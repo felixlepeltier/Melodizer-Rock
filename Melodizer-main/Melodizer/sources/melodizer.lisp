@@ -359,7 +359,7 @@
       'om::om-button
       (om::om-make-point 122 250)
       (om::om-make-point 200 20)
-      "Wallah le bouton"
+      "test le bouton"
       :di-action #'(lambda (b)
         (setf (input-chords (om::object editor)) (make-instance 'voice))
         (setf (input-rhythm (om::object editor)) (make-instance 'voice))
