@@ -7,6 +7,11 @@
 
 using namespace Gecode;
 
+namespace {
+  int majorNatural[7] = {2, 2, 1, 2, 2, 2, 1};
+  int minorNatural[7] = {2, 1, 2, 2, 2, 1, 2};
+};
+
 class Melody : public Script {
 private:
 
@@ -15,30 +20,57 @@ private:
 
   SetVarArray push;
   SetVarArray pull;
+  SetVarArray playing;
 
 public:
 
   Melody(const SizeOptions& opt) :
     Script(opt),
     push(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127),
-    pull(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127){
-
-      SetVarArray playing(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127);
+    pull(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127),
+    playing(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127){
 
       rel(*this, pull[0] == IntSet::empty);
+      rel(*this, playing[0] == push[0]);
 
       for(int i = 1; i < bars*quantification; i++){
-        rel(*this, playing[i] == (playing[i-1] - pull[i]) | push[i]); // Notes that are playing
-        rel(*this, pull[i] <= playing[i-1]); // Cannot pull a note not playing
-        rel(*this, push[i] || (playing[i-1] - pull[i])); // Cannot push a note still playing
+        // Notes that are playing
+        rel(*this, playing[i] == ((playing[i-1] - pull[i]) | push[i])); 
+        // Cannot pull a note not playing
+        rel(*this, pull[i] <= playing[i-1]);
+        // Cannot push a note still playing
+        rel(*this, push[i] || (playing[i-1] - pull[i])); 
       }
+
+      cardinality(*this, playing, 0, 10);
+      cardinality(*this, pull, 0, 10);
+      cardinality(*this, push, 0, 5);
+      
+
+      // Following a scale
+
+      std::vector<int> v;
+      for (int octave = 0; octave < 11; octave++){
+        for (int i = 0; i<7; i++){
+          v.push_back(octave*12+majorNatural[i]);
+        }
+      }
+
+      IntArgs a(v);
+      IntSet scaleSet(a);
 
       for(int i = 1; i < bars*quantification; i++){
-        cardinality(*this, playing[i], 0, 3);
+        rel(*this, push[i] <= scaleSet);
       }
+      
 
-      branch(*this, push, SET_VAR_NONE(), SET_VAL_MIN_INC());
-      branch(*this, pull, SET_VAR_NONE(), SET_VAL_MIN_INC());
+      Rnd r1(opt.seed());
+      r1.time();
+      Rnd r2(opt.seed());
+      r2.time();
+
+      branch(*this, push, SET_VAR_RND(r1), SET_VAL_RND_INC(r2));
+      branch(*this, pull, SET_VAR_RND(r1), SET_VAL_RND_INC(r2));
 
   }
 
@@ -47,7 +79,8 @@ public:
     Script(melody){
 
       push.update(*this, melody.push);
-      pull.update(*this, pull.end);
+      pull.update(*this, melody.pull);
+      playing.update(*this, melody.playing);
 
   }
 
@@ -62,7 +95,26 @@ public:
 
     os << "\t";
     for (int i = 0; i<bars*quantification; i++) {
-      os << push[i] << ", " << pull[i];
+      os << "Beat " << i << "    ";
+      for (SetVarGlbValues d(push[i]);d();++d) {
+        os << d.val() << " ";
+      };
+      os << std::endl << "\t";
+    }
+    os << std::endl << "\t";
+    for (int i = 0; i<bars*quantification; i++) {
+      os << "Beat " << i << "    ";
+      for (SetVarGlbValues d(pull[i]);d();++d) {
+        os << d.val() << " ";
+      };
+      os << std::endl << "\t";
+    }
+    os << std::endl << "\t";
+    for (int i = 0; i<bars*quantification; i++) {
+      os << "Beat " << i << "    ";
+      for (SetVarGlbValues d(playing[i]);d();++d) {
+        os << d.val() << " ";
+      };
       os << std::endl << "\t";
     }
     os << std::endl;
