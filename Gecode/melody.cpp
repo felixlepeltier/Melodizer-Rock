@@ -18,7 +18,7 @@ class Melody : public Script {
 private:
 
   const int bars = 4;
-  const int quantification = 64;
+  const int quantification = 48;
 
   SetVarArray push;
   SetVarArray pull;
@@ -28,17 +28,29 @@ public:
 
   Melody(const SizeOptions& opt) :
     Script(opt),
-    push(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127),
-    pull(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127),
-    playing(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127){
+    push(*this,bars*quantification+1,IntSet::empty,IntSet(0,127),0,127),
+    pull(*this,bars*quantification+1,IntSet::empty,IntSet(0,127),0,127),
+    playing(*this,bars*quantification+1,IntSet::empty,IntSet(0,127),0,127){
+
+      // Array of 127 sets containing for each note the time where it is pushed (ot pulled)
+      SetVarArray pushMap(*this, 127, IntSet::empty,IntSet(0,bars*quantification+1),0,bars*quantification+1);
+      SetVarArray pullMap(*this, 127, IntSet::empty,IntSet(0,bars*quantification+1),0,bars*quantification+1);
+      channel(*this, push, pushMap);
+      channel(*this, pull, pullMap);
+      for (int i = 0; i < 127; i++){
+        rel(*this, cardinality(pushMap[i]) >= cardinality(pullMap[i]));
+      }
 
       int scaleSize = sizeof(majorNatural)/sizeof(int);
       int progressionSize = sizeof(progression)/sizeof(int);
+      
 
       rel(*this, pull[0] == IntSet::empty);
+      rel(*this, push[bars*quantification] == IntSet::empty);
+      rel(*this, playing[bars*quantification] == IntSet::empty);
       rel(*this, playing[0] == push[0]);
 
-      for(int i = 1; i < bars*quantification; i++){
+      for(int i = 1; i <= bars*quantification; i++){
         // Notes that are playing
         rel(*this, playing[i] == ((playing[i-1] - pull[i]) | push[i])); 
         // Cannot pull a note not playing
@@ -66,7 +78,7 @@ public:
       IntArgs a(v);
       IntSet scaleSet(a);
 
-      for(int i = 0; i < bars*quantification; i++){
+      for(int i = 0; i <= bars*quantification; i++){
         rel(*this, push[i] <= scaleSet);
       }
 
@@ -96,46 +108,44 @@ public:
       }
 
       // Limiting the range of notes
-      for (int i = 0; i < bars*quantification; i++){
-        dom(*this, push, SRT_SUB, 2*12, 4*12);
-      }
+      dom(*this, push, SRT_SUB, 2*12, 4*12);
 
       // Constraining the min length of the notes
-      int length = 32;
-      for (int i = 0; i < bars*quantification; i++){
-        for (int j = 1; j < length && i+j < bars*quantification ; j++){
+      int minlength = 24;
+      for (int i = 0; i <= bars*quantification; i++){
+        for (int j = 1; j < minlength && i+j <= bars*quantification ; j++){
           rel(*this, pull[i+j] || push[i]);
         }
       }
 
-
       // Constraining the max length of the notes
-      int length = 32;
+      /* int maxlength = 24;
       for (int i = 0; i < bars*quantification; i++){
-        for (int j = 1; j < length && i+j < bars*quantification ; j++){
+        for (int j = 1; j < maxlength && i+j < bars*quantification ; j++){
           
         }
-      }
+      }  */
 
       // Constraining chord rhythm
       for (int i = 0; i < bars*quantification; i++){
-        if (i % 32 == 0){
-          cardinality(*this, push[i], 2, 4);
+        if (i % 24 == 0){
+          cardinality(*this, push[i], 3, 3);
         } else {
-          cardinality(*this, push[i], 0, 0);
+          cardinality(*this, push[i], 0, 1);
         }
       }
-
-
-      
         
       Rnd r1(opt.seed());
       r1.time();
       Rnd r2(opt.seed());
       r2.time();
 
-      branch(*this, push, SET_VAR_RND(r1), SET_VAL_RND_INC(r2));
-      branch(*this, pull, SET_VAR_RND(r1), SET_VAL_RND_INC(r2));
+      for (int i = 0; i <= bars*quantification; i++){
+        branch(*this, push[i], SET_VAL_RND_INC(r2));
+        branch(*this, pull[i], SET_VAL_RND_INC(r2));
+      }
+
+      
 
   }
 
@@ -159,7 +169,7 @@ public:
   print(std::ostream& os) const {
 
     os << "\t";
-    for (int i = 0; i<bars*quantification; i++) {
+    for (int i = 0; i<=bars*quantification; i++) {
       os << "Beat " << i << "    ";
       for (SetVarGlbValues d(push[i]);d();++d) {
         os << d.val() << " ";
@@ -167,7 +177,7 @@ public:
       os << std::endl << "\t";
     }
     os << std::endl << "\t";
-    for (int i = 0; i<bars*quantification; i++) {
+    for (int i = 0; i<=bars*quantification; i++) {
       os << "Beat " << i << "    ";
       for (SetVarGlbValues d(pull[i]);d();++d) {
         os << d.val() << " ";
@@ -175,7 +185,7 @@ public:
       os << std::endl << "\t";
     }
     os << std::endl << "\t";
-    for (int i = 0; i<bars*quantification; i++) {
+    for (int i = 0; i<=bars*quantification; i++) {
       os << "Beat " << i << "    ";
       for (SetVarGlbValues d(playing[i]);d();++d) {
         os << d.val() << " ";
