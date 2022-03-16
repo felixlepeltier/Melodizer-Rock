@@ -10,13 +10,15 @@ using namespace Gecode;
 namespace {
   int majorNatural[7] = {2, 2, 1, 2, 2, 2, 1};
   int minorNatural[7] = {2, 1, 2, 2, 2, 1, 2};
+
+  int progression[4] = {1, 5, 6, 4};
 };
 
 class Melody : public Script {
 private:
 
   const int bars = 4;
-  const int quantification = 8;
+  const int quantification = 64;
 
   SetVarArray push;
   SetVarArray pull;
@@ -30,6 +32,9 @@ public:
     pull(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127),
     playing(*this,bars*quantification,IntSet::empty,IntSet(0,127),0,127){
 
+      int scaleSize = sizeof(majorNatural)/sizeof(int);
+      int progressionSize = sizeof(progression)/sizeof(int);
+
       rel(*this, pull[0] == IntSet::empty);
       rel(*this, playing[0] == push[0]);
 
@@ -42,28 +47,88 @@ public:
         rel(*this, push[i] || (playing[i-1] - pull[i])); 
       }
 
-      cardinality(*this, playing, 0, 10);
+      cardinality(*this, playing, 0, 5);
       cardinality(*this, pull, 0, 10);
-      cardinality(*this, push, 0, 5);
+      cardinality(*this, push, 0, 10);
       
 
       // Following a scale
 
       std::vector<int> v;
       for (int octave = 0; octave < 11; octave++){
-        for (int i = 0; i<7; i++){
-          v.push_back(octave*12+majorNatural[i]);
+        int offset = 0;
+        for (int i = 0; i<scaleSize; i++){
+          v.push_back(octave*12+offset);
+          offset += majorNatural[i];
         }
       }
 
       IntArgs a(v);
       IntSet scaleSet(a);
 
-      for(int i = 1; i < bars*quantification; i++){
+      for(int i = 0; i < bars*quantification; i++){
         rel(*this, push[i] <= scaleSet);
       }
-      
 
+      // Following a chord progression
+
+      for (int i = 0; i < progressionSize; i++){
+        std::vector<int> v;
+        for (int octave = 0; octave < 11; octave++){
+          int offset = 0;
+          for (int j = 0; j<scaleSize; j++){          
+            if (j == progression[i]-1){
+              v.push_back(octave*12+offset);
+            } else if (j == (progression[i]+1)%scaleSize){
+              v.push_back(octave*12+offset);
+            } else if (j == (progression[i]+3)%scaleSize){
+              v.push_back(octave*12+offset);
+            }
+            offset += majorNatural[j];
+          }
+        }
+
+        IntArgs a(v);
+        IntSet chordSet(a);
+        for(int j = 0; j < bars*quantification/progressionSize; j++){
+          rel(*this, push[j + i*bars*quantification/progressionSize] <= chordSet);
+        }
+      }
+
+      // Limiting the range of notes
+      for (int i = 0; i < bars*quantification; i++){
+        dom(*this, push, SRT_SUB, 2*12, 4*12);
+      }
+
+      // Constraining the min length of the notes
+      int length = 32;
+      for (int i = 0; i < bars*quantification; i++){
+        for (int j = 1; j < length && i+j < bars*quantification ; j++){
+          rel(*this, pull[i+j] || push[i]);
+        }
+      }
+
+
+      // Constraining the max length of the notes
+      int length = 32;
+      for (int i = 0; i < bars*quantification; i++){
+        for (int j = 1; j < length && i+j < bars*quantification ; j++){
+          
+        }
+      }
+
+      // Constraining chord rhythm
+      for (int i = 0; i < bars*quantification; i++){
+        if (i % 32 == 0){
+          cardinality(*this, push[i], 2, 4);
+        } else {
+          cardinality(*this, push[i], 0, 0);
+        }
+      }
+
+
+      
+        
       Rnd r1(opt.seed());
       r1.time();
       Rnd r2(opt.seed());
