@@ -80,6 +80,21 @@
     )
 )
 
+
+; finds the biggest element in a list of lists
+(defun max-list-list (L)
+    (cond
+        ((null (car L)) nil); the list is empty -> return nil
+        ((null (cdr L)) (max-list (car L))); the list has 1 element -> return it
+        (T 
+            (let ((head (max-list (car L))); default behavior
+                 (tailMax (max-list-list (cdr L))))
+                (if (> head tailMax) head tailMax)
+            )
+        )
+    )
+)
+
 ; function to update the list of solutions in a pop-up menu without having to close and re-open the window
 ; TODO find a more efficient way to do this
 (defun update-pop-up (self my-panel data position size output)
@@ -143,12 +158,20 @@
   )
 )
 
-;function to get the starting times (in seconds) of the notes
+;function to get the starting times (in ms) of the notes
 ; from karim haddad (OM)
 (defmethod voice-onsets ((self voice))
   "on passe de voice a chord-seq juste pour avoir les onsets"
     (let ((obj (om::objfromobjs self (make-instance 'om::chord-seq))))
         (butlast (om::lonset obj))
+    )
+)
+
+;function to get the duration (in ms) of the notes
+(defmethod voice-durs ((self voice))
+  "on passe de voice a chord-seq juste pour avoir les onsets"
+    (let ((obj (om::objfromobjs self (make-instance 'om::chord-seq))))
+        (om::ldur obj)
     )
 )
 
@@ -312,6 +335,73 @@
     )
 )
 
+; <input-chords> is the voice objects for the chords
+; <quant> NOT USED YET (FORCED TO 500) smallest possible note length
+; Return a list in which each element i represent a note starting at a time i*quant
+; -1 means no note starting at that time, a chord object means multiple note starting
+(defun create-push (input-chords)
+    (let ((note-starting-times (voice-onsets input-chords))
+          (quant 500)
+          (push-list (list))
+          (chords (to-pitch-list (om::chords input-chords))) ; get chords list
+         )
+         (setf note-starting-times (mapcar (lambda (n) (/ n quant)) note-starting-times)) ; dividing note-starting-times by quant
+         (loop :for j :from 0 :below (+ (max-list note-starting-times) 1) :by 1 :do 
+            (if (= j (car note-starting-times)); if j == note-starting-times[0] 
+                (progn
+                    (setq push-list (nconc push-list (list (car chords))))
+                    (setf chords (cdr chords))
+                    (setf note-starting-times (cdr note-starting-times))) ;add chords[0] to push and prune qt[0] and pchords[0]
+                (setq push-list (nconc push-list (list -1)))) ; else add -1 to push
+        )
+        (print push-list)
+    )   
+)
+
+
+; <input-chords> is the voice objects for the chords
+; <quant> NOT USED YET (FORCED TO 500) smallest possible note length
+; Return a list in which each element i represent a note stopping at a time i*quant
+; -1 means no note stop at that time, a chord object means multiple note starting
+(defun create-pull (input-chords)
+    (let ((note-starting-times (voice-onsets input-chords)) ; note-starting-times = start time of each chord
+          (note-dur-times (voice-durs input-chords)) ; note-dur-times = duration of each note
+          (note-stopping-times (list))
+          (quant 500)
+          (pull-list (list))
+          (pitch (to-pitch-list (om::chords input-chords))) ; get chords list
+         )
+         (print pitch)
+         (setf note-starting-times (mapcar (lambda (n) (/ n quant)) note-starting-times)) ; dividing note-starting-times by quant
+         (print note-starting-times)
+         (setf note-dur-times (mapcar (lambda (n) (mapcar (lambda (m) (/ m quant)) n)) note-dur-times)) ; dividing note-dur-times by quant
+         (print note-dur-times)
+         (loop :for j :from 0 :below (length note-starting-times) :by 1 :do 
+             (setq note-stopping-times (nconc note-stopping-times (list (mapcar (lambda (n) (+ n (nth j note-starting-times))) (nth j note-dur-times))))) ; Adding note-starting-times to note-dur-times to get note-stopping-times
+        )
+        (print note-stopping-times)
+        (print (max-list-list note-stopping-times))
+        (loop :for j :from 0 :below (+ (max-list-list note-stopping-times) 1) :by 1 :do 
+              (setq pull-list (nconc pull-list (list -1))))
+        (loop for l in note-stopping-times 
+              for k in pitch do
+            (loop for i in l 
+                  for j in k do
+                  (if (typep (nth i pull-list) 'list)
+                      (setf (nth i pull-list) (nconc (nth i pull-list) (list j)))
+                      (setf (nth i pull-list) (list j)))                 
+             )
+        )
+        (print pull-list) 
+    )   
+)
+
+
+; <chords> a list of chord object
+; Return the list of pitch contained in chords in midi format
+(defun to-pitch-list (chords)
+     (loop :for n :from 0 :below (length chords) :by 1 collect (to-midi (om::lmidic (nth n chords))))
+)
 
 ; this is not used but kept in case it is needed
 ; shuffles a list

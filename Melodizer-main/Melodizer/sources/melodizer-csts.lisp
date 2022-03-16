@@ -125,6 +125,8 @@
 (defun range-restriction (sp notes input-chords)
     (let ((chords (om::chords input-chords)); get the list of pitches for all the chords in the voice object
         vals min-note max-note)
+        (create-push input-chords)
+        (create-pull input-chords)
         ; collect all the notes and put them in one big list
         (setf vals
                 (to-midi (om::flat 
