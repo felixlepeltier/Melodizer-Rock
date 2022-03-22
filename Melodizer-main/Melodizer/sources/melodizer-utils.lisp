@@ -354,7 +354,7 @@
                     (setf note-starting-times (cdr note-starting-times))) ;add chords[0] to push and prune qt[0] and pchords[0]
                 (setq push-list (nconc push-list (list -1)))) ; else add -1 to push
         )
-        (print push-list)
+        ; (print push-list)
     )   
 )
 
@@ -371,16 +371,16 @@
           (pull-list (list))
           (pitch (to-pitch-list (om::chords input-chords))) ; get chords list
          )
-         (print pitch)
+         ; (print pitch)
          (setf note-starting-times (mapcar (lambda (n) (/ n quant)) note-starting-times)) ; dividing note-starting-times by quant
-         (print note-starting-times)
+         ; (print note-starting-times)
          (setf note-dur-times (mapcar (lambda (n) (mapcar (lambda (m) (/ m quant)) n)) note-dur-times)) ; dividing note-dur-times by quant
-         (print note-dur-times)
+         ; (print note-dur-times)
          (loop :for j :from 0 :below (length note-starting-times) :by 1 :do 
              (setq note-stopping-times (nconc note-stopping-times (list (mapcar (lambda (n) (+ n (nth j note-starting-times))) (nth j note-dur-times))))) ; Adding note-starting-times to note-dur-times to get note-stopping-times
         )
-        (print note-stopping-times)
-        (print (max-list-list note-stopping-times))
+        ; (print note-stopping-times)
+        ; (print (max-list-list note-stopping-times))
         (loop :for j :from 0 :below (+ (max-list-list note-stopping-times) 1) :by 1 :do 
               (setq pull-list (nconc pull-list (list -1))))
         (loop for l in note-stopping-times 
@@ -392,7 +392,7 @@
                       (setf (nth i pull-list) (list j)))                 
              )
         )
-        (print pull-list) 
+        ; (print pull-list) 
     )   
 )
 
