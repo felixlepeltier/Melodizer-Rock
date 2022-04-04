@@ -32,13 +32,13 @@ public:
     pull(*this,bars*quantification+1,IntSet::empty,IntSet(0,127),0,127),
     playing(*this,bars*quantification+1,IntSet::empty,IntSet(0,127),0,127){
 
-      // Array of 127 sets containing for each note the time where it is pushed (ot pulled)
+      // Array of 127 sets containing for each note the time where it is pushed (or pulled)
       SetVarArray pushMap(*this, 127, IntSet::empty,IntSet(0,bars*quantification+1),0,bars*quantification+1);
       SetVarArray pullMap(*this, 127, IntSet::empty,IntSet(0,bars*quantification+1),0,bars*quantification+1);
       channel(*this, push, pushMap);
       channel(*this, pull, pullMap);
       for (int i = 0; i < 127; i++){
-        rel(*this, cardinality(pushMap[i]) >= cardinality(pullMap[i]));
+        rel(*this, cardinality(pushMap[i]) == cardinality(pullMap[i]));
       }
 
       int scaleSize = sizeof(majorNatural)/sizeof(int);
@@ -108,7 +108,7 @@ public:
       }
 
       // Limiting the range of notes
-      dom(*this, push, SRT_SUB, 2*12, 4*12);
+      dom(*this, push, SRT_SUB, 0, 12);
 
       // Constraining the min length of the notes
       int minlength = 24;
