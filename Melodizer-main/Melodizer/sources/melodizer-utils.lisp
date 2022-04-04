@@ -396,11 +396,46 @@
     )   
 )
 
+(defun adapt-scale (major-natural)
+    (let ((major-modified (list (first major-natural))))
+         (loop :for i :from 1 :below (length major-natural) :by 1 :do
+            (setq major-modified (nconc major-modified (list (+ (nth i major-natural) (nth (- i 1) major-modified)))))  
+         ) 
+    (return-from adapt-scale major-modified)
+    )    
+)
+
+(defun build-scaleset (major-natural)
+    (let ((major-modified (adapt-scale major-natural)))
+        (loop :for octave :from 0 :below 11 :by 1 append
+            (let ((offset 0)
+                (scaleset (list)))
+                (setq scaleset (nconc scaleset (mapcar (lambda (n) (+ n (* octave 12))) major-modified)))
+            )
+        )
+    )
+)
+
 
 ; <chords> a list of chord object
 ; Return the list of pitch contained in chords in midi format
 (defun to-pitch-list (chords)
      (loop :for n :from 0 :below (length chords) :by 1 collect (to-midi (om::lmidic (nth n chords))))
+)
+
+
+; Getting a list of chords and a rhythm tree from the playing list of intvar
+(defun build-score (sol playing)
+    (let ((pitch (list))
+          (tree (list '? (list (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)))))
+          )
+    (print (gil::g-value-size sol (first playing)))
+    (print "avant g-value")
+    (setq pitch (nconc pitch (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) playing)))
+    (print "apres g-value")
+    (print pitch)
+    (list pitch tree)
+    )
 )
 
 ; this is not used but kept in case it is needed
@@ -415,4 +450,3 @@
 		 (nth (random (length input-list)) input-list))
 	(list-shuffler (cdr input-list) 
 				 (append accumulator (list (car input-list)))))))
-

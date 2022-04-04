@@ -256,7 +256,7 @@
       (om::om-make-point 200 20) 
       "Tool Mode selection"
       :value(tool-mode (om::object editor))
-      :range '("Melody-Finder" "Variation maker")
+      :range '("Melody-Finder" "Variation maker" "New Melodizer")
       :di-action #'(lambda (m)
                     (setf (tool-mode (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m))) ; set the tool-mode according to the choice of the user
       ) 
@@ -457,6 +457,12 @@
                           (setf (result (om::object editor)) init)
                         )
                       )
+                      ((string-equal (tool-mode (om::object editor)) "New Melodizer")
+                        (let init
+                          (setq init (new-melodizer))
+                          (setf (result (om::object editor)) init)
+                        )
+                      )
                     )
       )
     )
@@ -479,7 +485,11 @@
                       "next thread" ; name of the thread, not necessary but useful for debugging
                       nil ; process initialization keywords, not needed here
                       (lambda () ; function to call
-                        (setf (solution (om::object editor)) (search-next (result (om::object editor)) (om::tree (input-rhythm (om::object editor))) (om::object editor)))
+                        (cond
+                            ((string-equal (tool-mode (om::object editor)) "Melody-Finder")
+                                (setf (solution (om::object editor)) (search-next (result (om::object editor)) (om::tree (input-rhythm (om::object editor))) (om::object editor))))
+                            ((string-equal (tool-mode (om::object editor)) "New Melodizer")
+                                (setf (solution (om::object editor)) (new-search-next (result (om::object editor)) (om::object editor)))))
                         (setf (om::tempo (solution (om::object editor))) (om::tempo (input-rhythm (om::object editor)))); set the tempo of the new voice object to be the same as the input
                         (om::openeditorframe ; open a voice window displaying the solution
                           (om::omNG-make-new-instance 

@@ -103,7 +103,7 @@
         (loop :for j :from 0 :below (length intervals) :do ;for each interval
             (let (temp)
                 (setq temp (gil::add-int-var-array sp 3 -12 108)); temporary variables
-
+                
                 (gil::g-rel sp (first temp) gil::IRT_EQ (nth j pitch)); temp[0] = pitch[j]
                 (gil::g-rel sp (second temp) gil::IRT_EQ (nth (+ j 1) pitch)); temp[1] = pitch[j+1]
                 (gil::g-rel sp (third temp) gil::IRT_EQ (nth j intervals)); temp[2] = intervals[j]
@@ -111,7 +111,6 @@
                 (gil::g-linear sp '(-1 1 -1) temp gil::IRT_EQ 0); -pitch[j] + pitch[j+1] - intervals[j] = 0
             )
         )
-
         ; post the constraints
 
         ; mandatory constraints
@@ -178,10 +177,13 @@
 ; This function creates the CSP by creating the space and the variables, posting the constraints and the branching, specifying
 ; the search options and creating the search engine. 
 (defmethod new-melodizer ()
-    (let ((sp (gil::new-space)); create the space; 
-        push pull playing dfs)
+    (let ((sp (gil::new-space)); create the space;
+        push pull playing dfs tstop sopts scaleset pitch
         (bars 4)
-        (quant 48)
+        (quant 8)
+        (major-natural (list 2 2 1 2 2 2 1)))
+        (setf scaleset (build-scaleset major-natural))
+        
 
         ;initialize the variables
         (setq push (gil::add-set-var-array sp (* bars quant) 0 127))
@@ -194,13 +196,12 @@
 
         ;connect push, pull and playing
         (loop :for j :from 1 :below (* bars quant) :do ;for each interval
-            (let (temp)
-                 (temp2)
+            (let (temp temp2)
                 (setq temp (gil::add-set-var-array sp 3 0 127)); temporary variables
                 (setq temp2 (gil::add-set-var-array sp 2 0 127)); temporary variables
                  
                 (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) (first temp)); temp[0] = playing[j-1] - pull[j]
-                (gil::g-op sp (nth j playing) gil::SRT_UNION (nth j push) (second temp)); playing[i] == playing[j-1] - pull[i] + push[i] Playing note
+                (gil::g-op sp (nth j playing) gil::SOT_UNION (nth j push) (second temp)); playing[i] == playing[j-1] - pull[i] + push[i] Playing note
                  
                 (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[i] <= playing[i-1] cannot pull a note not playing
                  
@@ -208,38 +209,18 @@
             )
         )
 
-        ; post the constraints
-
-        ; mandatory constraints
-
-        (range-restriction sp pitch input)
-
-        (interval-between-adjacent-notes sp pitch intervals)
-
-        (in-tonality sp pitch key mode)
-
-        (note-on-chord sp pitch rhythm input)
-
-        (harmonic-interval-chord sp pitch rhythm input)
-        
-        ; optional constraints
-        (post-optional-constraints optional-constraints sp pitch intervals global-interval min-pitch max-pitch)
+        (gil::g-card sp playing 0 10) ; piano can only 10 notes at a time
+        (gil::g-card sp pull 0 10) ; can't release more notes than we play
+        (gil::g-card sp push 0 5) ; can't start playing more than 5 notes at a time
+         
+        ; Following a scale
+        (loop :for j :from 0 :below (* bars quant) :do
+            (gil::g-rel sp (nth j push) gil::SRT_SUB scaleset)      
+        )
 
         ; branching
-        (gil::g-branch sp pitch gil::INT_VAR_DEGREE_MAX gil::INT_VAL_RND)
-        
-        ; the branching on intervals depends on the optional constraints. If there are none, do default branching
-        (cond
-            ((or (find "strictly-increasing-pitch" optional-constraints :test #'equal) (find "increasing-pitch" optional-constraints :test #'equal) (find "mostly-increasing-pitch" optional-constraints :test #'equal))
-                (gil::g-branch sp intervals gil::INT_VAR_SIZE_MIN gil::INT_VAL_SPLIT_MAX)
-            )
-            ((or (find "strictly-decreasing-pitch" optional-constraints :test #'equal) (find "decreasing-pitch" optional-constraints :test #'equal) (find "mostly-decreasing-pitch" optional-constraints :test #'equal))
-                (gil::g-branch sp intervals gil::INT_VAR_SIZE_MIN gil::INT_VAL_SPLIT_MIN)
-            )
-            (T ; default behaviour 
-                (gil::g-branch sp intervals gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
-            )
-        )
+        (gil::g-branch sp push nil nil) 
+        (gil::g-branch sp pull nil nil) 
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -254,9 +235,9 @@
         ; search engine
         (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
 
-        (print "melody-finder CSP constructed")
+        (print "new-melodizer CSP constructed")
         ; return
-        (list se pitch tstop sopts intervals)
+        (list se playing tstop sopts)
     )
 )
 
@@ -325,6 +306,41 @@
         (make-instance 'voice
             :tree rhythm
             :chords pitches
+            :tempo (om::tempo (input-rhythm melodizer-object))
+        )
+    )
+)
+
+; <l> is a list containing the search engine for the problem and the variables
+; <rhythm> is the input rhythm as given by the user 
+; <melodizer-object> is a melodizer object
+; this function finds the next solution of the CSP using the search engine given as an argument
+(defmethod new-search-next (l melodizer-object)
+    (let ((se (first l))
+         (playing (second l))
+         (tstop (third l))
+         (sopts (fourth l))
+         (check t); for the while loop
+         sol score)
+
+        (om::while check :do
+            (gil::time-stop-reset tstop);reset the tstop timer before launching the search
+            (setq sol (gil::search-next se)); search the next solution
+            (if (null sol) 
+                (stopped-or-ended (gil::stopped se) (stop-search melodizer-object) tstop); check if there are solutions left and if the user wishes to continue searching
+                (setf check nil); we have found a solution so break the loop
+            )
+        )
+
+         ;créer score qui retourne la liste de pitch et la rhythm tree
+        (print "avant score")
+        (setq score (build-score sol playing)); store the values of the solution TODO to midicent
+        (print "solution found")
+
+        ;return a voice object that is the solution we just found
+        (make-instance 'voice
+            :tree (second score)
+            :chords (first score)
             :tempo (om::tempo (input-rhythm melodizer-object))
         )
     )
