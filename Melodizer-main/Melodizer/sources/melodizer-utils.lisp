@@ -396,6 +396,7 @@
     )   
 )
 
+; reformat major natural to be a canvas of pitch and not intervals
 (defun adapt-scale (major-natural)
     (let ((major-modified (list (first major-natural))))
          (loop :for i :from 1 :below (length major-natural) :by 1 :do
@@ -405,6 +406,7 @@
     )    
 )
 
+; build the list of acceptable pitch based on the major natural
 (defun build-scaleset (major-natural)
     (let ((major-modified (adapt-scale major-natural)))
         (loop :for octave :from 0 :below 11 :by 1 append
@@ -416,6 +418,38 @@
     )
 )
 
+; build the acceptable pitch for a given chord progression
+(defun build-chordset (chord-prog major-natural) 
+    (loop :for i :from 0 :below (length chord-prog) :by 1 collect
+          (build-chordset-in (nth i chord-prog) major-natural)
+    ) 
+)
+
+;build the acceptable pitch for one element of a chord progression
+(defun build-chordset-in (chord major-natural)
+    (let ((vector (list))
+          (scalesize (length major-natural)))
+        (loop :for octave :from 0 :below 11 :by 1 :do
+              (let ((offset 0))
+                   (loop :for j :from 0 :below scalesize :by 1 :do
+                         (progn
+                            (cond
+                                ((= j (- chord 1))
+                                    (setq vector (nconc vector (list (+ (* octave 12) offset)))))
+                                ((= j (mod (+ chord 1) scalesize))
+                                    (setq vector (nconc vector (list (+ (* octave 12) offset)))))
+                                ((= j (mod (+ chord 3) scalesize))
+                                    (setq vector (nconc vector (list (+ (* octave 12) offset)))))
+                            )
+                            (setf offset (+ (nth j major-natural) offset))
+                         )
+                   )
+              )
+        )
+        (setq vector vector)
+    )
+)
+   
 
 ; <chords> a list of chord object
 ; Return the list of pitch contained in chords in midi format
@@ -425,18 +459,46 @@
 
 
 ; Getting a list of chords and a rhythm tree from the playing list of intvar
-(defun build-score (sol playing)
+(defun build-score (sol playing bars quant)
     (let ((pitch (list))
-          (tree (list '? (list (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)))))
+          (new-pitch (list))
+          (tree (list))
           )
-    (print (gil::g-value-size sol (first playing)))
-    (print "avant g-value")
     (setq pitch (nconc pitch (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) playing)))
-    (print "apres g-value")
     (print pitch)
-    (list pitch tree)
+    (loop :for b :from 0 :below bars :by 1 :do
+        (print b)
+        (let ((timer 1)
+              (tree-elem (list))
+              (toadd (* b quant)))
+        (loop :for q :from 1 :below quant :by 1 :do
+            (progn (print toadd)
+            (if (or (null (nth (+ (* b quant) q) pitch)) (compare (nth (+ (* b quant) q) pitch) (nth (- (+ (* b quant) q) 1) pitch)))
+                (setf timer (+ timer 1))
+                (progn
+                    (setq tree-elem (nconc tree-elem (list timer)))
+                    (setf timer 1)
+                    (setq new-pitch (nconc new-pitch (list (nth toadd pitch))))
+                    (setf toadd (+ (* b quant) q))
+                )
+            )
+                )
+        )
+        (setq tree-elem (nconc tree-elem (list timer)))
+        (setq new-pitch (nconc new-pitch (list (nth toadd pitch))))
+        (setq tree (nconc tree (list (list (list 4 4) tree-elem))))
+        (print tree)
+        (print new-pitch)
+        )
+    )
+    (setq tree (list '? tree))
+    (list new-pitch tree)
     )
 )
+
+;return T if the two list have the same elements (order doesn't matter)
+(defun compare (l1 l2)
+  (and (subsetp l1 l2) (subsetp l2 l1)))
 
 ; this is not used but kept in case it is needed
 ; shuffles a list

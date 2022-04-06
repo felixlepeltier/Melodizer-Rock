@@ -181,8 +181,11 @@
         push pull playing dfs tstop sopts scaleset pitch
         (bars 4)
         (quant 8)
-        (major-natural (list 2 2 1 2 2 2 1)))
+        (major-natural (list 2 2 1 2 2 2 1))
+        (chord-prog (list 1 5 6 4)))
         (setf scaleset (build-scaleset major-natural))
+        (setf chordset (build-chordset chord-prog major-natural))
+        (setf progsize (length chord-prog))
         
 
         ;initialize the variables
@@ -191,24 +194,24 @@
         (setq playing (gil::add-set-var-array sp (* bars quant) 0 127))
          
         ;initial constraint on pull and playing
-        ;(gil::g-rel sp (first pull) gil::IRT_EQ empty) ; pull[0] == empty
+        (gil::g-empty sp (first pull)) ; pull[0] == empty
         (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
 
         ;connect push, pull and playing
         (loop :for j :from 1 :below (* bars quant) :do ;for each interval
-            (let (temp temp2)
-                (setq temp (gil::add-set-var-array sp 3 0 127)); temporary variables
-                (setq temp2 (gil::add-set-var-array sp 2 0 127)); temporary variables
+            (let (temp)
+                (setq temp (gil::add-set-var sp 0 127)); temporary variables
                  
-                (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) (first temp)); temp[0] = playing[j-1] - pull[j]
-                (gil::g-op sp (nth j playing) gil::SOT_UNION (nth j push) (second temp)); playing[i] == playing[j-1] - pull[i] + push[i] Playing note
+                (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
+                (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
                  
-                (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[i] <= playing[i-1] cannot pull a note not playing
+                (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
                  
                 (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_UNION (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
             )
         )
 
+         ;cardinality constraint
         (gil::g-card sp playing 0 10) ; piano can only 10 notes at a time
         (gil::g-card sp pull 0 10) ; can't release more notes than we play
         (gil::g-card sp push 0 5) ; can't start playing more than 5 notes at a time
@@ -216,6 +219,18 @@
         ; Following a scale
         (loop :for j :from 0 :below (* bars quant) :do
             (gil::g-rel sp (nth j push) gil::SRT_SUB scaleset)      
+        )
+         
+        ;Following a chord progression
+        (loop :for j :from 0 :below (length chordset) :by 1 :do 
+            (loop :for k :from 0 :below (/ (* bars quant) progsize) :by 1 :do
+                (gil::g-rel sp (nth (+ k (/ (* (* bars quant) j) progsize)) push) gil::SRT_SUB (nth j chordset))      
+            )   
+        )
+         
+        ; pitch range limitation
+        (loop :for j :below (* bars quant) :by 1 :do
+            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 60 72)
         )
 
         ; branching
@@ -333,9 +348,9 @@
         )
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
-        (print "avant score")
-        (setq score (build-score sol playing)); store the values of the solution TODO to midicent
-        (print "solution found")
+        (setq score (build-score sol playing 4 8)); store the values of the solution
+        (print (first score))
+        (print (second score))
 
         ;return a voice object that is the solution we just found
         (make-instance 'voice
