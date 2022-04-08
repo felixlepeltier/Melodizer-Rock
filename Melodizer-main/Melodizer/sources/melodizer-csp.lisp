@@ -181,8 +181,11 @@
         push pull playing dfs tstop sopts scaleset pitch
         (bars 4)
         (quant 8)
-        (major-natural (list 2 2 1 2 2 2 1))
-        (chord-prog (list 1 5 6 4)))
+        (min-length 1) ;minimum length of a note with associated constraint
+        (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
+        (chord-min-length 2) ; minimum length of a chord with associated constraint
+        (major-natural (list 2 2 1 2 2 2 1)) ; represent intervals of the scale we are composing in
+        (chord-prog (list 1 5 6 4))) ; represent the chord progression we want to follow
         (setf scaleset (build-scaleset major-natural))
         (setf chordset (build-chordset chord-prog major-natural))
         (setf progsize (length chord-prog))
@@ -212,9 +215,9 @@
         )
 
          ;cardinality constraint
-        (gil::g-card sp playing 0 10) ; piano can only 10 notes at a time
+        (gil::g-card sp playing 0 5) ; piano can only 10 notes at a time
         (gil::g-card sp pull 0 10) ; can't release more notes than we play
-        (gil::g-card sp push 0 5) ; can't start playing more than 5 notes at a time
+        ;(gil::g-card sp push 0 5) ; can't start playing more than 5 notes at a time
          
         ; Following a scale
         (loop :for j :from 0 :below (* bars quant) :do
@@ -222,6 +225,7 @@
         )
          
         ;Following a chord progression
+        (print chordset)
         (loop :for j :from 0 :below (length chordset) :by 1 :do 
             (loop :for k :from 0 :below (/ (* bars quant) progsize) :by 1 :do
                 (gil::g-rel sp (nth (+ k (/ (* (* bars quant) j) progsize)) push) gil::SRT_SUB (nth j chordset))      
@@ -230,7 +234,31 @@
          
         ; pitch range limitation
         (loop :for j :below (* bars quant) :by 1 :do
-            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 60 72)
+            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 50 86)
+        )
+         
+        ; Minimum length of note
+        (loop :for j :from 0 :below (* bars quant) :by 1 :do
+             (loop :for k :from 1 :below min-length :while (< (+ j k) (* bars quant)) :do
+                (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))      
+             )
+        )
+         
+        ; chord rhythm
+        (loop :for j :from 0 :below (* bars quant) :by 1 :do
+              (if (= (mod j chord-rhythm) 0)
+                  (gil::g-card sp (nth j push) 3 3)  
+                  (gil::g-card sp (nth j push) 0 1)
+              )
+        )
+         
+        ; chord length (need previous constraint to work)
+        (loop :for j :from 0 :below (* bars quant) :by 1 :do
+              (if (= (mod j chord-rhythm) 0)
+                  (loop :for k :from 1 :below chord-min-length :while (< (+ j k) (* bars quant)) :do
+                      (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))      
+                  )
+              )
         )
 
         ; branching
@@ -350,12 +378,13 @@
          ;créer score qui retourne la liste de pitch et la rhythm tree
         (setq score (build-score sol playing 4 8)); store the values of the solution
         (print (first score))
-        (print (second score))
+        (print (third score))
 
         ;return a voice object that is the solution we just found
         (make-instance 'voice
             :tree (second score)
             :chords (first score)
+            :ties (third score)
             :tempo (om::tempo (input-rhythm melodizer-object))
         )
     )
