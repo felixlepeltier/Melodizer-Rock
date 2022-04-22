@@ -94,60 +94,77 @@ public:
       rel(*this, cardinality(pushMap[i])<=1);
     }
     
-    //Rhythmic constraint: Fast or slow pace
+    //Rhythmic constraint: Fast or slow pace should also influence min length notes (and max length)
     IntVarArray cardinality_push(*this, bars*quantification+1, 0, max_simultaneous_notes);
     for(int i; i<bars*quantification+1; i++){
       rel(*this, cardinality(push[i])== cardinality_push[i]);
     }
-    // Fast pace explain problem to do with union => it would eventually work with disjoint union
+    // Fast pace explain problem to do with union 
     linear(*this, cardinality_push, IRT_GQ, 60);
     // Slow pace 
     linear(*this, cardinality_push, IRT_LQ, 30);
-    //Alternative way to do and probably faster but we get Segmentation fault
+    //Alternative way to do and probably faster, great idea but problem with disjoint union
     //SetVar allPushed;
     //rel(*this, SOT_DUNION, push, allPushed);
-    //Fast pace also should influence min length notes(and max length)
+    //Fast pace also should also influence min length notes (and max length)
     //rel(*this, cardinality(allPushed)>=60);
-    //slow pace also should influence min length notes
+    //slow pace also should also influence min length notes (and max length)
     //rel(*this, cardinality(allPushed)<=30);
     
     
     // strictly decreasing/increasing pitch
-    SetVar allPlayed(*this, IntSet::empty, IntSet(0, max_pitch), 0, max_pitch);
-    BoolVarArgs isPlayed(*this, max_pitch, 0, 1);
+    SetVar allPlayed(*this, IntSet::empty, IntSet(0, max_pitch), 0, max_pitch+1);
+    BoolVarArray isPlayed(*this, max_pitch+1, 0, 1);
     rel(*this, SOT_UNION, push, allPlayed);
     channel(*this,  isPlayed, allPlayed);
-    cardinality(*this, pushMap[max_pitch-1], 0, 1);
+    cardinality(*this, pushMap, 0, 1);
     // strictly increasing pitch
-    for (int i=60; i<=max_pitch-2; i++){
-      cardinality(*this, pushMap[i], 0, 1);
-      for (int j=i+1; j<=max_pitch-1; j++){
-	  rel(*this, (isPlayed[i] && isPlayed[j]) >> (max(pushMap[i])<=min(pushMap[j])));
+    for (int i=60; i<=max_pitch-1; i++){
+      for (int j=i+1; j<=max_pitch; j++){
+	rel(*this, (isPlayed[i] && isPlayed[j]) >> (min(pushMap[i])<=min(pushMap[j])));
+	// Remarks:
+	// we took the min values of sets because we constrained the cardinality to be less than 1 (we cold also have taken the max value)
+	// we put a <= rather than a < since we allow multiple notes to be played simoultaneously
+	// unfortunately, this constraint doesn't work when there are pitches that aren't pushed :
+	// the logic behind was that we constraint the pitch only if it was pushed
       } 
     }
     // strictly decreasing pitch
-    for (int i=60; i<=max_pitch-2; i++){
-      cardinality(*this, pushMap[i], 0, 1);
-      for (int j=i+1; j<=max_pitch-1; j++){
-	rel(*this, (isPlayed[i] && isPlayed[j]) >> (min(pushMap[i])>=max(pushMap[j])));
+    for (int i=60; i<=max_pitch-1; i++){
+      for (int j=i+1; j<=max_pitch; j++){
+	rel(*this, (isPlayed[i] && isPlayed[j]) >> (min(pushMap[i])>=min(pushMap[j])));
+	// Remarks:
+	// we took the min values of sets because we constrained the cardinality to be less than 1 (we cold also have taken the max value)
+	// we put a >= rather than a > since we allow multiple notes to be played simoultaneously
+	// unfortunately, this constraint doesn't work when there are pitches that aren't pushed :
+	// the logic behind was that we constraint the pitch only if it was pushed
       } 
     }
     
-    // increasing pitch
-    SetVar allPlayed;
-    BoolVarArgs isPlayed(*this, max_pitch);
+
+    // increasing/decreasing pitch // TODO re check, something is going wrong
+    SetVar allPlayed(*this, IntSet::empty, IntSet(0, max_pitch), 0, max_pitch+1);
+    BoolVarArray isPlayed(*this, max_pitch+1, 0, 1);
     rel(*this, SOT_UNION, push, allPlayed);
-    channel(*this, allPlayed, isPlayed);
-    for (int i=60; i<max_pitch-2; i++){
-      for (int j=i+1; j<max_pitch-1; j++){
-	rel(*this, (isPlayed[i] && isPlayed[j]) >> (max(pushMap[i])<min(pushMap[j])));
+    channel(*this,  isPlayed, allPlayed);
+    // increasing pitch
+    for (int i=60; i<=max_pitch-1; i++){
+      for (int j=i+1; j<=max_pitch; j++){
+	rel(*this, (isPlayed[i] && isPlayed[j]) >> (max(pushMap[i])<=min(pushMap[j])));
+	// Remarks:
+	// we put a <= rather than a < since we allow multiple notes to be played simoultaneously
+	// unfortunately, this constraint doesn't work when there are pitches that aren't pushed :
+	// the logic behind was that we constraint the pitch only if it was pushed
       }
     }
-    
     //decreasing pitch
-    for (int i=60; i<max_pitch-2; i++){
-      for (int j=i+1; j<max_pitch-1; j++){
-	rel(*this, (isPlayed[i] && isPlayed[j]) >> (max(pushMap[i])>min(pushMap[j])));
+    for (int i=60; i<=max_pitch-1; i++){
+      for (int j=i+1; j<=max_pitch; j++){
+	rel(*this, (isPlayed[i] && isPlayed[j]) >> (max(pushMap[i])>=min(pushMap[j])));
+	// Remarks:
+	// we put a >= rather than a > since we allow multiple notes to be played simoultaneously
+	// unfortunately, this constraint doesn't work when there are pitches that aren't pushed :
+	// the logic behind was that we constraint the pitch only if it was pushed
       }
     }
     
@@ -157,20 +174,20 @@ public:
     //first << zero;
     //first<<IntVar(*this, 0, 0);
     for(int i=0; i<=bars*quantification; i++){
-      rel(*this, (push[i] != IntSet::Empty) >> (max_push << IntVar(*this, max(push[i]),  max(push[i]))) );//check si ca fonctionne
-      rel(*this, (push[i] != IntSet::Empty) >> (min_push << IntVar(*this, min(push[i]),  min(push[i]))) );
+      rel(*this, (push[i] != IntSet::empty) >> (max_push << IntVar(*this, max(push[i]),  max(push[i]))) );//check si ca fonctionne
+      rel(*this, (push[i] != IntSet::empty) >> (min_push << IntVar(*this, min(push[i]),  min(push[i]))) );
     }
     //mostly increasing
     IntVarArgs most_inc;
     rel(*this, most_inc == max_push.slice(0,1,max_push.size()-2) - min_push.slice(1,1,min_push.size()-2));//check si ca fonctionne
     IntVar inc ;
-    count(*this, most_inc, 0, IRT_GE, inc );
+    count(*this, most_inc, 0, IRT_GR, inc );
     rel(*this, inc  >= 0.8*max_push.size());
     //mostly decreasing
     IntVarArgs most_dec;
     rel(*this, most_dec == min_push.slice(0,1,min_push.size()-2) -  max_push.slice(0,1,max_push.size()-2));
     IntVar dec ;
-    count(*this, most_dec, 0, IRT_GE, dec);
+    count(*this, most_dec, 0, IRT_GR, dec);
     rel(*this, dec >= 0.8*max_push.size());
     
     
@@ -269,12 +286,13 @@ public:
       }
     }
     
-    Rnd r1(opt.seed());
-    r1.time();
-    Rnd r2(opt.seed());
-    r2.time();
-
+    
+    // TO DO Test with different r1 and r2 and see results
     for (int i = 0; i <= bars*quantification; i++){
+      //Rnd r1(opt.seed());
+      //r1.time();
+      Rnd r2(opt.seed());
+      r2.time();
       branch(*this, push[i], SET_VAL_RND_INC(r2));
       branch(*this, pull[i], SET_VAL_RND_INC(r2));
     }
