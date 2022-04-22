@@ -178,7 +178,8 @@
 ; the search options and creating the search engine. 
 (defmethod new-melodizer ()
     (let ((sp (gil::new-space)); create the space;
-        push pull playing dfs tstop sopts scaleset pitch
+        push pull playing pushMap pullMap dfs tstop sopts scaleset pitch
+        (max-pitch 127)
         (bars 4)
         (quant 8)
         (min-length 1) ;minimum length of a note with associated constraint
@@ -192,18 +193,26 @@
         
 
         ;initialize the variables
-        (setq push (gil::add-set-var-array sp (* bars quant) 0 127))
-        (setq pull (gil::add-set-var-array sp (* bars quant) 0 127))
-        (setq playing (gil::add-set-var-array sp (* bars quant) 0 127))
+        (setq push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        (setq pull (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        (setq playing (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
          
-        ;initial constraint on pull and playing
+        ;channeling array with time as index to array with pitch as index
+        (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
+        (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
+        (gil::g-channel sp push pushMap)
+        (gil::g-channel sp pull pullMap)
+         
+        ;initial constraint on pull, push and playing
         (gil::g-empty sp (first pull)) ; pull[0] == empty
+        (gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
+        ;(gil::g-empty sp (car (last playing)))  ; playing[bars*quant] == empty
         (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
 
         ;connect push, pull and playing
         (loop :for j :from 1 :below (* bars quant) :do ;for each interval
             (let (temp)
-                (setq temp (gil::add-set-var sp 0 127)); temporary variables
+                (setq temp (gil::add-set-var sp 0 max-pitch 0 max-pitch)); temporary variables
                  
                 (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
                 (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
@@ -234,7 +243,7 @@
          
         ; pitch range limitation
         (loop :for j :below (* bars quant) :by 1 :do
-            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 50 86)
+            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 50 80)
         )
          
         ; Minimum length of note
