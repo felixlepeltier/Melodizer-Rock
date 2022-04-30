@@ -60,6 +60,30 @@ public:
     SetVarArray pullMap(*this, max_pitch+1, IntSet::empty,IntSet(0,bars*quantification),0,bars*quantification);
     channel(*this, push, pushMap);
     channel(*this, pull, pullMap);
+	    
+    /*BoolVarArray timePlayed(*this,bars*quantification+1, 0, 1);
+    SetVar unionPush(*this, IntSet::empty,IntSet(0,bars*quantification),0,bars*quantification+1);
+    rel(*this, SOT_UNION, pushMap, unionPush);
+    channel(*this, timePlayed, unionPush);
+    float percentPlayed=0.5;
+    linear(*this, timePlayed, IRT_EQ,(bars*quantification-1)*percentPlayed+1);*/
+
+    float percentPlayed=1.0;
+    if (percentPlayed == 0.0){
+      SetVar unionPush(*this, IntSet::empty,IntSet(0,bars*quantification),0,bars*quantification+1);
+      rel(*this, SOT_UNION, pushMap, unionPush);
+      cardinality(*this, unionPush, 1, 1);
+    }else{
+      int pushEvery = int(minLength/percentPlayed);
+      for(int i=0;  i<bars*quantification; i++){
+	if(i%pushEvery==0){
+	  //cardinality(*this, push[i], IRT_GQ, 1);
+	  rel(*this, cardinality(push[i])>=1);
+	}else{
+	  cardinality(*this, push[i], IRT_EQ, 0);
+	}
+      }
+    }
     
     int scaleSize = sizeof(majorNatural)/sizeof(int);
     int progressionSize = sizeof(progression)/sizeof(int);
