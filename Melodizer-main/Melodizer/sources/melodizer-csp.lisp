@@ -12,9 +12,9 @@
 ; <mode> is the mode of the tonality (major, minor)
 ; This function creates the CSP by creating the space and the variables, posting the constraints and the branching, specifying
 ; the search options and creating the search engine.
-(defmethod new-melodizer ()
+(defmethod new-melodizer (block-csp)
     (let ((sp (gil::new-space)); create the space;
-        push pull playing pushMap pullMap dfs tstop sopts scaleset pitch
+        push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp
         (max-pitch 127)
         (bars 4)
         (quant 8)
@@ -26,86 +26,93 @@
         (setf scaleset (build-scaleset major-natural))
         (setf chordset (build-chordset chord-prog major-natural))
         (setf progsize (length chord-prog))
+         
+        (print block-csp)
+        (setq temp (get-sub-block-values sp block-csp))
+        (setq push (nth 0 temp))
+        (setq pull (nth 1 temp))
+        (setq playing (nth 2 temp))
         
 
 
         ;initialize the variables
-        (setq push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
-        (setq pull (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
-        (setq playing (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        ;(setq push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        ;(setq pull (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        ;(setq playing (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
          
         ;channeling array with time as index to array with pitch as index
-        (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
-        (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
-        (gil::g-channel sp push pushMap)
-        (gil::g-channel sp pull pullMap)
+        ;(setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
+        ;(setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
+        ;(gil::g-channel sp push pushMap)
+        ;(gil::g-channel sp pull pullMap)
          
         ;initial constraint on pull, push and playing
-        (gil::g-empty sp (first pull)) ; pull[0] == empty
-        (gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
-        ;(gil::g-empty sp (car (last playing)))  ; playing[bars*quant] == empty
-        (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
+        ;(gil::g-empty sp (first pull)) ; pull[0] == empty
+        ;(gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
+        ;(gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
 
         ;connect push, pull and playing
-        (loop :for j :from 1 :below (* bars quant) :do ;for each interval
-            (let (temp)
-                (setq temp (gil::add-set-var sp 0 max-pitch 0 max-pitch)); temporary variables
-                 
-                (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
-                (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
-                 
-                (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
-                 
-                (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_UNION (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
-            )
-        )
+        ;(loop :for j :from 1 :below (* bars quant) :do ;for each interval
+        ;    (let (temp)
+        ;        (setq temp (gil::add-set-var sp 0 max-pitch 0 max-pitch)); temporary variables
+        ;         
+        ;        (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
+        ;        (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
+        ;         
+        ;        (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
+        ;         
+        ;        (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_UNION (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
+        ;    )
+        ;)
 
          ;cardinality constraint
-        (gil::g-card sp playing 0 5) ; piano can only 10 notes at a time
-        (gil::g-card sp pull 0 10) ; can't release more notes than we play
+        ;(gil::g-card sp playing 0 5) ; piano can only play 10 notes at a time
+        ;(gil::g-card sp pull 0 10) ; can't release more notes than we play
         ;(gil::g-card sp push 0 5) ; can't start playing more than 5 notes at a time
          
+        ;(post-optional-constraits sp block)
+        ;(pitch-range sp push (min-pitch block) (max-pitch block))
+         
         ; Following a scale
-        (loop :for j :from 0 :below (* bars quant) :do
-            (gil::g-rel sp (nth j push) gil::SRT_SUB scaleset)
-        )
+        ;(loop :for j :from 0 :below (* bars quant) :do
+        ;    (gil::g-rel sp (nth j push) gil::SRT_SUB scaleset)
+        ;)
          
         ;Following a chord progression
-        (print chordset)
-        (loop :for j :from 0 :below (length chordset) :by 1 :do 
-            (loop :for k :from 0 :below (/ (* bars quant) progsize) :by 1 :do
-                (gil::g-rel sp (nth (+ k (/ (* (* bars quant) j) progsize)) push) gil::SRT_SUB (nth j chordset))      
-            )   
-        )
+        ;(loop :for j :from 0 :below (length chordset) :by 1 :do 
+        ;    (loop :for k :from 0 :below (/ (* bars quant) progsize) :by 1 :do
+        ;        (gil::g-rel sp (nth (+ k (/ (* (* bars quant) j) progsize)) push) gil::SRT_SUB (nth j chordset))      
+        ;    )   
+        ;)
          
         ; pitch range limitation
-        (loop :for j :below (* bars quant) :by 1 :do
-            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 50 80)
-        )
+        ;(loop :for j :below (* bars quant) :by 1 :do
+        ;    (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 50 80)
+        ;)
          
         ; Minimum length of note
-        (loop :for j :from 0 :below (* bars quant) :by 1 :do
-             (loop :for k :from 1 :below min-length :while (< (+ j k) (* bars quant)) :do
-                (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))      
-             )
-        )
+        ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
+        ;     (loop :for k :from 1 :below min-length :while (< (+ j k) (* bars quant)) :do
+        ;        (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))      
+        ;     )
+        ;)
          
         ; chord rhythm
-        (loop :for j :from 0 :below (* bars quant) :by 1 :do
-              (if (= (mod j chord-rhythm) 0)
-                  (gil::g-card sp (nth j push) 3 3)  
-                  (gil::g-card sp (nth j push) 0 1)
-              )
-        )
+        ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
+        ;      (if (= (mod j chord-rhythm) 0)
+        ;         (gil::g-card sp (nth j push) 3 3)  
+        ;          (gil::g-card sp (nth j push) 0 1)
+        ;      )
+        ;)
          
         ; chord length (need previous constraint to work)
-        (loop :for j :from 0 :below (* bars quant) :by 1 :do
-              (if (= (mod j chord-rhythm) 0)
-                  (loop :for k :from 1 :below chord-min-length :while (< (+ j k) (* bars quant)) :do
-                      (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))      
-                  )
-              )
-        )
+        ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
+        ;      (if (= (mod j chord-rhythm) 0)
+        ;          (loop :for k :from 1 :below chord-min-length :while (< (+ j k) (* bars quant)) :do
+        ;              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))      
+        ;          )
+        ;      )
+        ;)
 
         ; branching
         (gil::g-branch sp push nil nil)
@@ -130,35 +137,86 @@
     )
 )
 
+(defun get-sub-block-values (sp block-csp)
+    ; for block child of block-csp
+    ; (pull supersets de get-sub-block-values(block) )  
+    ; constraints
+    ; return pull push playing
+    (let (pull push playing pushMap pullMap block-list positions
+         (bars (bar-length block-csp))
+         (quant (quantification block-csp))
+         (max-pitch 127))
+         
+         (print quant)
+         (print "oui")
+         
+        ;initialize the variables
+        (setq push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        (setq pull (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        (setq playing (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+         
+        ;channeling array with time as index to array with pitch as index
+        (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
+        (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
+        (gil::g-channel sp push pushMap)
+        (gil::g-channel sp pull pullMap)
+         
+        (setq block-list (block-list block-csp))
+        (setq positions (position-list block-csp))
+         
+        ;initial constraint on pull, push and playing
+        (gil::g-empty sp (first pull)) ; pull[0] == empty
+        (gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
+        (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
+
+        ;connect push, pull and playing
+        (loop :for j :from 1 :below (* bars quant) :do ;for each interval
+            (let (temp)
+                (setq temp (gil::add-set-var sp 0 max-pitch 0 max-pitch)); temporary variables
+                 
+                (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
+                (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
+                 
+                (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
+                 
+                (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_UNION (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
+            )
+        )
+        
+        ; make the push and pull array supersets of the corresponding array of the child blocks
+        (loop :for i :from 0 :below (length block-list) :by 1 :do
+              (let (tempPush tempPull tempList (start (* (nth i positions) quant)))
+                   (setq tempList (get-sub-block-values sp (nth i block-list)))
+                   (setq tempPush (nth 0 tempList))
+                   (setq tempPull (nth 1 tempList))
+                   (loop :for j :from start :below (+ start (length tempPush)) :by 1 :do
+                        (gil::g-rel (nth j push) gil::SRT_SUP (nth j tempPush))
+                        (gil::g-rel (nth j pull) gil::SRT_SUP (nth j tempPull))
+                   )
+              )
+        )
+         
+        ;constraints
+        (post-optional-constraits sp block push pull playing)
+        (pitch-range sp push (min-pitch block) (max-pitch block))
+        (list push pull playing)
+    )
+)
+
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (optional-constraints sp notes intervals global-interval min-pitch max-pitch)
-    (if (find "all-different-notes" optional-constraints :test #'equal)
-        (all-different-notes sp notes)
+(defun post-optional-constraints (sp block push pull playing)
+    (if (/= (min-note-length block) nil)
+        (note-min-length sp push pull (min-note-length block))
     )
-    (if (find "minimum-pitch" optional-constraints :test #'equal)
-        (minimum-pitch sp notes min-pitch)
-    )
-    (if (find "maximum-pitch" optional-constraints :test #'equal)
-        (maximum-pitch sp notes max-pitch)
-    )
-    (if (find "strictly-increasing-pitch" optional-constraints :test #'equal)
-        (strictly-increasing-pitch sp notes)
-    )
-    (if (find "strictly-decreasing-pitch" optional-constraints :test #'equal)
-        (strictly-decreasing-pitch sp notes)
-    )
-    (if (find "increasing-pitch" optional-constraints :test #'equal)
-        (increasing-pitch sp notes)
-    )
-    (if (find "decreasing-pitch" optional-constraints :test #'equal)
-        (decreasing-pitch sp notes)
-    )
-    (if (find "mostly-increasing-pitch" optional-constraints :test #'equal)
-        (mostly-increasing-pitch sp notes intervals global-interval)
-    )
-    (if (find "mostly-decreasing-pitch" optional-constraints :test #'equal)
-        (mostly-decreasing-pitch sp notes intervals global-interval)
+    (if (/= (min-added-note block) nil)
+        (if (/= (max-added-note block) nil)
+            (num-added-note sp playing (min-added-note block) (max-added-note block))
+            (num-added-note sp playing (min-added-note block) 127)
+        )
+        (if (/= (max-added-note block) nil)
+            (num-added-note sp playing 0 (max-added-note block))
+        )
     )
 )
 
