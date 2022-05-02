@@ -467,6 +467,7 @@
           (prev 0)
           )
     (setq pitch (nconc pitch (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) playing)))
+    (print pitch)
     (loop :for b :from 0 :below bars :by 1 :do
         (let ((timer 1)
               (tree-elem (list))
@@ -518,7 +519,8 @@
             )
         )
         (setq tree-elem (nconc tree-elem (list timer)))
-        (setq new-pitch (nconc new-pitch (list (nth toadd pitch))))
+        (if (/= toadd -1)  ;peut-etre enlever ce if
+        (setq new-pitch (nconc new-pitch (list (nth toadd pitch)))))
         (setq tree (nconc tree (list (list (list 4 4) tree-elem))))
         ;(print tree)
         ;(print new-pitch)
@@ -533,6 +535,22 @@
 ;return T if the two list have the same elements (order doesn't matter)
 (defun compare (l1 l2)
   (and (subsetp l1 l2) (subsetp l2 l1)))
+
+; return the quant value based on the index selected
+(defun get-quant (i)
+    (case i
+    (1 2)
+    (2 4)
+    (3 8)
+    (4 16)
+    (5 32)
+    (6 24)
+    (7 3) 
+    (8 6)
+    (9 12)
+    (10 48)
+    (0 1))
+)
 
 ; this is not used but kept in case it is needed
 ; shuffles a list

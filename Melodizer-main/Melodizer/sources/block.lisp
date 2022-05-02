@@ -40,6 +40,10 @@
     (result :accessor result
       :result :initform (list) :documentation
       "A temporary list holder to store the result of the call to the CSPs, shouldn't be touched.")
+    (stop-search :accessor stop-search :stop-search :initform nil :documentation 
+      "A boolean variable to tell if the user wishes to stop the search or not.")
+    (input-rhythm :accessor input-rhythm :input-rhythm :initform (make-instance 'voice) :documentation 
+      "The rhythm of the melody or a melody in the form of a voice object. ")
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -356,9 +360,9 @@
       (om::om-make-point 170 150)
       (om::om-make-point 200 20)
       "Quantification"
-      :range '("1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/6 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
+      :range '("1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/6 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/12 beat")
       :di-action #'(lambda (m)
-        (setf (quantification (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (quantification (om::object editor)) (om::om-get-selected-item-index m))
       )
     )
 
@@ -607,7 +611,8 @@
           nil ; process initialization keywords, not needed here
           (lambda () ; function to call
             (setf (solution (om::object editor)) (new-search-next (result (om::object editor)) (om::object editor)))
-            (setf (om::tempo (solution (om::object editor))) (om::tempo (input-rhythm (om::object editor)))); set the tempo of the new voice object to be the same as the input
+            (print "ah ouais")
+            ;(setf (om::tempo (solution (om::object editor))) (om::tempo (input-rhythm (om::object editor)))); set the tempo of the new voice object to be the same as the input
             (om::openeditorframe ; open a voice window displaying the solution
               (om::omNG-make-new-instance (solution (om::object editor)) "current solution")
             )

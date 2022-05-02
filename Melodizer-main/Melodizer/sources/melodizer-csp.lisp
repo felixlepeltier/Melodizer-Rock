@@ -16,8 +16,8 @@
     (let ((sp (gil::new-space)); create the space;
         push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp
         (max-pitch 127)
-        (bars 4)
-        (quant 8)
+        (bars (bar-length block-csp))
+        (quant (get-quant (quantification block-csp)))
         (min-length 1) ;minimum length of a note with associated constraint
         (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
         (chord-min-length 2) ; minimum length of a chord with associated constraint
@@ -133,7 +133,7 @@
 
         (print "new-melodizer CSP constructed")
         ; return
-        (list se playing tstop sopts)
+        (list se playing tstop sopts bars quant)
     )
 )
 
@@ -144,11 +144,13 @@
     ; return pull push playing
     (let (pull push playing pushMap pullMap block-list positions
          (bars (bar-length block-csp))
-         (quant (quantification block-csp))
+         (quant (get-quant (quantification block-csp)))
+         (major-natural (list 2 2 1 2 2 2 1))
          (max-pitch 127))
-         
+         (setf scaleset (build-scaleset major-natural))
+
+         (print bars)
          (print quant)
-         (print "oui")
          
         ;initialize the variables
         (setq push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
@@ -160,6 +162,8 @@
         (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
         (gil::g-channel sp push pushMap)
         (gil::g-channel sp pull pullMap)
+         
+         (print "qllez")
          
         (setq block-list (block-list block-csp))
         (setq positions (position-list block-csp))
@@ -182,39 +186,44 @@
                 (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_UNION (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
             )
         )
+        (print "allez")
         
         ; make the push and pull array supersets of the corresponding array of the child blocks
         (loop :for i :from 0 :below (length block-list) :by 1 :do
               (let (tempPush tempPull tempList (start (* (nth i positions) quant)))
                    (setq tempList (get-sub-block-values sp (nth i block-list)))
-                   (setq tempPush (nth 0 tempList))
-                   (setq tempPull (nth 1 tempList))
+                   (setq tempPush (first tempList))
+                   (setq tempPull (second tempList))
+                   (print "on est la")
                    (loop :for j :from start :below (+ start (length tempPush)) :by 1 :do
-                        (gil::g-rel (nth j push) gil::SRT_SUP (nth j tempPush))
-                        (gil::g-rel (nth j pull) gil::SRT_SUP (nth j tempPull))
+                        (gil::g-rel sp (nth j push) gil::SRT_SUP (nth j tempPush))
+                        (gil::g-rel sp (nth j pull) gil::SRT_SUP (nth j tempPull))
                    )
+                   (print "sheesh")
               )
         )
+        (print "AAAAAH")
          
         ;constraints
-        (post-optional-constraits sp block push pull playing)
-        (pitch-range sp push (min-pitch block) (max-pitch block))
+        (post-optional-constraints sp block-csp push pull playing scaleset)
+        (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing)
     )
 )
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp block push pull playing)
-    (if (/= (min-note-length block) nil)
+(defun post-optional-constraints (sp block push pull playing scaleset)
+    (scale-follow sp push scaleset)
+    (if (min-note-length block)
         (note-min-length sp push pull (min-note-length block))
     )
-    (if (/= (min-added-note block) nil)
-        (if (/= (max-added-note block) nil)
+    (if (min-added-note block)
+        (if (max-added-note block)
             (num-added-note sp playing (min-added-note block) (max-added-note block))
             (num-added-note sp playing (min-added-note block) 127)
         )
-        (if (/= (max-added-note block) nil)
+        (if (max-added-note block)
             (num-added-note sp playing 0 (max-added-note block))
         )
     )
@@ -267,6 +276,8 @@
          (playing (second l))
          (tstop (third l))
          (sopts (fourth l))
+         (bars (fifth l))
+         (quant (sixth l))
          (check t); for the while loop
          sol score)
 
@@ -278,18 +289,25 @@
                 (setf check nil); we have found a solution so break the loop
             )
         )
+         
+        (print bars)
+        (print quant)
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
-        (setq score (build-score sol playing 4 8)); store the values of the solution
+         
+        (setq score (build-score sol playing bars quant)); store the values of the solution
+        (print "out")
         (print (first score))
         (print (third score))
+         
+        (print "la")
 
         ;return a voice object that is the solution we just found
         (make-instance 'voice
             :tree (second score)
             :chords (first score)
             :ties (third score)
-            :tempo (om::tempo (input-rhythm melodizer-object))
+            ;:tempo (om::tempo (input-rhythm melodizer-object))
         )
     )
 )
