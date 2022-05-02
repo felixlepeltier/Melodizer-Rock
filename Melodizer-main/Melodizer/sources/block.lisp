@@ -23,7 +23,7 @@
    (chord-key :accessor chord-key :initform nil :type string)
    (chord-quality :accessor chord-quality :initform nil :type string)
    (min-pitch :accessor min-pitch :initform 1 :type integer)
-   (max-pitch :accessor max-pitch :initform 127 :type integer )
+   (max-pitch :accessor max-pitch :initform 127 :type integer)
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -40,6 +40,18 @@
     (result :accessor result
       :result :initform (list) :documentation
       "A temporary list holder to store the result of the call to the CSPs, shouldn't be touched.")
+  )
+  (:icon 225)
+  (:documentation "This class implements Melodizer.
+        Melodizer is a constraints based application aiming to improve composer's expression and exploration abilities
+        by generating interesting and innovative melodies based on a set of constraints expressing musical rules.
+        More information and a tutorial can be found at https://github.com/sprockeelsd/Melodizer")
+)
+
+(om::defclass! debug ()
+  ;attributes
+  (
+    (block-csp :accessor block-csp :initarg :block-csp :initform nil)
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -168,6 +180,7 @@
       :range '(0 1 2 3 4)
       :di-action #'(lambda (m)
         (setf (bar-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (print (bar-length (om::object editor)))
       )
     )
 
@@ -186,7 +199,8 @@
       "Beat length"
       :range '(0 1 2 3)
       :di-action #'(lambda (m)
-        (setf (bar-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (beat-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (print (bar-length (om::object editor)))
       )
     )
 
@@ -601,5 +615,93 @@
         )
       )
     )
+  )
+)
+
+
+(defclass debug-editor (om::editorview) ())
+
+(defmethod om::class-has-editor-p ((self debug)) t)
+(defmethod om::get-editor-class ((self debug)) 'debug-editor)
+
+(defmethod om::om-draw-contents ((view debug-editor))
+  (let* ((object (om::object view)))
+    (om::om-with-focused-view
+      view
+      ;;; DRAW SOMETHING ?
+    )
+  )
+)
+
+(defmethod initialize-instance ((self debug-editor) &rest args)
+  ;;; do what needs to be done by default
+  (call-next-method) ; start the search by default?
+  (make-my-interface self)
+)
+
+; function to create the tool's interface
+(defmethod make-my-interface ((self debug-editor))
+
+  ; create the main view of the object
+  (make-main-view self)
+
+  (let*
+    (
+      (debug-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 400 605)
+        :position (om::om-make-point 5 5)
+        :bg-color om::*azulito*)
+      )
+    )
+
+    (setf elements-debug-panel (make-debug-panel self debug-panel))
+
+    (om::om-add-subviews
+      self
+      debug-panel
+    )
+  )
+  self
+)
+
+(defun make-debug-panel (editor debug-panel)
+  (om::om-add-subviews
+    debug-panel
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 150 2)
+      (om::om-make-point 120 20)
+      "Printer"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-button
+      (om::om-make-point 15 50) ; position (horizontal, vertical)
+      (om::om-make-point 130 20) ; size (horizontal, vertical)
+      "Print"
+      :di-action #'(lambda (b)
+       (print "Debugging")
+       (print (block-list (block-csp (om::object editor))))
+       (print (position-list (block-csp (om::object editor))))
+       (print (bar-length (block-csp (om::object editor))))
+       (print (beat-length (block-csp (om::object editor))))
+       (print (voices (block-csp (om::object editor))))
+       (print (style (block-csp (om::object editor))))
+       (print (min-added-note (block-csp (om::object editor))))
+       (print (max-added-note (block-csp (om::object editor))))
+       (print (min-note-length (block-csp (om::object editor))))
+       (print (max-note-length (block-csp (om::object editor))))
+       (print (quantification (block-csp (om::object editor))))
+       (print (note-repartition (block-csp (om::object editor))))
+       (print (key-selection (block-csp (om::object editor))))
+       (print (mode-selection (block-csp (om::object editor))))
+       (print (chord-key (block-csp (om::object editor))))
+       (print (chord-quality (block-csp (om::object editor))))
+       (print (min-pitch (block-csp (om::object editor))))
+       (print (max-pitch (block-csp (om::object editor))))
+      )
+    )
+
   )
 )
