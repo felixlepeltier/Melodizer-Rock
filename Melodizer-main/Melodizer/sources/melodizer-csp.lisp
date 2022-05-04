@@ -166,6 +166,11 @@
 
 
         (setq block-list (block-list block-csp))
+        (if (not (typep block-list 'list))
+            (progn
+            (print "in typep")
+            (setq block-list (list block-list)))   
+        )
         (setq positions (position-list block-csp))
 
         ;initial constraint on pull, push and playing
@@ -187,17 +192,20 @@
             )
         )
         (print "allez")
+        (print positions)
 
         ; make the push and pull array supersets of the corresponding array of the child blocks
         (loop :for i :from 0 :below (length block-list) :by 1 :do
-              (let (tempPush tempPull tempList (start (* (nth i positions) quant)))
+              (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
                    (setq tempList (get-sub-block-values sp (nth i block-list)))
                    (setq tempPush (first tempList))
                    (setq tempPull (second tempList))
+                   (setq tempPlaying (third tempList))
                    (print "on est la")
-                   (loop :for j :from start :below (+ start (length tempPush)) :by 1 :do
-                        (gil::g-rel sp (nth j push) gil::SRT_SUP (nth j tempPush))
-                        (gil::g-rel sp (nth j pull) gil::SRT_SUP (nth j tempPull))
+                   (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
+                        (gil::g-dom sp (nth j push) (nth j tempPush))
+                        (gil::g-dom sp (nth j pull) (nth j tempPull))
+                        (gil::g-dom sp (nth j playing) (nth j tempPlaying))
                    )
                    (print "sheesh")
               )
@@ -219,12 +227,9 @@
         (if (mode-selection block)
             (let ((scale (get-scale (mode-selection block)))  ;if - mode selectionné
                   (offset (- (name-to-note-value (key-selection block)) 60)))
-                 (print scale)
-                 (print offset)
                  (setf scaleset (build-scaleset scale offset))
-                 (print scaleset)
                  (scale-follow sp push scaleset))
-            (let ((scale (get-scale (list 2 2 1 2 2 2 1)))  ;else - pas de mode selectionné => major natural
+            (let ((scale (get-scale "ionian (major)"))  ;else - pas de mode selectionné => major natural
                   (offset (- (name-to-note-value (key-selection block)) 60)))
                  (setf scaleset (build-scaleset scale offset))
                  (scale-follow sp push scaleset))
@@ -234,7 +239,7 @@
 
     ; Block constraints
     (if (voices block)
-      (gil::g-card sp playing 0 (voices block))
+      (gil::g-card sp playing (voices block) (voices block))
     )
     (if (min-added-note block)
         (if (max-added-note block)

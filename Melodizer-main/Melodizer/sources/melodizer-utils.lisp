@@ -413,7 +413,6 @@
         (loop :for octave :from -1 :below 11 :by 1 append
                 (setq scaleset (nconc scaleset (mapcar (lambda (n) (+ n (* octave 12))) major-modified)))
         )
-        (print scaleset)
         (setq scaleset (remove-if 'minusp scaleset))
     )
 )
