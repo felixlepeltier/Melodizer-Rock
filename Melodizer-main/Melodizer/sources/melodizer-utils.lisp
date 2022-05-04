@@ -396,25 +396,25 @@
     )   
 )
 
-; reformat major natural to be a canvas of pitch and not intervals
-(defun adapt-scale (major-natural)
-    (let ((major-modified (list (first major-natural))))
-         (loop :for i :from 1 :below (length major-natural) :by 1 :do
-            (setq major-modified (nconc major-modified (list (+ (nth i major-natural) (nth (- i 1) major-modified)))))  
+; reformat a scale to be a canvas of pitch and not intervals
+(defun adapt-scale (scale)
+    (let ((major-modified (list (first scale))))
+         (loop :for i :from 1 :below (length scale) :by 1 :do
+            (setq major-modified (nconc major-modified (list (+ (nth i scale) (nth (- i 1) major-modified)))))  
          ) 
     (return-from adapt-scale major-modified)
     )    
 )
 
-; build the list of acceptable pitch based on the major natural
-(defun build-scaleset (major-natural)
-    (let ((major-modified (adapt-scale major-natural)))
-        (loop :for octave :from 0 :below 11 :by 1 append
-            (let ((offset 0)
-                (scaleset (list)))
+; build the list of acceptable pitch based on the scale and a key offset
+(defun build-scaleset (scale offset)
+    (let ((major-modified (adapt-scale scale))
+          (scaleset (list)))
+        (loop :for octave :from -1 :below 11 :by 1 append
                 (setq scaleset (nconc scaleset (mapcar (lambda (n) (+ n (* octave 12))) major-modified)))
-            )
         )
+        (print scaleset)
+        (setq scaleset (remove-if 'minusp scaleset))
     )
 )
 

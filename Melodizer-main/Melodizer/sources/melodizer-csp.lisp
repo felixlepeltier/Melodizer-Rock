@@ -23,7 +23,7 @@
         (chord-min-length 2) ; minimum length of a chord with associated constraint
         (major-natural (list 2 2 1 2 2 2 1)) ; represent intervals of the scale we are composing in
         (chord-prog (list 1 5 6 4))) ; represent the chord progression we want to follow
-        (setf scaleset (build-scaleset major-natural))
+        ;(setf scaleset (build-scaleset major-natural))
         (setf chordset (build-chordset chord-prog major-natural))
         (setf progsize (length chord-prog))
 
@@ -147,7 +147,7 @@
          (quant (get-quant (quantification block-csp)))
          (major-natural (list 2 2 1 2 2 2 1))
          (max-pitch 127))
-         (setf scaleset (build-scaleset major-natural))
+         ;(setf scaleset (build-scaleset major-natural))
 
          (print bars)
          (print quant)
@@ -205,7 +205,7 @@
         (print "AAAAAH")
 
         ;constraints
-        (post-optional-constraints sp block-csp push pull playing scaleset)
+        (post-optional-constraints sp block-csp push pull playing)
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing)
     )
@@ -213,8 +213,24 @@
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp block push pull playing scaleset)
-    (scale-follow sp push scaleset)
+(defun post-optional-constraints (sp block push pull playing)
+    ; following a scale
+    (if (key-selection block)
+        (if (mode-selection block)
+            (let ((scale (get-scale (mode-selection block)))  ;if - mode selectionné
+                  (offset (- (name-to-note-value (key-selection block)) 60)))
+                 (print scale)
+                 (print offset)
+                 (setf scaleset (build-scaleset scale offset))
+                 (print scaleset)
+                 (scale-follow sp push scaleset))
+            (let ((scale (get-scale (list 2 2 1 2 2 2 1)))  ;else - pas de mode selectionné => major natural
+                  (offset (- (name-to-note-value (key-selection block)) 60)))
+                 (setf scaleset (build-scaleset scale offset))
+                 (scale-follow sp push scaleset))
+        )
+    )
+    ;(scale-follow sp push scaleset)
 
     ; Block constraints
     (if (voices block)
