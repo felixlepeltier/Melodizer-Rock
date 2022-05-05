@@ -11,7 +11,7 @@
    (bar-length :accessor bar-length :initform 0 :type integer)
    (beat-length :accessor beat-length :initform 0 :type integer)
    (voices :accessor voices :initform nil :type integer)
-   (style :accessor style :initform "None" :type string)
+   (style :accessor style :initform nil :type string)
    (min-added-note :accessor min-added-note :initform nil :type integer)
    (max-added-note :accessor max-added-note :initform nil :type integer)
    (min-note-length :accessor min-note-length :initform nil :type integer)
@@ -184,7 +184,6 @@
       :range '(0 1 2 3 4)
       :di-action #'(lambda (m)
         (setf (bar-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (print (bar-length (om::object editor)))
       )
     )
 
@@ -204,7 +203,6 @@
       :range '(0 1 2 3)
       :di-action #'(lambda (m)
         (setf (beat-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (print (bar-length (om::object editor)))
       )
     )
 
@@ -227,7 +225,6 @@
         (if (typep check 'string)
           (setf (voices (om::object editor)) nil)
           (setf (voices (om::object editor)) check))
-          (print (voices (om::object editor)))
       )
     )
 
@@ -246,7 +243,11 @@
       "Style"
       :range '("None" "Full chords" "Arpeggio" "Hybrid")
       :di-action #'(lambda (m)
-        (setf (style (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (style (om::object editor)) nil)
+          (setf (style (om::object editor)) check))
+          (print (style (om::object editor)))
       )
     )
 
@@ -364,9 +365,13 @@
       (om::om-make-point 170 150)
       (om::om-make-point 200 20)
       "Quantification"
-      :range '("1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/6 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/12 beat")
+      :range '("None" "1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
       :di-action #'(lambda (m)
-        (setf (quantification (om::object editor)) (om::om-get-selected-item-index m))
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (quantification (om::object editor)) nil)
+          (setf (quantification (om::object editor)) check))
+          (print (quantification (om::object editor)))
       )
     )
 
@@ -615,7 +620,6 @@
           nil ; process initialization keywords, not needed here
           (lambda () ; function to call
             (setf (solution (om::object editor)) (new-search-next (result (om::object editor)) (om::object editor)))
-            (print "ah ouais")
             ;(setf (om::tempo (solution (om::object editor))) (om::tempo (input-rhythm (om::object editor)))); set the tempo of the new voice object to be the same as the input
             (om::openeditorframe ; open a voice window displaying the solution
               (om::omNG-make-new-instance (solution (om::object editor)) "current solution")

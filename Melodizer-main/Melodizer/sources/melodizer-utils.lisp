@@ -2,7 +2,7 @@
 
 ; converts a list of MIDI values to MIDIcent
 (defun to-midicent (l)
-    (if (null l) 
+    (if (null l)
         nil
         (cons (* 100 (first l)) (to-midicent (rest l)))
     )
@@ -10,7 +10,7 @@
 
 ; convert from MIDIcent to MIDI
 (defun to-midi (l)
-    (if (null l) 
+    (if (null l)
         nil
         (cons (/ (first l) 100) (to-midi (rest l)))
     )
@@ -18,7 +18,7 @@
 
 ;converts the value of a note to its name
 (defmethod note-value-to-name (note)
-    (cond 
+    (cond
         ((eq note 60) "C")
         ((eq note 61) "C#")
         ((eq note 62) "D")
@@ -36,7 +36,7 @@
 
 ;converts the name of a note to its value
 (defmethod name-to-note-value (name)
-    (cond 
+    (cond
         ((string-equal name "C") 60)
         ((string-equal name "C#") 61)
         ((string-equal name "D") 62)
@@ -57,7 +57,7 @@
     (cond
         ((null (car L)) nil); the list is empty -> return nil
         ((null (cdr L)) (car L)); the list has 1 element -> return it
-        (T 
+        (T
             (let ((head (car L)); default behavior
                  (tailMin (min-list (cdr L))))
                 (if (< head tailMin) head tailMin)
@@ -71,7 +71,7 @@
     (cond
         ((null (car L)) nil); the list is empty -> return nil
         ((null (cdr L)) (car L)); the list has 1 element -> return it
-        (T 
+        (T
             (let ((head (car L)); default behavior
                  (tailMax (max-list (cdr L))))
                 (if (> head tailMax) head tailMax)
@@ -86,7 +86,7 @@
     (cond
         ((null (car L)) nil); the list is empty -> return nil
         ((null (cdr L)) (max-list (car L))); the list has 1 element -> return it
-        (T 
+        (T
             (let ((head (max-list (car L))); default behavior
                  (tailMax (max-list-list (cdr L))))
                 (if (> head tailMax) head tailMax)
@@ -99,20 +99,20 @@
 ; TODO find a more efficient way to do this
 (defun update-pop-up (self my-panel data position size output)
   (om::om-add-subviews my-panel
-    (om::om-make-dialog-item 
-      'om::om-pop-up-dialog-item 
+    (om::om-make-dialog-item
+      'om::om-pop-up-dialog-item
       position ;(om::om-make-point 5 130)
-      size ;(om::om-make-point 320 20) 
+      size ;(om::om-make-point 320 20)
       "list of solutions"
       :range (loop for item in (make-data-sol data) collect (car item))
-      ;:value (mode (object self)); change so it goes to the newest added solution? 
+      ;:value (mode (object self)); change so it goes to the newest added solution?
       :di-action #'(lambda (m)
-                    (cond 
+                    (cond
                         ((string-equal output "output-solution")
                             (setf (output-solution (om::object self)) (nth (om::om-get-selected-item-index m) data)); set the output solution to the currently selected solution
                             (let ((indx (om::om-get-selected-item-index m)))
                                 (om::openeditorframe ; open the editor of the selected solution
-                                    (om::omNG-make-new-instance 
+                                    (om::omNG-make-new-instance
                                         (nth indx data)
                                         (format nil "melody ~D" (1+ indx)); name of the window
                                     )
@@ -177,7 +177,7 @@
 
 ; returns the list of intervals defining a given mode
 (defun get-scale (mode)
-    (cond 
+    (cond
         ((string-equal mode "ionian (major)")
             (list 2 2 1 2 2 2 1)
         )
@@ -291,7 +291,7 @@
                 )
             )
         )
-    )   
+    )
 )
 
 ; function to get the mode of the chord (major, minor, diminished,...) and the inversion (0 = classical form, 1 = first inversion, 2 = second inversion)
@@ -299,7 +299,7 @@
     (let ((major-intervals (list (list 4 3) (list 3 5) (list 5 4))); possible intervals in midi for major chords
         (minor-intervals (list (list 3 4) (list 4 5) (list 5 3))) ; possible intervals in midi for minor chords
         (diminished-intervals (list (list 3 3) (list 3 6) (list 6 3)))); possible intervals in midi for diminished chords
-        (cond 
+        (cond
             ((position intervals major-intervals :test #'equal); if the chord is major
                 (list "major" (position intervals major-intervals :test #'equal))
             )
@@ -313,13 +313,13 @@
     )
 )
 
-;makes a list (name voice-instance) from a list of voices: 
+;makes a list (name voice-instance) from a list of voices:
 ;(from Karim Haddad)
 (defun make-data-sol (liste)
   (loop for l in liste
         for i from 1 to (length liste)
         collect (list (format nil "solution ~D: ~A"  i l) l)))
-    
+
 
 ; taken from rhythm box
 ; https://github.com/blapiere/Rhythm-Box
@@ -346,8 +346,8 @@
           (chords (to-pitch-list (om::chords input-chords))) ; get chords list
          )
          (setf note-starting-times (mapcar (lambda (n) (/ n quant)) note-starting-times)) ; dividing note-starting-times by quant
-         (loop :for j :from 0 :below (+ (max-list note-starting-times) 1) :by 1 :do 
-            (if (= j (car note-starting-times)); if j == note-starting-times[0] 
+         (loop :for j :from 0 :below (+ (max-list note-starting-times) 1) :by 1 :do
+            (if (= j (car note-starting-times)); if j == note-starting-times[0]
                 (progn
                     (setq push-list (nconc push-list (list (car chords))))
                     (setf chords (cdr chords))
@@ -355,7 +355,7 @@
                 (setq push-list (nconc push-list (list -1)))) ; else add -1 to push
         )
         ; (print push-list)
-    )   
+    )
 )
 
 
@@ -376,24 +376,24 @@
          ; (print note-starting-times)
          (setf note-dur-times (mapcar (lambda (n) (mapcar (lambda (m) (/ m quant)) n)) note-dur-times)) ; dividing note-dur-times by quant
          ; (print note-dur-times)
-         (loop :for j :from 0 :below (length note-starting-times) :by 1 :do 
+         (loop :for j :from 0 :below (length note-starting-times) :by 1 :do
              (setq note-stopping-times (nconc note-stopping-times (list (mapcar (lambda (n) (+ n (nth j note-starting-times))) (nth j note-dur-times))))) ; Adding note-starting-times to note-dur-times to get note-stopping-times
         )
         ; (print note-stopping-times)
         ; (print (max-list-list note-stopping-times))
-        (loop :for j :from 0 :below (+ (max-list-list note-stopping-times) 1) :by 1 :do 
+        (loop :for j :from 0 :below (+ (max-list-list note-stopping-times) 1) :by 1 :do
               (setq pull-list (nconc pull-list (list -1))))
-        (loop for l in note-stopping-times 
+        (loop for l in note-stopping-times
               for k in pitch do
-            (loop for i in l 
+            (loop for i in l
                   for j in k do
                   (if (typep (nth i pull-list) 'list)
                       (setf (nth i pull-list) (nconc (nth i pull-list) (list j)))
-                      (setf (nth i pull-list) (list j)))                 
+                      (setf (nth i pull-list) (list j)))
              )
         )
-        ; (print pull-list) 
-    )   
+        ; (print pull-list)
+    )
 )
 
 ; reformat a scale to be a canvas of pitch and not intervals
@@ -403,7 +403,7 @@
             (setq major-modified (nconc major-modified (list (+ (nth i scale) (nth (- i 1) major-modified)))))  
          ) 
     (return-from adapt-scale major-modified)
-    )    
+    )
 )
 
 ; build the list of acceptable pitch based on the scale and a key offset
@@ -418,10 +418,10 @@
 )
 
 ; build the acceptable pitch for a given chord progression
-(defun build-chordset (chord-prog major-natural) 
+(defun build-chordset (chord-prog major-natural)
     (loop :for i :from 0 :below (length chord-prog) :by 1 collect
           (build-chordset-in (nth i chord-prog) major-natural)
-    ) 
+    )
 )
 
 ;build the acceptable pitch for one element of a chord progression
@@ -448,7 +448,7 @@
         (setq vector vector)
     )
 )
-   
+
 
 ; <chords> a list of chord object
 ; Return the list of pitch contained in chords in midi format
@@ -458,76 +458,56 @@
 
 
 ; Getting a list of chords and a rhythm tree from the playing list of intvar
-(defun build-score (sol playing bars quant)
-    (let ((pitch (list))
-          (new-pitch (list))
+(defun build-score (sol push pull bars quant)
+    (let ((p-push (list))
+          (p-pull (list))
+          (chords (list))
           (tree (list))
           (ties (list))
           (prev 0)
           )
-    (setq pitch (nconc pitch (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) playing)))
-    (print pitch)
+
+    (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
+    (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
+
+    (print p-push)
+
+    (setq count 1)
     (loop :for b :from 0 :below bars :by 1 :do
-        (let ((timer 1)
-              (tree-elem (list))
-              (toadd (* b quant)))
-        (cond 
-            ((and (/= prev -1) (> b 0))
-             (progn
-                 (setq ties (nconc ties (list (intersection (nth prev pitch) (nth (* b quant) pitch)))))
-                 (setf prev (* b quant))))
-            ((= b 0)
-             (progn
-                 ;(setq ties (nconc ties (list nil)))
-                 (setf prev (* b quant))))
-            ((= prev -1)
-                 (setf prev (* b quant)))
+        (if (not (nth (* b quant) p-push))
+            (setq rest 1)
+            (setq rest 0)
         )
-        (loop :for q :from 1 :below quant :by 1 :do
-            (cond 
-                ((null (nth (+ (* b quant) q) pitch))
-                    (progn
-                    (setq tree-elem (nconc tree-elem (list timer)))
-                    (setf timer -1)
-                    (setq new-pitch (nconc new-pitch (list (nth toadd pitch))))
-                    ;(setq ties (nconc ties (list nil)))
-                    (setf toadd -1)
-                    (setf prev -1)
-                ))
-                ((compare (nth (+ (* b quant) q) pitch) (nth (- (+ (* b quant) q) 1) pitch))         
-                    (if (= toadd -1)
-                        (setf timer (- timer 1))
-                        (setf timer (+ timer 1))))
-                (T
-                (if (= toadd -1)
-                (progn
-                    (setq tree-elem (nconc tree-elem (list timer)))
-                    (setf timer 1)
-                    (setf toadd (+ (* b quant) q))
-                    (setf prev (+ (* b quant) q))
-                )
-                (progn
-                    (setq tree-elem (nconc tree-elem (list timer)))
-                    (setf timer 1)
-                    (setq new-pitch (nconc new-pitch (list (nth toadd pitch))))
-                    (if (/= prev -1)
-                        (setq ties (nconc ties (list (intersection (nth prev pitch) (nth (+ (* b quant) q) pitch))))))
-                    (setf toadd (+ (* b quant) q))
-                    (setf prev (+ (* b quant) q))
-                ))) 
+        (setq rhythm (list))
+        (loop :for q :from 0 :below quant :by 1 :do
+            (setq i (+ (* b quant) q))
+            (cond
+                ((nth i p-push)
+                     ; if rhythm impulse
+                     (progn
+                        (setq chord (make-instance 'chord :LMidic (nth i p-push)))
+                        (setq chords (nconc chords (list chord)))
+                        (cond
+                            ((= rest 1)
+                                (progn
+                                    (setq rhythm (nconc rhythm (list (* -1 count))))
+                                    (setq rest 0)))
+                            ((/= q 0)
+                                (setq rhythm (nconc rhythm (list count))))
+                        )
+                     (setq count 1)))
+                ; else
+                (t (setq count (+ count 1)))
             )
         )
-        (setq tree-elem (nconc tree-elem (list timer)))
-        (if (/= toadd -1)  ;peut-etre enlever ce if
-        (setq new-pitch (nconc new-pitch (list (nth toadd pitch)))))
-        (setq tree (nconc tree (list (list (list 4 4) tree-elem))))
-        ;(print tree)
-        ;(print new-pitch)
-        ;(print ties)
-        )
+        (setq rhythm (nconc rhythm (list count)))
+        (setq rhythm (list '(4 4) rhythm))
+
+        (setq tree (nconc tree (list rhythm)))
     )
     (setq tree (list '? tree))
-    (list new-pitch tree ties)
+    (print tree)
+    (list chords tree)
     )
 )
 
@@ -536,19 +516,18 @@
   (and (subsetp l1 l2) (subsetp l2 l1)))
 
 ; return the quant value based on the index selected
-(defun get-quant (i)
-    (case i
-    (1 2)
-    (2 4)
-    (3 8)
-    (4 16)
-    (5 32)
-    (6 24)
-    (7 3) 
-    (8 6)
-    (9 12)
-    (10 48)
-    (0 1))
+(defun get-quant (str)
+  (cond ((string= str "1 bar") 1)
+    ((string= str "1/2 bar") 2)
+    ((string= str "1 beat") 4)
+    ((string= str "1/2 beat") 8)
+    ((string= str "1/4 beat") 16)
+    ((string= str "1/8 beat") 32)
+    ((string= str "1/3 bar") 3)
+    ((string= str "1/6 bar") 6)
+    ((string= str "1/3 beat") 12)
+    ((string= str "1/6 beat") 24)
+    ((string= str "1/12 beat") 48))
 )
 
 ; this is not used but kept in case it is needed
@@ -559,7 +538,7 @@
   (if (eq input-list nil)
       accumulator
       (progn
-	(rotatef (car input-list) 
+	(rotatef (car input-list)
 		 (nth (random (length input-list)) input-list))
-	(list-shuffler (cdr input-list) 
+	(list-shuffler (cdr input-list)
 				 (append accumulator (list (car input-list)))))))

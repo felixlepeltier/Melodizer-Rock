@@ -17,7 +17,7 @@
         push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp
         (max-pitch 127)
         (bars (bar-length block-csp))
-        (quant (get-quant (quantification block-csp)))
+        (quant 192)
         (min-length 1) ;minimum length of a note with associated constraint
         (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
         (chord-min-length 2) ; minimum length of a chord with associated constraint
@@ -66,7 +66,6 @@
         ;)
 
          ;cardinality constraint
-        ;(gil::g-card sp playing 0 5) ; piano can only play 10 notes at a time
         ;(gil::g-card sp pull 0 10) ; can't release more notes than we play
         ;(gil::g-card sp push 0 5) ; can't start playing more than 5 notes at a time
 
@@ -133,7 +132,7 @@
 
         (print "new-melodizer CSP constructed")
         ; return
-        (list se playing tstop sopts bars quant)
+        (list se push pull tstop sopts bars quant)
     )
 )
 
@@ -144,7 +143,7 @@
     ; return pull push playing
     (let (pull push playing pushMap pullMap block-list positions
          (bars (bar-length block-csp))
-         (quant (get-quant (quantification block-csp)))
+         (quant 192)
          (major-natural (list 2 2 1 2 2 2 1))
          (max-pitch 127))
          ;(setf scaleset (build-scaleset major-natural))
@@ -207,10 +206,8 @@
                         (gil::g-dom sp (nth j pull) (nth j tempPull))
                         (gil::g-dom sp (nth j playing) (nth j tempPlaying))
                    )
-                   (print "sheesh")
               )
         )
-        (print "AAAAAH")
 
         ;constraints
         (post-optional-constraints sp block-csp push pull playing)
@@ -255,6 +252,9 @@
     (if (min-note-length block)
         (note-min-length sp push pull (min-note-length block))
     )
+    (if (quantification block)
+        (set-quantification sp push pull (quantification block))
+    )
 
     ; Pitch constraints
 
@@ -268,47 +268,14 @@
 ; <rhythm> is the input rhythm as given by the user
 ; <melodizer-object> is a melodizer object
 ; this function finds the next solution of the CSP using the search engine given as an argument
-(defmethod search-next (l rhythm melodizer-object)
-    (let ((se (first l))
-         (pitch* (second l))
-         (tstop (third l))
-         (sopts (fourth l))
-         (intervals (fifth l))
-         (check t); for the while loop
-         sol pitches)
-
-        (om::while check :do
-            (gil::time-stop-reset tstop);reset the tstop timer before launching the search
-            (setq sol (gil::search-next se)); search the next solution
-            (if (null sol)
-                (stopped-or-ended (gil::stopped se) (stop-search melodizer-object) tstop); check if there are solutions left and if the user wishes to continue searching
-                (setf check nil); we have found a solution so break the loop
-            )
-        )
-
-        (setq pitches (to-midicent (gil::g-values sol pitch*))); store the values of the solution
-        (print "solution found")
-
-        ;return a voice object that is the solution we just found
-        (make-instance 'voice
-            :tree rhythm
-            :chords pitches
-            :tempo (om::tempo (input-rhythm melodizer-object))
-        )
-    )
-)
-
-; <l> is a list containing the search engine for the problem and the variables
-; <rhythm> is the input rhythm as given by the user
-; <melodizer-object> is a melodizer object
-; this function finds the next solution of the CSP using the search engine given as an argument
 (defmethod new-search-next (l melodizer-object)
     (let ((se (first l))
-         (playing (second l))
-         (tstop (third l))
-         (sopts (fourth l))
-         (bars (fifth l))
-         (quant (sixth l))
+         (push (second l))
+         (pull (third l))
+         (tstop (fourth l))
+         (sopts (fifth l))
+         (bars (sixth l))
+         (quant (seventh l))
          (check t); for the while loop
          sol score)
 
@@ -321,23 +288,14 @@
             )
         )
 
-        (print bars)
-        (print quant)
-
          ;créer score qui retourne la liste de pitch et la rhythm tree
 
-        (setq score (build-score sol playing bars quant)); store the values of the solution
-        (print "out")
-        (print (first score))
-        (print (third score))
-
-        (print "la")
-
+        (setq score (build-score sol push pull bars quant)); store the values of the solution
+        
         ;return a voice object that is the solution we just found
         (make-instance 'voice
             :tree (second score)
             :chords (first score)
-            :ties (third score)
             ;:tempo (om::tempo (input-rhythm melodizer-object))
         )
     )
