@@ -85,8 +85,6 @@
 
 (defun set-quantification (sp push pull quantification)
     (setq q (/ 192 (get-quant quantification)))
-    (print "here")
-    (print q)
     (loop :for j :from 0 :below (length push) :by 1 :do
          (if (/= (mod j q) 0)
             (gil::g-empty sp (nth j push))

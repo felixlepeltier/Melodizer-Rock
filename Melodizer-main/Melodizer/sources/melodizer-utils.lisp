@@ -400,8 +400,8 @@
 (defun adapt-scale (scale)
     (let ((major-modified (list (first scale))))
          (loop :for i :from 1 :below (length scale) :by 1 :do
-            (setq major-modified (nconc major-modified (list (+ (nth i scale) (nth (- i 1) major-modified)))))  
-         ) 
+            (setq major-modified (nconc major-modified (list (+ (nth i scale) (nth (- i 1) major-modified)))))
+         )
     (return-from adapt-scale major-modified)
     )
 )
@@ -458,7 +458,7 @@
 
 
 ; Getting a list of chords and a rhythm tree from the playing list of intvar
-(defun build-score (sol push pull bars quant)
+(defun build-score (sol push pull bars quant tempo)
     (let ((p-push (list))
           (p-pull (list))
           (chords (list))
@@ -501,12 +501,14 @@
             )
         )
         (setq rhythm (nconc rhythm (list count)))
+        (setq count 0)
         (setq rhythm (list '(4 4) rhythm))
 
         (setq tree (nconc tree (list rhythm)))
     )
     (setq tree (list '? tree))
     (print tree)
+
     (list chords tree)
     )
 )

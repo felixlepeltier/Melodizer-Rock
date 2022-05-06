@@ -168,7 +168,7 @@
         (if (not (typep block-list 'list))
             (progn
             (print "in typep")
-            (setq block-list (list block-list)))   
+            (setq block-list (list block-list)))
         )
         (setq positions (position-list block-csp))
 
@@ -192,15 +192,17 @@
         )
         (print "allez")
         (print positions)
+        (print block-list)
 
         ; make the push and pull array supersets of the corresponding array of the child blocks
         (loop :for i :from 0 :below (length block-list) :by 1 :do
+              (print "here")
               (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
                    (setq tempList (get-sub-block-values sp (nth i block-list)))
                    (setq tempPush (first tempList))
                    (setq tempPull (second tempList))
                    (setq tempPlaying (third tempList))
-                   (print "on est la")
+
                    (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
                         (gil::g-dom sp (nth j push) (nth (- j start) tempPush))
                         (gil::g-dom sp (nth j pull) (nth (- j start) tempPull))
@@ -209,8 +211,11 @@
               )
         )
 
+        (print "on est la")
+
         ;constraints
         (post-optional-constraints sp block-csp push pull playing)
+
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing)
     )
@@ -290,13 +295,13 @@
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
 
-        (setq score (build-score sol push pull bars quant)); store the values of the solution
-        
+        (setq score (build-score sol push pull bars quant (tempo melodizer-object))); store the values of the solution
+
         ;return a voice object that is the solution we just found
         (make-instance 'voice
             :tree (second score)
             :chords (first score)
-            ;:tempo (om::tempo (input-rhythm melodizer-object))
+            :tempo (tempo melodizer-object)
         )
     )
 )

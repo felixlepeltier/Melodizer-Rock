@@ -44,6 +44,8 @@
       "A boolean variable to tell if the user wishes to stop the search or not.")
     (input-rhythm :accessor input-rhythm :input-rhythm :initform (make-instance 'voice) :documentation
       "The rhythm of the melody or a melody in the form of a voice object. ")
+    (tempo :accessor tempo :tempo :initform 120 :type integer :documentation
+      "The tempo (BPM) of the project")
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -583,7 +585,7 @@
     search-panel
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 150 2)
+      (om::om-make-point 145 2)
       (om::om-make-point 120 20)
       "Search Parameters"
       :font om::*om-default-font1b*
@@ -591,7 +593,7 @@
 
     (om::om-make-dialog-item
       'om::om-button
-      (om::om-make-point 15 50) ; position (horizontal, vertical)
+      (om::om-make-point 5 50) ; position (horizontal, vertical)
       (om::om-make-point 130 20) ; size (horizontal, vertical)
       "Start"
       :di-action #'(lambda (b)
@@ -604,7 +606,7 @@
 
     (om::om-make-dialog-item
       'om::om-button
-      (om::om-make-point 160 50) ; position
+      (om::om-make-point 135 50) ; position
       (om::om-make-point 130 20) ; size
       "Next"
       :di-action #'(lambda (b)
@@ -626,6 +628,33 @@
             )
           )
         )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-button
+      (om::om-make-point 265 50) ; position (horizontal, vertical)
+      (om::om-make-point 130 20) ; size (horizontal, vertical)
+      "Stop"
+      :di-action #'(lambda (b))
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 100)
+      (om::om-make-point 200 20)
+      "Tempo (BPM)"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 100)
+      (om::om-make-point 200 20)
+      "Tempo"
+      :range (loop :for n :from 30 :upto 200 collect n)
+      :di-action #'(lambda (m)
+        (setf (tempo (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
       )
     )
   )
