@@ -204,9 +204,9 @@
                    (setq tempPlaying (third tempList))
 
                    (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
-                        (gil::g-dom sp (nth j push) (nth (- j start) tempPush))
-                        (gil::g-dom sp (nth j pull) (nth (- j start) tempPull))
-                        (gil::g-dom sp (nth j playing) (nth (- j start) tempPlaying))
+                        (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_SUB (nth j push))
+                        (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_SUB (nth j pull))
+                        (gil::g-rel sp (nth (- j start) tempPlaying) gil::SRT_SUB (nth j playing))
                    )
               )
         )
