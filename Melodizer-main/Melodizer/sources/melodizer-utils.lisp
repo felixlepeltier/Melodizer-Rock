@@ -411,7 +411,7 @@
     (let ((major-modified (adapt-scale scale))
           (scaleset (list)))
         (loop :for octave :from -1 :below 11 :by 1 append
-                (setq scaleset (nconc scaleset (mapcar (lambda (n) (+ n (* octave 12))) major-modified)))
+                (setq scaleset (nconc scaleset (mapcar (lambda (n) (+ (+ n (* octave 12)) offset)) major-modified)))
         )
         (setq scaleset (remove-if 'minusp scaleset))
     )

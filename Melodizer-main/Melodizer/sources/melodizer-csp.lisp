@@ -227,17 +227,20 @@
     ; following a scale
     (if (key-selection block)
         (if (mode-selection block)
-            (let ((scale (get-scale (mode-selection block)))  ;if - mode selectionné
+            (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+                  (scale (get-scale (mode-selection block)))  ;if - mode selectionné
                   (offset (- (name-to-note-value (key-selection block)) 60)))
                  (setf scaleset (build-scaleset scale offset))
-                 (scale-follow sp push scaleset))
-            (let ((scale (get-scale "ionian (major)"))  ;else - pas de mode selectionné => major natural
+                 (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
+                 (scale-follow-reify sp push scaleset bool))
+            (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+                  (scale (get-scale "ionian (major)"))  ;else - pas de mode selectionné => major natural
                   (offset (- (name-to-note-value (key-selection block)) 60)))
+                 (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
                  (setf scaleset (build-scaleset scale offset))
-                 (scale-follow sp push scaleset))
+                 (scale-follow-reify sp push scaleset bool))
         )
     )
-    ;(scale-follow sp push scaleset)
 
     ; Block constraints
     (if (voices block)

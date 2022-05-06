@@ -10,6 +10,16 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; FOLLOWING A SCALE WITH REIFICATION ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun scale-follow-reify (sp push scaleset reify)
+    (loop :for j :from 0 :below (length push) :do
+            (gil::g-rel-reify sp (nth j push) gil::SRT_SUB scaleset reify)
+    )
+)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; FOLLOWING A CHORD PROGRESSION ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
