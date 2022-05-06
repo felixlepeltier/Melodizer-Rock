@@ -202,9 +202,9 @@
                    (setq tempPlaying (third tempList))
                    (print "on est la")
                    (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
-                        (gil::g-dom sp (nth j push) (nth j tempPush))
-                        (gil::g-dom sp (nth j pull) (nth j tempPull))
-                        (gil::g-dom sp (nth j playing) (nth j tempPlaying))
+                        (gil::g-dom sp (nth j push) (nth (- j start) tempPush))
+                        (gil::g-dom sp (nth j pull) (nth (- j start) tempPull))
+                        (gil::g-dom sp (nth j playing) (nth (- j start) tempPlaying))
                    )
               )
         )
