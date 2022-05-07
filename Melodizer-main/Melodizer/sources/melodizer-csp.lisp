@@ -214,7 +214,7 @@
         (print "on est la")
 
         ;constraints
-        (post-optional-constraints sp block-csp push pull playing)
+        (post-optional-constraints sp block-csp push pull playing pushMap)
 
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing)
@@ -223,7 +223,7 @@
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp block push pull playing)
+(defun post-optional-constraints (sp block push pull playing pushMap)
     ; following a scale
     (if (key-selection block)
         (if (mode-selection block)
@@ -265,6 +265,23 @@
     )
 
     ; Pitch constraints
+    (print (pitch-direction block))
+    (if (pitch-direction block)
+        (let ((allPlayed (gil::add-set-var sp 0 (+ (length push) 1) 0 (+ (length push) 1)))
+              (isPlayed (gil::add-bool-var-array sp (+ (length push) 1) 0 1)))
+             (gil::g-arr-op sp gil::SOT_UNION pushMap allPlayed)
+             (gil::g-channel sp isPlayed allPlayed)
+             
+            (cond
+                ;((string= (pitch-direction block) "Moslty increasing")    (moslty-increasing-pitch sp))
+                ((string= (pitch-direction block) "Increasing")           (increasing-pitch sp playing isPlayed))
+                ;((string= (pitch-direction block) "Strictly increasing")  (strictly-increasig-pitch sp))
+                ;((string= (pitch-direction block) "Moslty decreasing")    (mostly-decreasig-pitch sp))
+                ((string= (pitch-direction block) "Decreasing")           (decreasing-pitch sp playing isPlayed))
+                ;((string= (pitch-direction block) "Strictly Decreasing")  (strictly-decreasig-pitch sp))
+            )
+        )
+    )
 
 )
 

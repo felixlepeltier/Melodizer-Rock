@@ -24,6 +24,7 @@
    (chord-quality :accessor chord-quality :initform nil :type string)
    (min-pitch :accessor min-pitch :initform 1 :type integer)
    (max-pitch :accessor max-pitch :initform 127 :type integer)
+   (pitch-direction :accessor pitch-direction :initform nil :type string)
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -529,6 +530,25 @@
       :di-action #'(lambda (m)
         (setf (max-pitch (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
       )
+    )
+   
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 350)
+      (om::om-make-point 200 20)
+      "Pitch direction"
+      :font om::*om-default-font1b*
+    )
+   
+    (om::om-make-dialog-item
+       'om::pop-up-menu
+       (om::om-make-point 170 350)
+       (om::om-make-point 200 20)
+       "Pitch direction"
+       :range '("None" "Mostly increasing" "Increasing" "Strictly increasing" "Mostly decreasing" "Decreasing" "Strictly decreasing")
+       :di-action #'(lambda (m)
+         (setf (pitch-direction (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+       )
     )
 
   )

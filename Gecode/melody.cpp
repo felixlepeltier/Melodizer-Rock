@@ -69,12 +69,13 @@ public:
     linear(*this, timePlayed, IRT_EQ,(bars*quantification-1)*percentPlayed+1);*/
 
     float percentPlayed=1.0;
+    int minlength = 24;
     if (percentPlayed == 0.0){
       SetVar unionPush(*this, IntSet::empty,IntSet(0,bars*quantification),0,bars*quantification+1);
       rel(*this, SOT_UNION, pushMap, unionPush);
       cardinality(*this, unionPush, 1, 1);
     }else{
-      int pushEvery = int(minLength/percentPlayed);
+      int pushEvery = int(minlength/percentPlayed);
       for(int i=0;  i<bars*quantification; i++){
 	if(i%pushEvery==0){
 	  //cardinality(*this, push[i], IRT_GQ, 1);
@@ -117,7 +118,7 @@ public:
     for (int i=60; i<=max_pitch; i++){
       rel(*this, cardinality(pushMap[i])<=1);
     }
-    
+    /*
     //Rhythmic constraint: Fast or slow pace should also influence min length notes (and max length)
     IntVarArray cardinality_push(*this, bars*quantification+1, 0, max_simultaneous_notes);
     for(int i; i<bars*quantification+1; i++){
@@ -134,7 +135,7 @@ public:
     //rel(*this, cardinality(allPushed)>=60);
     //slow pace also should also influence min length notes (and max length)
     //rel(*this, cardinality(allPushed)<=30);
-    
+    */
     
     // strictly decreasing/increasing pitch
     SetVar allPlayed(*this, IntSet::empty, IntSet(0, max_pitch), 0, max_pitch+1);
@@ -153,6 +154,7 @@ public:
 	// the logic behind was that we constraint the pitch only if it was pushed
       } 
     }
+        /*
     // strictly decreasing pitch
     for (int i=60; i<=max_pitch-1; i++){
       for (int j=i+1; j<=max_pitch; j++){
@@ -226,6 +228,7 @@ public:
       rel(*this, diff == pullTmp - pushTmp);
       rel(*this, diff<=maxLength);
     }
+    */
     
     
     cardinality(*this, playing, 0, max_simultaneous_notes); //We should maybe do it in the constructor in order to be more performant
@@ -303,7 +306,6 @@ public:
     dom(*this, push, SRT_SUB, 2*12, 4*12);
       
     // Constraining the min length of the notes
-    int minlength = 24;
     for (int i = 0; i <= bars*quantification; i++){
       for (int j = 1; j < minlength && i+j <= bars*quantification ; j++){
 	rel(*this, pull[i+j] || push[i]);
