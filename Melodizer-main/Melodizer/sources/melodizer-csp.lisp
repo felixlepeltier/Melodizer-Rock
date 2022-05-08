@@ -187,12 +187,44 @@
 
                 (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
 
-                (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_UNION (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
+                (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
             )
         )
         (print "allez")
         (print positions)
         (print block-list)
+         
+        (if (melody-source block-csp)
+            (let (melody-temp melody-push melody-pull melody-playing)
+                (setq melody-temp (create-push-pull (melody-source block-csp) quant))
+                (setq melody-push (gil::add-set-var-array sp (length (first melody-temp)) 0 max-pitch 0 max-pitch))
+                (setq melody-pull (gil::add-set-var-array sp (length (second melody-temp)) 0 max-pitch 0 max-pitch))
+                (setq melody-playing (gil::add-set-var-array sp (length (third melody-temp)) 0 max-pitch 0 max-pitch))
+                (loop :for i :from 0 :below (length (first melody-temp)) :by 1 :do
+                    (if (or (typep (nth i (first melody-temp)) 'list) (/= (nth i (first melody-temp)) -1))
+                        (gil::g-rel sp (nth i melody-push) gil::SRT_EQ (nth i (first melody-temp)))
+                        (gil::g-empty sp (nth i melody-push))
+                    )
+                )
+                (loop :for i :from 0 :below (length (second melody-temp)) :by 1 :do
+                    (if (or (typep (nth i (second melody-temp)) 'list) (/= (nth i (second melody-temp)) -1))
+                        (gil::g-rel sp (nth i melody-pull) gil::SRT_EQ (nth i (second melody-temp)))
+                        (gil::g-empty sp (nth i melody-pull))
+                    )
+                )
+                (loop :for i :from 0 :below (length (third melody-temp)) :by 1 :do
+                    (if (or (typep (nth i (third melody-temp)) 'list) (/= (nth i (third melody-temp)) -1))
+                        (gil::g-rel sp (nth i melody-playing) gil::SRT_EQ (nth i (third melody-temp)))
+                        (gil::g-empty sp (nth i melody-playing))
+                    )
+                )
+                (loop :for j :from 0 :below (length melody-push) :by 1 :do
+                        (gil::g-rel sp (nth j melody-push) gil::SRT_SUB (nth j push))
+                        (gil::g-rel sp (nth j melody-pull) gil::SRT_SUB (nth j pull))
+                        ;(gil::g-rel sp (nth j melody-playing) gil::SRT_SUB (nth j playing))
+                )
+            )
+        )
 
         ; make the push and pull array supersets of the corresponding array of the child blocks
         (loop :for i :from 0 :below (length block-list) :by 1 :do

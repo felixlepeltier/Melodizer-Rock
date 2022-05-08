@@ -7,6 +7,7 @@
 (om::defclass! block ()
   ;attributes
   ((block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
+   (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
    (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
    (bar-length :accessor bar-length :initform 0 :type integer)
    (beat-length :accessor beat-length :initform 0 :type integer)
@@ -745,6 +746,7 @@
       :di-action #'(lambda (b)
        (print "Debugging")
        (print (block-list (block-csp (om::object editor))))
+       (print (melody-source (melody-source (om::object editor))))
        (print (position-list (block-csp (om::object editor))))
        (print (bar-length (block-csp (om::object editor))))
        (print (beat-length (block-csp (om::object editor))))

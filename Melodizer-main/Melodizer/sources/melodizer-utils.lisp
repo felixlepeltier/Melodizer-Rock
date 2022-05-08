@@ -335,16 +335,79 @@
     )
 )
 
+; Create push and pull list from a voice object
+(defun create-push-pull (input-chords quant)
+    (let (temp
+         (push (list))
+         (pull (list '-1))
+         (playing (list))
+         (tree (om::tree input-chords))
+         (pitch (to-pitch-list (om::chords input-chords))))
+         (print "tree :")
+         (print tree)
+         (print pitch)
+         (setq tree (second tree))
+         (loop :for i :from 0 :below (length tree) :by 1 :do
+            (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (first (second (nth i tree)))) pitch 0 quant 0))
+            (setq push (append push (first temp)))
+            (setq pull (append pull (second temp)))
+            (setq playing (append playing (third temp)))
+         )
+         (print push)
+         (print pull)
+         (print playing)
+         (list push pull playing))
+)
+
+; <tree> is the rhythm tree to read
+; <pitch> is the ordered list of pitch
+; <pos> is the next position in push to add values
+; <length> is the current duration of a note to add
+; <next> is the index in pitch of the next notes we will add
+;recursive function to read a rhythm tree and create push and pull
+(defun read-tree (push pull playing tree pitch pos length next)
+    (progn
+        (print tree)
+        (setf length (/ length (length tree)))
+        (loop :for i :from 0 :below (length tree) :by 1 :do
+            (if (typep (nth i tree) 'list)
+                (let (temp)
+                    (print "not ok")
+                    (setq temp (read-tree push pull playing (second (nth i tree)) pitch pos length next))
+                    (setq push (first temp))
+                    (setq pull (second temp))
+                    (setq playing (third temp))
+                )
+                (progn
+                    (print "ok")
+                    (setf (nth pos push) (nth next pitch))
+                    (loop :for j :from pos :below (+ pos (* length (nth i tree))) :by 1 :do
+                         (setf (nth j playing) (nth next pitch))     
+                    )
+                    (setf pos (+ pos (* length (nth i tree))))
+                    (setf (nth (- pos 1) pull) (nth next pitch))
+                    (setf next (+ next 1))
+                )
+            ) 
+        )
+        (list push pull playing)
+    )    
+)
+
 ; <input-chords> is the voice objects for the chords
-; <quant> NOT USED YET (FORCED TO 500) smallest possible note length
+; <quantOrig> quantification used by melodizer
 ; Return a list in which each element i represent a note starting at a time i*quant
 ; -1 means no note starting at that time, a chord object means multiple note starting
-(defun create-push (input-chords)
+(defun create-push (input-chords quantOrig)
     (let ((note-starting-times (voice-onsets input-chords))
-          (quant 500)
+          (quant (/ (second (first (om::tempo input-chords))) (/ quantOrig 16)))
+          (tree (om::tree input-chords))
           (push-list (list))
           (chords (to-pitch-list (om::chords input-chords))) ; get chords list
          )
+         (print tree)
+         (print quant)
+         (print note-starting-times)
          (setf note-starting-times (mapcar (lambda (n) (/ n quant)) note-starting-times)) ; dividing note-starting-times by quant
          (loop :for j :from 0 :below (+ (max-list note-starting-times) 1) :by 1 :do
             (if (= j (car note-starting-times)); if j == note-starting-times[0]
