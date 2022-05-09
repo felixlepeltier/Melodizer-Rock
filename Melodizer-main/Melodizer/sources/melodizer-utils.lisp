@@ -382,16 +382,16 @@
                     (print "ok")
                     (setf (nth pos push) (nth next pitch))
                     (loop :for j :from pos :below (+ pos (* length (nth i tree))) :by 1 :do
-                         (setf (nth j playing) (nth next pitch))     
+                         (setf (nth j playing) (nth next pitch))
                     )
                     (setf pos (+ pos (* length (nth i tree))))
                     (setf (nth (- pos 1) pull) (nth next pitch))
                     (setf next (+ next 1))
                 )
-            ) 
+            )
         )
         (list push pull playing)
-    )    
+    )
 )
 
 ; <input-chords> is the voice objects for the chords
@@ -533,8 +533,6 @@
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
     (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
 
-    (print p-push)
-
     (setq count 1)
     (loop :for b :from 0 :below bars :by 1 :do
         (if (not (nth (* b quant) p-push))
@@ -548,7 +546,24 @@
                 ((nth i p-push)
                      ; if rhythm impulse
                      (progn
-                        (setq chord (make-instance 'chord :LMidic (nth i p-push)))
+                        (setq durations (list))
+                        (loop :for m :in (nth i p-push) :do
+                            (setq j (+ i 1))
+                            (loop
+                                (if (nth j p-pull)
+                                    (if (find m (nth j p-pull))
+                                        (progn
+                                            (setq dur (* (floor 60000 (* tempo quant)) (- j i)))
+                                            (setq durations (nconc durations (list dur)))
+
+                                            (return)
+                                        )
+                                    )
+                                )
+                                (incf j)
+                            )
+                        )
+                        (setq chord (make-instance 'chord :LMidic (nth i p-push) :Ldur durations))
                         (setq chords (nconc chords (list chord)))
                         (cond
                             ((= rest 1)
@@ -558,7 +573,8 @@
                             ((/= q 0)
                                 (setq rhythm (nconc rhythm (list count))))
                         )
-                     (setq count 1)))
+                        (setq count 1))
+                )
                 ; else
                 (t (setq count (+ count 1)))
             )

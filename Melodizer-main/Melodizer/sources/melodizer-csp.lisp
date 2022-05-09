@@ -228,7 +228,6 @@
 
         ; make the push and pull array supersets of the corresponding array of the child blocks
         (loop :for i :from 0 :below (length block-list) :by 1 :do
-              (print "here")
               (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
                    (setq tempList (get-sub-block-values sp (nth i block-list)))
                    (setq tempPush (first tempList))
@@ -242,8 +241,6 @@
                    )
               )
         )
-
-        (print "on est la")
 
         ;constraints
         (post-optional-constraints sp block-csp push pull playing pushMap)
@@ -276,7 +273,7 @@
 
     ; Block constraints
     (if (voices block)
-      (gil::g-card sp playing (voices block) (voices block))
+      (gil::g-card sp playing 0 (voices block))
     )
     (if (min-added-note block)
         (if (max-added-note block)
