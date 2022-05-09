@@ -65,35 +65,13 @@
         ;    )
         ;)
 
-         ;cardinality constraint
-        ;(gil::g-card sp pull 0 10) ; can't release more notes than we play
-        ;(gil::g-card sp push 0 5) ; can't start playing more than 5 notes at a time
 
-        ;(post-optional-constraits sp block)
-        ;(pitch-range sp push (min-pitch block) (max-pitch block))
-
-        ; Following a scale
-        ;(loop :for j :from 0 :below (* bars quant) :do
-        ;    (gil::g-rel sp (nth j push) gil::SRT_SUB scaleset)
-        ;)
 
         ;Following a chord progression
         ;(loop :for j :from 0 :below (length chordset) :by 1 :do
         ;    (loop :for k :from 0 :below (/ (* bars quant) progsize) :by 1 :do
         ;        (gil::g-rel sp (nth (+ k (/ (* (* bars quant) j) progsize)) push) gil::SRT_SUB (nth j chordset))
         ;    )
-        ;)
-
-        ; pitch range limitation
-        ;(loop :for j :below (* bars quant) :by 1 :do
-        ;    (gil::g-dom-ints sp (nth j push) gil::SRT_SUB 50 80)
-        ;)
-
-        ; Minimum length of note
-        ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
-        ;     (loop :for k :from 1 :below min-length :while (< (+ j k) (* bars quant)) :do
-        ;        (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
-        ;     )
         ;)
 
         ; chord rhythm
@@ -190,10 +168,7 @@
                 (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
             )
         )
-        (print "allez")
-        (print positions)
-        (print block-list)
-         
+
         (if (melody-source block-csp)
             (let (melody-temp melody-push melody-pull melody-playing)
                 (setq melody-temp (create-push-pull (melody-source block-csp) quant))
@@ -242,6 +217,8 @@
               )
         )
 
+
+
         ;constraints
         (post-optional-constraints sp block-csp push pull playing pushMap)
 
@@ -253,6 +230,7 @@
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-constraints (sp block push pull playing pushMap)
+
     ; following a scale
     (if (key-selection block)
         (if (mode-selection block)
@@ -269,20 +247,42 @@
                  (setf scaleset (build-scaleset scale offset))
                  (scale-follow-reify sp push scaleset bool))
         )
+        (if (mode-selection block)
+            (let ((bool-array (gil::add-bool-var-array sp 12 0 1))) ; créer le booleen pour la reify
+                (loop :for key :from 0 :below 12 :by 1 :do
+                    (setf scale (get-scale (mode-selection block)))
+                    (setf scaleset (build-scaleset scale key))
+                    (scale-follow-reify sp push scaleset (nth key bool-array))
+                )
+                (gil::g-rel sp gil::BOT_OR bool-array 1)
+            )
+        )
+    )
+
+    (if (chord-key block)
+        (if (chord-quality block)
+            (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+                  (chord (get-chord (chord-quality block)))  ;if - mode selectionné
+                  (offset (- (name-to-note-value (chord-key block)) 60)))
+                 (setf chordset (build-scaleset chord offset))
+                 (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
+                 (scale-follow-reify sp push chordset bool))
+        )
+        (if (chord-quality block)
+            (let ((bool-array (gil::add-bool-var-array sp 12 0 1))) ; créer le booleen pour la reify
+                (loop :for key :from 0 :below 12 :by 1 :do
+                    (setf chord (get-chord (chord-quality block)))
+                    (setf chordset (build-scaleset chord key))
+                    (scale-follow-reify sp push chordset (nth key bool-array))
+                )
+                (gil::g-rel sp gil::BOT_OR bool-array 1)
+            )
+        )
     )
 
     ; Block constraints
     (if (voices block)
       (gil::g-card sp playing 0 (voices block))
-    )
-    (if (min-added-note block)
-        (if (max-added-note block)
-            (num-added-note sp playing (min-added-note block) (max-added-note block))
-            (num-added-note sp playing (min-added-note block) 127)
-        )
-        (if (max-added-note block)
-            (num-added-note sp playing 0 (max-added-note block))
-        )
     )
 
     ; Time constraints
@@ -300,7 +300,7 @@
               (isPlayed (gil::add-bool-var-array sp (+ (length push) 1) 0 1)))
              (gil::g-arr-op sp gil::SOT_UNION pushMap allPlayed)
              (gil::g-channel sp isPlayed allPlayed)
-             
+
             (cond
                 ;((string= (pitch-direction block) "Moslty increasing")    (moslty-increasing-pitch sp))
                 ((string= (pitch-direction block) "Increasing")           (increasing-pitch sp playing isPlayed))
