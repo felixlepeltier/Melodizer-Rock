@@ -187,7 +187,7 @@
 
                 (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
 
-                (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] + pull[j] Cannot push a note still playing
+                (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] - pull[j] Cannot push a note still playing
             )
         )
         (print "allez")
@@ -203,13 +203,13 @@
                 (loop :for i :from 0 :below (length (first melody-temp)) :by 1 :do
                     (if (or (typep (nth i (first melody-temp)) 'list) (/= (nth i (first melody-temp)) -1))
                         (gil::g-rel sp (nth i melody-push) gil::SRT_EQ (nth i (first melody-temp)))
-                        (gil::g-empty sp (nth i melody-push))
+                        (gil::g-empty sp (nth i push))
                     )
                 )
                 (loop :for i :from 0 :below (length (second melody-temp)) :by 1 :do
                     (if (or (typep (nth i (second melody-temp)) 'list) (/= (nth i (second melody-temp)) -1))
                         (gil::g-rel sp (nth i melody-pull) gil::SRT_EQ (nth i (second melody-temp)))
-                        (gil::g-empty sp (nth i melody-pull))
+                        (gil::g-empty sp (nth i pull))
                     )
                 )
                 (loop :for i :from 0 :below (length (third melody-temp)) :by 1 :do

@@ -337,25 +337,24 @@
 
 ; Create push and pull list from a voice object
 (defun create-push-pull (input-chords quant)
-    (let (temp
+    (let (temp 
+         (next 0)
          (push (list))
          (pull (list '-1))
          (playing (list))
          (tree (om::tree input-chords))
          (pitch (to-pitch-list (om::chords input-chords))))
-         (print "tree :")
-         (print tree)
-         (print pitch)
          (setq tree (second tree))
+         (print pitch)
          (loop :for i :from 0 :below (length tree) :by 1 :do
-            (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (first (second (nth i tree)))) pitch 0 quant 0))
+            (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (first (second (nth i tree)))) pitch 0 quant next))
             (setq push (append push (first temp)))
             (setq pull (append pull (second temp)))
             (setq playing (append playing (third temp)))
+            (setf next (fourth temp))
          )
          (print push)
          (print pull)
-         (print playing)
          (list push pull playing))
 )
 
@@ -377,6 +376,9 @@
                     (setq push (first temp))
                     (setq pull (second temp))
                     (setq playing (third temp))
+                    (setf next (fourth temp))
+                    (setf pos (fifth temp))
+                    (print "out")
                 )
                 (progn
                     (print "ok")
@@ -390,7 +392,7 @@
                 )
             ) 
         )
-        (list push pull playing)
+        (list push pull playing next pos)
     )    
 )
 
