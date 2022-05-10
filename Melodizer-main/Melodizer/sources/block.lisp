@@ -375,7 +375,6 @@
         (if (string= check "None")
           (setf (quantification (om::object editor)) nil)
           (setf (quantification (om::object editor)) check))
-          (print (quantification (om::object editor)))
       )
     )
 
@@ -432,7 +431,10 @@
       "Key selection"
       :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
       :di-action #'(lambda (m)
-        (setf (key-selection (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (key-selection (om::object editor)) nil)
+          (setf (key-selection (om::object editor)) check))
       )
     )
 
@@ -452,7 +454,10 @@
       "Mode selection"
       :range '("None" "ionian (major)" "dorian" "phrygian" "lydian" "mixolydian" "aeolian (natural minor)" "locrian" "pentatonic" "harmonic minor" "chromatic")
       :di-action #'(lambda (m)
-        (setf (mode-selection (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (mode-selection (om::object editor)) nil)
+          (setf (mode-selection (om::object editor)) check))
       )
     )
 
@@ -532,7 +537,7 @@
         (setf (max-pitch (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
       )
     )
-   
+
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 350)
@@ -540,7 +545,7 @@
       "Pitch direction"
       :font om::*om-default-font1b*
     )
-   
+
     (om::om-make-dialog-item
        'om::pop-up-menu
        (om::om-make-point 170 350)
