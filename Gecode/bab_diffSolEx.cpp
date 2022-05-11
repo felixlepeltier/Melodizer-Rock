@@ -8,6 +8,8 @@
 #include <set>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 
 using namespace Gecode;
 
@@ -34,6 +36,9 @@ private:
   //SetVarArray pushMap;
   //SetVarArray pullMap;
   int minLength = 2;
+
+  
+  int percent_diff = 50;
 
   const int max_pitch = 5;
 
@@ -166,13 +171,6 @@ public:
   print(std::ostream& os) const {
 
     os << "\t";
-    /*for (int i = 0; i<=bars*quantification; i++) {
-      os << "Beat " << i << "    ";
-      for (SetVarGlbValues d(drt[i]);d();++d) {
-        os << d.val() << " ";
-      };
-      os << std::endl << "\t";
-      }*/
     os << std::endl << "\t";
     for (int i = 0; i<=bars*quantification; i++) {
       os << "Beat " << i << "    ";
@@ -182,32 +180,15 @@ public:
       os << std::endl << "\t";
     }
     os << std::endl << "\t";
-    for (int i = 0; i<=bars*quantification; i++) {
-      os << "Beat " << i << "    ";
-      for (SetVarGlbValues d(pull[i]);d();++d) {
-        os << d.val() << " ";
-      };
-      os << std::endl << "\t";
-    }
-    os << std::endl << "\t";
-    for (int i = 0; i<=bars*quantification; i++) {
-      os << "Beat " << i << "    ";
-      for (SetVarGlbValues d(playing[i]);d();++d) {
-        os << d.val() << " ";
-      };
-      os << std::endl << "\t";
-    }
-    os << std::endl;
   }
 
   virtual void constrain(const Space& _b) {
     const Melody& b = static_cast<const Melody&>(_b);
     for(int i=0; i<=bars*quantification-minLength; i=i+1){//-2 car c'est le minLenght
-      SetVar tmp(b.push[i]);
-      //IntSet push_i = tmp.val();
-      //IntSet push_i(b.push[i]) ;
-      //dom(*this, push[i], SRT_LE, push_i );
-      rel(*this, push[i] != tmp );
+      if((rand()%100)< percent_diff){
+	SetVar tmp(b.push[i]);
+	rel(*this, push[i] != tmp );
+      }
       //rel(*this, (tmp!=IntSet::empty) >> (push[i] != tmp) ); si on veut que ca change que quand tmp n'est pas nul
     }
       //rel(this, cardinality(b.push)>cardinality(push));
@@ -219,7 +200,10 @@ public:
  *  \relates melody
  */
 int main(int argc, char* argv[]) {
+  srand(time(NULL));
   SizeOptions opt("Melody");
+  std::cout << rand() << std::endl;
+  //std::cout << rand() << std::endl;
   opt.solutions(4);
   opt.parse(argc,argv);
   Script::run<Melody,BAB,SizeOptions>(opt);
