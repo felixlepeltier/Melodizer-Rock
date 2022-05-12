@@ -275,7 +275,7 @@
                     (print scaleset)
                     (scale-follow-reify sp push scaleset (nth key bool-array))
                 )
-                (gil::g-rel sp gil::BOT_OR bool-array 1)
+                ;(gil::g-rel sp gil::BOT_OR bool-array 1)
             )
         )
     )

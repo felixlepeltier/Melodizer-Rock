@@ -16,7 +16,7 @@
 
 (defun scale-follow-reify (sp push scaleset reify)
     (loop :for j :from 0 :below (length push) :do
-            (gil::g-rel-reify sp (nth j push) gil::SRT_SUB scaleset reify)
+            (gil::g-rel-reify sp (nth j push) gil::SRT_SUB scaleset reify gil::RM_IMP)
     )
 )
 
