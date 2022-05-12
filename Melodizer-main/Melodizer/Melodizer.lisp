@@ -11,6 +11,7 @@
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "melodizer-csts" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "block" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "dummy-problem" :type "lisp")
+                     (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "golomb-ruler" :type "lisp")
                      ))
 
 
