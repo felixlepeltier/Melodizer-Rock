@@ -637,6 +637,8 @@
         (let init
           (setq init (new-melodizer (block-csp (om::object editor))))
           (setf (result (om::object editor)) init)
+          ;(setq init (golomb-ruler 5))
+          ;(setf (result (om::object editor)) init)
         )
       )
     )
@@ -659,6 +661,7 @@
           nil ; process initialization keywords, not needed here
           (lambda () ; function to call
             (setf (solution (om::object editor)) (new-search-next (result (om::object editor)) (om::object editor)))
+            ;(setf (solution (om::object editor)) (search-next-golomb-ruler (result (om::object editor))))
             ;(setf (om::tempo (solution (om::object editor))) (om::tempo (input-rhythm (om::object editor)))); set the tempo of the new voice object to be the same as the input
             (om::openeditorframe ; open a voice window displaying the solution
               (om::omNG-make-new-instance (solution (om::object editor)) "current solution")

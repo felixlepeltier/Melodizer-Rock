@@ -40,18 +40,14 @@
          
          (setq sopts (gil::search-opts))
          (gil::init-search-opts sopts)
-         (setq tstop (gil::t-stop))
-         (gil::time-stop-init tstop 500)
-         (gil::set-time-stop sopts tstop)
          
          (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
-         (list se m tstop sopts)
+         (list se m sopts)
     )
 )
 
 (defun search-next-golomb-ruler (l)
-    (let ((se (first l)) (mark* (second l)) (tstop (third l)) (sopts (fourth l)) sol marks)
-         (gil::time-stop-reset tstop)
+    (let ((se (first l)) (mark* (second l)) (sopts (third l)) sol marks)
          (setq sol (gil::search-next se))
          (if (null sol)
              (error "No more solution")

@@ -108,22 +108,64 @@
 
 (defun increasing-pitch (sp playing isPlayed)
     (loop :for i :from 0 :below (- (length playing) 1) :by 1 :do
-          (loop :for j :from (+ i 1) :below (length playing) :by 1 :do
-                (let ((tempBool (gil::add-bool-var sp 0 1)))
-                     (gil::g-op sp (nth i isPlayed) gil::BOT_AND (nth j isPlayed) tempBool)
-                     (gil::g-rel-reify sp (gil::g-setmin sp (nth i playing)) gil::IRT_LQ (gil::g-setmin sp (nth j playing)) tempBool gil::RM_IMP)
-                )
+          (let ((tempVar1 (gil::add-int-var sp 0 127)))
+             (gil::g-setmin-reify sp (nth i playing) tempVar1 (nth i isPlayed) gil::RM_IMP)
+             (loop :for j :from (+ i 1) :below (length playing) :by 1 :do
+                   (let ((tempBool (gil::add-bool-var sp 0 1)) tempVar2)
+                        (setq tempVar2 (gil::add-int-var sp 0 127))
+                        (gil::g-op sp (nth i isPlayed) gil::BOT_AND (nth j isPlayed) tempBool)
+                        (gil::g-setmin-reify sp (nth j playing) tempVar2 tempBool gil::RM_IMP)
+                        (gil::g-rel-reify sp tempVar1 gil::IRT_LQ tempVar2 tempBool gil::RM_IMP)
+                   )
+             )
           )
     )
 )
 
 (defun decreasing-pitch (sp playing isPlayed)
     (loop :for i :from 0 :below (- (length playing) 1) :by 1 :do
-          (loop :for j :from (+ i 1) :below (length playing) :by 1 :do
-                (let ((tempBool (gil::add-bool-var sp 0 1)))
-                     (gil::g-op sp (nth i isPlayed) gil::BOT_AND (nth j isPlayed) tempBool)
-                     (gil::g-rel-reify sp (gil::g-setmax sp (nth i playing)) gil::IRT_GQ (gil::g-setmax sp (nth j playing)) tempBool gil::RM_IMP)
-                )
+          (let ((tempVar1 (gil::add-int-var sp 0 127)))
+             (gil::g-setmax-reify sp (nth i playing) tempVar1 (nth i isPlayed) gil::RM_IMP)
+             (loop :for j :from (+ i 1) :below (length playing) :by 1 :do
+                   (let ((tempBool (gil::add-bool-var sp 0 1)) tempVar2)
+                        (setq tempVar2 (gil::add-int-var sp 0 127))
+                        (gil::g-op sp (nth i isPlayed) gil::BOT_AND (nth j isPlayed) tempBool)
+                        (gil::g-setmax-reify sp (nth j playing) tempVar2 tempBool gil::RM_IMP)
+                        (gil::g-rel-reify sp tempVar1 gil::IRT_GQ tempVar2 tempBool gil::RM_IMP)
+                   )
+             )
+          )
+    )
+)
+
+(defun strictly-increasing-pitch (sp playing isPlayed)
+    (loop :for i :from 0 :below (- (length playing) 1) :by 1 :do
+          (let ((tempVar1 (gil::add-int-var sp 0 127)))
+             (gil::g-setmax-reify sp (nth i playing) tempVar1 (nth i isPlayed) gil::RM_IMP)
+             (loop :for j :from (+ i 1) :below (length playing) :by 1 :do
+                   (let ((tempBool (gil::add-bool-var sp 0 1)) tempVar2)
+                        (setq tempVar2 (gil::add-int-var sp 0 127))
+                        (gil::g-op sp (nth i isPlayed) gil::BOT_AND (nth j isPlayed) tempBool)
+                        (gil::g-setmin-reify sp (nth j playing) tempVar2 tempBool gil::RM_IMP)
+                        (gil::g-rel-reify sp tempVar1 gil::IRT_LE tempVar2 tempBool gil::RM_IMP)
+                   )
+             )
+          )
+    )
+)
+
+(defun strictly-decreasing-pitch (sp playing isPlayed)
+    (loop :for i :from 0 :below (- (length playing) 1) :by 1 :do
+          (let ((tempVar1 (gil::add-int-var sp 0 127)))
+             (gil::g-setmin-reify sp (nth i playing) tempVar1 (nth i isPlayed) gil::RM_IMP)
+             (loop :for j :from (+ i 1) :below (length playing) :by 1 :do
+                   (let ((tempBool (gil::add-bool-var sp 0 1)) tempVar2)
+                        (setq tempVar2 (gil::add-int-var sp 0 127))
+                        (gil::g-op sp (nth i isPlayed) gil::BOT_AND (nth j isPlayed) tempBool)
+                        (gil::g-setmax-reify sp (nth j playing) tempVar2 tempBool gil::RM_IMP)
+                        (gil::g-rel-reify sp tempVar1 gil::IRT_GR tempVar2 tempBool gil::RM_IMP)
+                   )
+             )
           )
     )
 )

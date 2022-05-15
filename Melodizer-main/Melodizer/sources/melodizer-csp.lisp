@@ -53,8 +53,8 @@
         ;)
 
         ; branching
-        (gil::g-branch sp push nil nil)
-        (gil::g-branch sp pull nil nil)
+        (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -311,11 +311,11 @@
 
             (cond
                 ;((string= (pitch-direction block) "Moslty increasing")    (moslty-increasing-pitch sp))
-                ((string= (pitch-direction block) "Increasing")           (increasing-pitch sp playing isPlayed))
-                ;((string= (pitch-direction block) "Strictly increasing")  (strictly-increasig-pitch sp))
+                ((string= (pitch-direction block) "Increasing")           (increasing-pitch sp push isPlayed))
+                ((string= (pitch-direction block) "Strictly increasing")  (strictly-increasing-pitch sp push isPlayed))
                 ;((string= (pitch-direction block) "Moslty decreasing")    (mostly-decreasig-pitch sp))
-                ((string= (pitch-direction block) "Decreasing")           (decreasing-pitch sp playing isPlayed))
-                ;((string= (pitch-direction block) "Strictly Decreasing")  (strictly-decreasig-pitch sp))
+                ((string= (pitch-direction block) "Decreasing")           (decreasing-pitch sp push isPlayed))
+                ((string= (pitch-direction block) "Strictly decreasing")  (strictly-decreasing-pitch sp push isPlayed))
             )
         )
     )
@@ -342,6 +342,8 @@
          (added-notes (ninth l))
          (check t); for the while loop
          sol score)
+         
+         (print "in search")
 
         (om::while check :do
             (gil::time-stop-reset tstop);reset the tstop timer before launching the search
@@ -352,8 +354,8 @@
             )
         )
 
-        ; (print (gil::g-values sol notes))
-        ; (print (gil::g-values sol added-notes))
+        (print (gil::g-values sol notes))
+        (print (gil::g-values sol added-notes))
          ;créer score qui retourne la liste de pitch et la rhythm tree
 
         (setq score (build-score sol push pull bars quant (tempo melodizer-object))); store the values of the solution
