@@ -12,7 +12,7 @@
 ; <mode> is the mode of the tonality (major, minor)
 ; This function creates the CSP by creating the space and the variables, posting the constraints and the branching, specifying
 ; the search options and creating the search engine.
-(defmethod new-melodizer (block-csp)
+(defmethod new-melodizer (block-csp percent-diff)
     (let ((sp (gil::new-space)); create the space;
         push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp
         (max-pitch 127)
@@ -52,6 +52,9 @@
         ;      )
         ;)
 
+        (gil::g-specify-sol-variables sp push)
+        (gil::g-specify-percent-diff sp percent-diff)
+         
         ; branching
         (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
         (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
@@ -67,7 +70,7 @@
         (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
+        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
 
         (print "new-melodizer CSP constructed")
         ; return
@@ -257,7 +260,6 @@
                   (scale (get-scale (mode-selection block)))  ;if - mode selectionné
                   (offset (- (name-to-note-value (key-selection block)) 60)))
                  (setf scaleset (build-scaleset scale offset))
-                 (print scaleset)
                  (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
                  (scale-follow-reify sp push scaleset bool))
             (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
@@ -272,10 +274,9 @@
                 (loop :for key :from 0 :below 12 :by 1 :do
                     (setf scale (get-scale (mode-selection block)))
                     (setf scaleset (build-scaleset scale key))
-                    (print scaleset)
                     (scale-follow-reify sp push scaleset (nth key bool-array))
                 )
-                ;(gil::g-rel sp gil::BOT_OR bool-array 1)
+                (gil::g-rel sp gil::BOT_OR bool-array 1)
             )
         )
     )

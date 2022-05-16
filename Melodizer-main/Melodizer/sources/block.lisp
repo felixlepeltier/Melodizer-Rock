@@ -46,8 +46,9 @@
       "A boolean variable to tell if the user wishes to stop the search or not.")
     (input-rhythm :accessor input-rhythm :input-rhythm :initform (make-instance 'voice) :documentation
       "The rhythm of the melody or a melody in the form of a voice object. ")
-    (tempo :accessor tempo :tempo :initform 120 :type integer :documentation
+    (tempo :accessor tempo :initform 120 :type integer :documentation
       "The tempo (BPM) of the project")
+    (percent-diff :accessor percent-diff :initform 0 :type integer)
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -635,7 +636,7 @@
       "Start"
       :di-action #'(lambda (b)
         (let init
-          (setq init (new-melodizer (block-csp (om::object editor))))
+          (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor))))
           (setf (result (om::object editor)) init)
           ;(setq init (golomb-ruler 5))
           ;(setf (result (om::object editor)) init)
@@ -697,6 +698,27 @@
         (setf (tempo (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
       )
     )
+   
+   (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 150)
+      (om::om-make-point 200 20)
+      "Difference Percentage"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 170 150)
+      (om::om-make-point 200 20)
+      "Difference Percentage"
+      :range '(0 100)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (percent-diff (om::object editor)) (om::om-slider-value s))
+      )
+    )
+   
   )
 )
 

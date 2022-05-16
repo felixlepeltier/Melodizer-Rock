@@ -187,7 +187,7 @@ public:
     for(int i=0; i<=bars*quantification-minLength; i=i+1){//-2 car c'est le minLenght
       if((rand()%100)< percent_diff){
 	SetVar tmp(b.push[i]);
-	rel(*this, push[i] != tmp );
+	rel(*this, push[i] != tmp);
       }
       //rel(*this, (tmp!=IntSet::empty) >> (push[i] != tmp) ); si on veut que ca change que quand tmp n'est pas nul
     }
