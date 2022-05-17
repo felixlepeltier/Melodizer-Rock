@@ -15,9 +15,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun scale-follow-reify (sp push scaleset reify)
+    (print scaleset)
+    (setq r (gil::add-bool-var-array sp (length push) 0 1))
     (loop :for j :from 0 :below (length push) :do
-            (gil::g-rel-reify sp (nth j push) gil::SRT_SUB scaleset reify gil::RM_IMP)
+        (gil::g-rel-reify sp (nth j push) gil::SRT_SUB scaleset (nth j r))
     )
+    (gil::g-rel sp gil::BOT_AND r reify)
+
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -169,13 +173,3 @@
           )
     )
 )
-
-
-
-
-
-
-
-
-
-

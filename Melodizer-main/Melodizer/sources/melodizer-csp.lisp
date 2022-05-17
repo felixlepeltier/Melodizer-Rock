@@ -61,7 +61,7 @@
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
-        (gil::time-stop-init tstop 500); initialize it (time is expressed in ms)
+        (gil::time-stop-init tstop 5000); initialize it (time is expressed in ms)
 
         ;search options
         (setq sopts (gil::search-opts)); create the search options object
@@ -296,23 +296,65 @@
 
     (if (chord-key block)
         (if (chord-quality block)
-            (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-                  (chord (get-chord (chord-quality block)))  ;if - mode selectionné
-                  (offset (- (name-to-note-value (chord-key block)) 60)))
-                 (setf chordset (build-scaleset chord offset))
-                 (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
-                 (scale-follow-reify sp push chordset bool))
+            (if (all-chord-notes block)
+                (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+                      (bool2 (gil::add-bool-var sp 0 1))
+                      (chord (get-chord (chord-quality block)))  ;if - mode selectionné
+                      (offset (- (name-to-note-value (chord-key block)) 60))
+                      (all-notes (gil::add-set-var sp 0 127 01 127)))
+                     (setf chordset (build-scaleset chord offset))
+                     (scale-follow-reify sp push chordset bool))
+                     (setf notesets (build-notesets chord offset))
+                     (gil::g-setunion sp all-notes push)
+
+                     (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
+                     (loop :for i :from 0 :below (length notesets) :do
+                          (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array))
+                     )
+
+                     (gil::g-rel sp gil::BOT_OR bool-array bool2)
+                     (gil::g-rel sp bool gil::SRT_EQ 1)
+                     (gil::g-rel sp bool2 gil::SRT_EQ 0)
+
+                (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+                      (chord (get-chord (chord-quality block)))  ;if - mode selectionné
+                      (offset (- (name-to-note-value (chord-key block)) 60)))
+                     (setf chordset (build-scaleset chord offset))
+                     (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
+                     (scale-follow-reify sp push chordset bool))
+            )
         )
         (if (chord-quality block)
-            (let ((bool-array (gil::add-bool-var-array sp 12 0 1))) ; créer le booleen pour la reify
-                (loop :for key :from 0 :below 12 :by 1 :do
-                    (setf chord (get-chord (chord-quality block)))
-                    (setf chordset (build-scaleset chord key))
-                    (print chordset)
-                    (scale-follow-reify sp push chordset (nth key bool-array))
+            (if (all-chord-notes block)
+                (let ((bool-array (gil::add-bool-var-array sp 12 0 1)); créer le booleen pour la reify
+                      (all-notes (gil::add-set-var sp 0 127 01 127)))
+                    (gil::g-setunion sp all-notes push)
+                    (loop :for key :from 0 :below 12 :by 1 :do
+                        (setf chord (get-chord (chord-quality block)))
+                        (setf chordset (build-scaleset chord key))
+                        (setf notesets (build-notesets chord key))
+
+                        (setq bool-array-note (gil::add-bool-var-array sp (length notesets) 0 1))
+                        (loop :for i :from 0 :below (length notesets) :do
+                             (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array-note))
+                        )
+                        (setq bool (gil::add-bool-var sp 0 1))
+                        (gil::g-rel sp gil::BOT_OR bool-array-note bool)
+                        (scale-follow-reify sp push chordset (nth key bool-array))
+                        (gil::g-op sp (nth key bool-array) gil::BOT_AND bool 0)
+                    )
+                    (gil::g-rel sp gil::BOT_OR bool-array 1)
                 )
-                (gil::g-rel sp gil::BOT_OR bool-array 1)
+                (let ((bool-array (gil::add-bool-var-array sp 12 0 1)))
+                    (loop :for key :from 0 :below 12 :by 1 :do
+                        (setf chord (get-chord (chord-quality block)))
+                        (setf chordset (build-scaleset chord key))
+                        (scale-follow-reify sp push chordset (nth key bool-array))
+                    )
+                    (gil::g-rel sp gil::BOT_OR bool-array 1)
+                )
             )
+
         )
     )
 

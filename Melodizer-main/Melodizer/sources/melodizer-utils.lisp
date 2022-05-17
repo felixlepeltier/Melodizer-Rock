@@ -415,7 +415,6 @@
          (tree (om::tree input-chords))
          (pitch (to-pitch-list (om::chords input-chords))))
          (setq tree (second tree))
-         (print pitch)
          (loop :for i :from 0 :below (length tree) :by 1 :do
             (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (first (second (nth i tree)))) pitch 0 quant next))
             (setq push (append push (first temp)))
@@ -423,8 +422,6 @@
             (setq playing (append playing (third temp)))
             (setf next (fourth temp))
          )
-         (print push)
-         (print pull)
          (list push pull playing))
 )
 
@@ -546,43 +543,28 @@
     (let ((major-modified (adapt-scale scale))
           (scaleset (list)))
         (loop :for octave :from -1 :below 11 :by 1 append
-                (setq scaleset (nconc scaleset (mapcar (lambda (n) (+ (+ n (* octave 12)) offset)) major-modified)))
+              (setq scaleset (nconc scaleset (mapcar (lambda (n) (+ (+ n (* octave 12)) offset)) major-modified)))
         )
         (setq scaleset (remove-if 'minusp scaleset))
     )
 )
 
-; build the acceptable pitch for a given chord progression
-(defun build-chordset (chord-prog major-natural)
-    (loop :for i :from 0 :below (length chord-prog) :by 1 collect
-          (build-chordset-in (nth i chord-prog) major-natural)
+; build the list of acceptable pitch based on the scale and a key offset
+(defun build-notesets (chord offset)
+    (let ((chord-modified (adapt-scale chord))
+          (notesets (list)))
+        (loop :for i :from 0 :below (length chord-modified) :by 1 :do
+            (setq noteset (list))
+            (loop :for octave :from -1 :below 11 :by 1 append
+                  (setq noteset (nconc noteset (list (+ (+ (nth i chord-modified) (* octave 12)) offset))))
+            )
+            (setq noteset (remove-if 'minusp noteset))
+            (setq notesets (nconc notesets (list noteset)))
+        )
+        notesets
     )
 )
 
-;build the acceptable pitch for one element of a chord progression
-(defun build-chordset-in (chord major-natural)
-    (let ((vector (list))
-          (scalesize (length major-natural)))
-        (loop :for octave :from 0 :below 11 :by 1 :do
-              (let ((offset 0))
-                   (loop :for j :from 0 :below scalesize :by 1 :do
-                         (progn
-                            (cond
-                                ((= j (- chord 1))
-                                    (setq vector (nconc vector (list (+ (* octave 12) offset)))))
-                                ((= j (mod (+ chord 1) scalesize))
-                                    (setq vector (nconc vector (list (+ (* octave 12) offset)))))
-                                ((= j (mod (+ chord 3) scalesize))
-                                    (setq vector (nconc vector (list (+ (* octave 12) offset)))))
-                            )
-                            (setf offset (+ (nth j major-natural) offset))
-                         )
-                   )
-              )
-        )
-        (setq vector vector)
-    )
-)
 
 
 ; <chords> a list of chord object
@@ -605,6 +587,7 @@
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
     (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
 
+    (print "Solution")
     (print p-push)
 
     (setq count 1)
