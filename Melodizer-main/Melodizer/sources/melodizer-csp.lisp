@@ -54,7 +54,7 @@
 
         (gil::g-specify-sol-variables sp push)
         (gil::g-specify-percent-diff sp percent-diff)
-         
+
         ; branching
         (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
         (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
@@ -119,8 +119,6 @@
         (gil::g-empty sp (first pull)) ; pull[0] == empty
         (gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
         (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
-
-
 
         ;compute notes
         (setq notes (gil::add-int-var sp 0 max-notes))
@@ -219,7 +217,7 @@
         )
 
         ;constraints
-        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes)
+        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array)
 
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing notes added-notes)
@@ -228,12 +226,26 @@
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes)
+(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes notes-array)
 
 
     ; Block constraints
     (if (voices block)
-      (gil::g-card sp playing 0 (voices block))
+        (gil::g-card sp playing 0 (voices block))
+    )
+
+    (if (min-pushed-notes block)
+        (loop :for i :from 0 :below (length notes-array) :by 1 :do
+            (setq b1 (gil::add-bool-var sp 0 1))
+            (gil::g-rel-reify sp (nth i notes-array) gil::IRT_EQ 0 b1)
+            (setq b2 (gil::add-bool-var sp 0 1))
+            (gil::g-rel-reify sp (nth i notes-array) gil::IRT_GQ (min-pushed-notes block) b2)
+            (gil::g-rel sp b1 gil::BOT_OR b2)
+        )
+    )
+
+    (if (max-pushed-notes block)
+        (gil::g-card sp push 0 (max-pushed-notes block))
     )
 
     (if (min-added-notes block)
@@ -296,6 +308,7 @@
                 (loop :for key :from 0 :below 12 :by 1 :do
                     (setf chord (get-chord (chord-quality block)))
                     (setf chordset (build-scaleset chord key))
+                    (print chordset)
                     (scale-follow-reify sp push chordset (nth key bool-array))
                 )
                 (gil::g-rel sp gil::BOT_OR bool-array 1)
@@ -343,7 +356,7 @@
          (added-notes (ninth l))
          (check t); for the while loop
          sol score)
-         
+
          (print "in search")
 
         (om::while check :do

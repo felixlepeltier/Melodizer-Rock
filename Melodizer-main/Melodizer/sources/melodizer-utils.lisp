@@ -243,6 +243,8 @@
         ((string-equal quality "Minor-major 7")
             (list 3 4 4 1)
         )
+
+        ; TODO gérer les accords 9 ou +
         ((string-equal quality "Major 9")
             (list 3 4 5)
         )
@@ -602,6 +604,8 @@
 
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
     (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
+
+    (print p-push)
 
     (setq count 1)
     (loop :for b :from 0 :below bars :by 1 :do
