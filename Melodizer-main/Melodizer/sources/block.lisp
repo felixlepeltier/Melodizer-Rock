@@ -611,7 +611,7 @@
    
    (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 400)
+      (om::om-make-point 15 450)
       (om::om-make-point 200 20)
       "Golomb ruler size"
       :font om::*om-default-font1b*
@@ -619,7 +619,7 @@
 
     (om::om-make-dialog-item
        'om::pop-up-menu
-       (om::om-make-point 170 400)
+       (om::om-make-point 170 450)
        (om::om-make-point 200 20)
        "Golomb ruler size"
        :range '("None" "1" "2" "3" "4" "5" "6" "7" "8" "9")
