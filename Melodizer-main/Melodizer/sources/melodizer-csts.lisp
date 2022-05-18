@@ -171,6 +171,32 @@
 )
 
 
+;;;;;;;;;;;;;;;;
+; GOLOMB RULER ;
+;;;;;;;;;;;;;;;;
+
+(defun golomb-rule (sp size push quant)
+        
+    (setf size-d (/ (- (* size size) size) 2))
+         
+    ; array of differences
+    (setq d (gil::add-int-var-array sp size-d 0 127))
+         
+    (setf k 0)
+    (loop :for i :from 0 :below (* (- size 1) quant) :by quant :do
+       (loop :for j :from (+ i quant) :below (* size quant) :by quant :do
+           (progn
+               (print k)
+               (gil::g-linear sp '(1 -1) (list (gil::g-setmax sp (nth j push)) (gil::g-setmax sp (nth i push))) gil::IRT_EQ (nth k d))
+               (setf k (+ k 1))    
+           )         
+       )      
+    )
+         
+    (gil::g-distinct sp d)    
+)
+
+
 
 
 

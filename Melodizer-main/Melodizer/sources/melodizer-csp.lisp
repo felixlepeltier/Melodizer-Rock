@@ -320,6 +320,10 @@
             )
         )
     )
+    
+    (if (/= (golomb-ruler-size block) 0)
+        (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))    
+    )
 
 )
 

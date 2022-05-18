@@ -26,6 +26,7 @@
    (min-pitch :accessor min-pitch :initform 1 :type integer)
    (max-pitch :accessor max-pitch :initform 127 :type integer)
    (pitch-direction :accessor pitch-direction :initform nil :type string)
+   (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -566,6 +567,25 @@
          (if (string= check "None")
            (setf (pitch-direction (om::object editor)) nil)
            (setf (pitch-direction (om::object editor)) check))
+       )
+    )
+   
+   (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 400)
+      (om::om-make-point 200 20)
+      "Golomb ruler size"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+       'om::pop-up-menu
+       (om::om-make-point 170 400)
+       (om::om-make-point 200 20)
+       "Golomb ruler size"
+       :range '("None" "1" "2" "3" "4" "5" "6" "7" "8" "9")
+       :di-action #'(lambda (m)
+         (setf (golomb-ruler-size (om::object editor)) (om::om-get-selected-item-index m))
        )
     )
 
