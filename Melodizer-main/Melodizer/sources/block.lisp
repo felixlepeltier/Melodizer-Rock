@@ -12,7 +12,8 @@
    (bar-length :accessor bar-length :initform 0 :type integer)
    (beat-length :accessor beat-length :initform 0 :type integer)
    (voices :accessor voices :initform nil :type integer)
-   (style :accessor style :initform nil :type string)
+   (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
+   (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
    (min-added-notes :accessor min-added-notes :initform nil :type integer)
    (max-added-notes :accessor max-added-notes :initform nil :type integer)
    (min-note-length :accessor min-note-length :initform nil :type integer)
@@ -23,6 +24,7 @@
    (mode-selection :accessor mode-selection :initform nil :type string)
    (chord-key :accessor chord-key :initform nil :type string)
    (chord-quality :accessor chord-quality :initform nil :type string)
+   (all-chord-notes :accessor all-chord-notes :initform nil :type integer)
    (min-pitch :accessor min-pitch :initform 1 :type integer)
    (max-pitch :accessor max-pitch :initform 127 :type integer)
    (pitch-direction :accessor pitch-direction :initform nil :type string)
@@ -238,7 +240,7 @@
       'om::om-static-text
       (om::om-make-point 15 200)
       (om::om-make-point 200 20)
-      "Style"
+      "Minimum pushed notes"
       :font om::*om-default-font1b*
     )
 
@@ -246,14 +248,13 @@
       'om::pop-up-menu
       (om::om-make-point 170 200)
       (om::om-make-point 200 20)
-      "Style"
-      :range '("None" "Full chords" "Arpeggio" "Hybrid")
+      "Minimum pushed notes"
+      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (style (om::object editor)) nil)
-          (setf (style (om::object editor)) check))
-          (print (style (om::object editor)))
+        (if (typep check 'string)
+          (setf (min-pushed-notes (om::object editor)) nil)
+          (setf (min-pushed-notes (om::object editor)) check))
       )
     )
 
@@ -261,7 +262,7 @@
       'om::om-static-text
       (om::om-make-point 15 250)
       (om::om-make-point 200 20)
-      "Minimum added notes"
+      "Maximum pushed notes"
       :font om::*om-default-font1b*
     )
 
@@ -269,13 +270,13 @@
       'om::pop-up-menu
       (om::om-make-point 170 250)
       (om::om-make-point 200 20)
-      "Minimum added notes"
-      :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
+      "Maximum pushed notes"
+      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
         (if (typep check 'string)
-          (setf (min-added-notes (om::object editor)) 0)
-          (setf (min-added-notes (om::object editor)) check))
+          (setf (max-pushed-notes (om::object editor)) nil)
+          (setf (max-pushed-notes (om::object editor)) check))
       )
     )
 
@@ -283,13 +284,35 @@
       'om::om-static-text
       (om::om-make-point 15 300)
       (om::om-make-point 200 20)
-      "Maximum added notes"
+      "Minimum added notes"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::pop-up-menu
       (om::om-make-point 170 300)
+      (om::om-make-point 200 20)
+      "Minimum added notes"
+      :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (min-added-notes (om::object editor)) nil)
+          (setf (min-added-notes (om::object editor)) check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 350)
+      (om::om-make-point 200 20)
+      "Maximum added notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 350)
       (om::om-make-point 200 20)
       "Maximum added notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -508,9 +531,25 @@
       )
     )
 
+    ;checkbox for all-different constraint
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 170 250)
+      (om::om-make-point 200 20)
+      "All chord notes"
+      ;:checked-p (find "all-different-notes" (optional-constraints (om::object editor)) :test #'equal)
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (all-chord-notes (om::object editor)) 1)
+                      (setf (all-chord-notes (om::object editor)) nil)
+                    )
+      )
+      :font om::*om-default-font1*
+    )
+
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 250)
+      (om::om-make-point 15 300)
       (om::om-make-point 200 20)
       "Minimum pitch"
       :font om::*om-default-font1b*
@@ -518,7 +557,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 170 250)
+      (om::om-make-point 170 300)
       (om::om-make-point 200 20)
       "Minimum pitch"
       :range '(1 127)
@@ -530,7 +569,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 300)
+      (om::om-make-point 15 350)
       (om::om-make-point 200 20)
       "Maximum pitch"
       :font om::*om-default-font1b*
@@ -538,7 +577,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 170 300)
+      (om::om-make-point 170 350)
       (om::om-make-point 200 20)
       "Maximum pitch"
       :range '(1 127)
@@ -550,7 +589,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 350)
+      (om::om-make-point 15 400)
       (om::om-make-point 200 20)
       "Pitch direction"
       :font om::*om-default-font1b*
@@ -558,7 +597,7 @@
 
     (om::om-make-dialog-item
        'om::pop-up-menu
-       (om::om-make-point 170 350)
+       (om::om-make-point 170 400)
        (om::om-make-point 200 20)
        "Pitch direction"
        :range '("None" "Mostly increasing" "Increasing" "Strictly increasing" "Mostly decreasing" "Decreasing" "Strictly decreasing")
@@ -718,7 +757,7 @@
         (setf (tempo (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
       )
     )
-   
+
    (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 150)
@@ -738,7 +777,7 @@
         (setf (percent-diff (om::object editor)) (om::om-slider-value s))
       )
     )
-   
+
   )
 )
 
