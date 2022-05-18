@@ -29,6 +29,7 @@
    (max-pitch :accessor max-pitch :initform 127 :type integer)
    (pitch-direction :accessor pitch-direction :initform nil :type string)
    (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
+   (note-repetition :accessor note-repetition :initform 0 :type integer)
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -586,10 +587,30 @@
         (setf (max-pitch (om::object editor)) (om::om-slider-value s))
       )
     )
-
+   
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 400)
+      (om::om-make-point 200 20)
+      "Note repetition"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 170 400)
+      (om::om-make-point 200 20)
+      "Note repetition"
+      :range '(0 100)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (note-repetition (om::object editor)) (om::om-slider-value s))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 450)
       (om::om-make-point 200 20)
       "Pitch direction"
       :font om::*om-default-font1b*
@@ -597,7 +618,7 @@
 
     (om::om-make-dialog-item
        'om::pop-up-menu
-       (om::om-make-point 170 400)
+       (om::om-make-point 170 450)
        (om::om-make-point 200 20)
        "Pitch direction"
        :range '("None" "Mostly increasing" "Increasing" "Strictly increasing" "Mostly decreasing" "Decreasing" "Strictly decreasing")
@@ -611,7 +632,7 @@
    
    (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 450)
+      (om::om-make-point 15 500)
       (om::om-make-point 200 20)
       "Golomb ruler size"
       :font om::*om-default-font1b*
@@ -619,7 +640,7 @@
 
     (om::om-make-dialog-item
        'om::pop-up-menu
-       (om::om-make-point 170 450)
+       (om::om-make-point 170 500)
        (om::om-make-point 200 20)
        "Golomb ruler size"
        :range '("None" "1" "2" "3" "4" "5" "6" "7" "8" "9")

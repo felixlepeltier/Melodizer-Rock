@@ -24,7 +24,7 @@
         (major-natural (list 2 2 1 2 2 2 1)) ; represent intervals of the scale we are composing in
         (chord-prog (list 1 5 6 4))) ; represent the chord progression we want to follow
         ;(setf scaleset (build-scaleset major-natural))
-        (setf chordset (build-chordset chord-prog major-natural))
+        ;(setf chordset (build-chordset chord-prog major-natural))
         (setf progsize (length chord-prog))
 
         (print block-csp)
