@@ -374,6 +374,10 @@
     (if (/= (golomb-ruler-size block) 0)
         (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))    
     )
+    
+    (if (= 0 0) ; ajouter condition d'activation de note repetition
+        (repeat-note sp push (note-repetition block) (/ 192 (get-quant (quantification block))))
+    )
 
 )
 

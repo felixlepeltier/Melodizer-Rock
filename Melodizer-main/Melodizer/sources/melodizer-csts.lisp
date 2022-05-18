@@ -199,3 +199,20 @@
          
     (gil::g-distinct sp d)    
 )
+
+;;;;;;;;;;;;;;;;;;;
+; NOTE REPETITION ;
+;;;;;;;;;;;;;;;;;;;
+
+(defun repeat-note (sp push percent quant)
+    (let ((index (list-shuffler (range (length push) :min 0 :step quant))))
+    (print index)
+    (print percent)
+    (loop :for i :from 0 :below (- (length index) 1) :by 1 :do
+        (if (< (random 100) percent)
+            (gil::g-rel sp (nth (nth i index) push) gil::SRT_EQ (nth (+ (nth i index) 1) push))
+            (gil::g-rel sp (nth (nth i index) push) gil::SRT_DISJ (nth (+ (nth i index) 1) push))
+        )
+    )
+    )
+)

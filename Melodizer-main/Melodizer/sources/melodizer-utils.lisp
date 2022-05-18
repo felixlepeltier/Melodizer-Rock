@@ -95,6 +95,11 @@
     )
 )
 
+; create a list from min to max by step
+(defun range (max &key (min 0) (step 1))
+   (loop for n from min below max by step
+      collect n))
+
 ; function to update the list of solutions in a pop-up menu without having to close and re-open the window
 ; TODO find a more efficient way to do this
 (defun update-pop-up (self my-panel data position size output)
@@ -668,7 +673,6 @@
     ((string= str "1/12 beat") 48))
 )
 
-; this is not used but kept in case it is needed
 ; shuffles a list
 ; from https://gist.github.com/shortsightedsid/62d0ee21bfca53d9b69e
 (defun list-shuffler (input-list &optional accumulator)
