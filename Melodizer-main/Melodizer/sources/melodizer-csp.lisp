@@ -20,12 +20,7 @@
         (quant 192)
         (min-length 1) ;minimum length of a note with associated constraint
         (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
-        (chord-min-length 2) ; minimum length of a chord with associated constraint
-        (major-natural (list 2 2 1 2 2 2 1)) ; represent intervals of the scale we are composing in
-        (chord-prog (list 1 5 6 4))) ; represent the chord progression we want to follow
-        ;(setf scaleset (build-scaleset major-natural))
-        ;(setf chordset (build-chordset chord-prog major-natural))
-        (setf progsize (length chord-prog))
+        (chord-min-length 2)) ; minimum length of a chord with associated constraint
 
         (print block-csp)
         (setq temp (get-sub-block-values sp block-csp))
@@ -414,8 +409,8 @@
             )
         )
 
-        (print (gil::g-values sol notes))
-        (print (gil::g-values sol added-notes))
+        (print notes)
+    
          ;créer score qui retourne la liste de pitch et la rhythm tree
 
         (setq score (build-score sol push pull bars quant (tempo melodizer-object))); store the values of the solution
