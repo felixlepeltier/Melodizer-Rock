@@ -417,21 +417,21 @@
             )
         )
 
-        (loop :for i :from 1 :below (length push) :by 1 :do
-            (print (gil::g-values sol (nth i push)))
-            (print (gil::g-values sol (nth i notes-array)))
-        )
-
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
-
-        (setq score (build-score sol push pull bars quant (tempo melodizer-object))); store the values of the solution
+        (setq score-chord-seq (build-chord-seq sol push pull bars quant (tempo melodizer-object)))
 
         ;return a voice object that is the solution we just found
-        (make-instance 'voice
-            :tree (second score)
-            :chords (first score)
-            :tempo (tempo melodizer-object)
+        ; (make-instance 'voice
+        ;     :tree (second score)
+        ;     :chords (first score)
+        ;     :tempo (tempo melodizer-object)
+        ; )
+
+        (make-instance 'chord-seq
+            :LMidic (first score-chord-seq)
+            :LOnset (second score-chord-seq)
+            :Ldur (third score-chord-seq)
         )
     )
 )

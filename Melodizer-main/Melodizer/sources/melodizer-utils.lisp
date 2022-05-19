@@ -580,7 +580,7 @@
 
 
 ; Getting a list of chords and a rhythm tree from the playing list of intvar
-(defun build-score (sol push pull bars quant tempo)
+(defun build-voice (sol push pull bars quant tempo)
     (let ((p-push (list))
           (p-pull (list))
           (chords (list))
@@ -642,7 +642,7 @@
             )
         )
         (if (= rest 1)
-            (setq rhythm (nconc rhythm (list (* -1 count))))
+            (setq rhythm (nconc rhythm '(list (* -1 count))))
             (setq rhythm (nconc rhythm (list count)))
         )
         (setq count 0)
@@ -654,6 +654,51 @@
     (print tree)
 
     (list chords tree)
+    )
+)
+
+(defun build-chord-seq (sol push pull bars quant tempo)
+    (let ((p-push (list))
+          (p-pull (list))
+          (chords (list))
+          (durations (list))
+          (onsets (list)))
+
+        (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
+        (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
+
+        (loop :for i :from 0 :below (* bars quant) :do
+            (if (nth i p-push)
+                (progn
+                    (setq onset (* (floor 60000 (* tempo (/ quant 4))) i))
+                    (setq duration (list))
+                    (loop :for m :in (nth i p-push) :do
+                        (setq j (+ i 1))
+                        (loop
+                            (if (nth j p-pull)
+                                (if (find m (nth j p-pull))
+                                    (progn
+                                        (setq dur (* (floor 60000 (* tempo (/ quant 4))) (- j i)))
+                                        (setq duration (nconc duration (list dur)))
+
+                                        (return)
+                                    )
+                                )
+                            )
+                            (incf j)
+                        )
+                    )
+                    (print (nth i p-push))
+                    (print duration)
+                    (print onset)
+                    (setq chords (nconc chords (list (nth i p-push))))
+                    (setq durations (nconc durations (list duration)))
+                    (setq onsets (nconc onsets (list onset)))
+                )
+            )
+        )
+
+        (list chords onsets durations)
     )
 )
 
