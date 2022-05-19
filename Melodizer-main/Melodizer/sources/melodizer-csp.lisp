@@ -29,6 +29,7 @@
         (setq playing (nth 2 temp))
         (setq notes (nth 3 temp))
         (setq added-notes (nth 4 temp))
+        (setq notes-array (nth 5 temp))
 
         ; chord rhythm
         ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
@@ -69,7 +70,7 @@
 
         (print "new-melodizer CSP constructed")
         ; return
-        (list se push pull tstop sopts bars quant notes added-notes)
+        (list se push pull tstop sopts bars quant notes added-notes notes-array)
     )
 )
 
@@ -78,7 +79,7 @@
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
     ; return pull push playing
-    (let (pull push playing pushMap pullMap block-list positions max-notes
+    (let (pull push notes playing pushMap pullMap block-list positions max-notes
          (bars (bar-length block-csp))
          (quant 192)
          (major-natural (list 2 2 1 2 2 2 1))
@@ -186,10 +187,11 @@
 
                 (loop :for i :from 0 :below (* bars quant) :by 1 :do
                     (setq temp (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
+                    (gil::g-setunion sp (nth i sub-push) temp)
                     (setq sub-push-list (nconc sub-push-list (list temp)))
-                    (gil::g-setunion sp (nth i sub-push) (nth i sub-push-list))
                     (gil::g-op sp (nth i added-push) gil::SOT_DUNION (nth i push) (nth i sub-push))
                 )
+                (print "la")
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
                       (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
                            (setq tempList (get-sub-block-values sp (nth i block-list)))
@@ -209,13 +211,14 @@
             )
             ; if no block-list
             (gil::g-rel sp added-notes gil::SRT_EQ notes)
+
         )
 
         ;constraints
         (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array)
 
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
-        (list push pull playing notes added-notes)
+        (list push pull playing notes added-notes notes-array)
     )
 )
 
@@ -244,11 +247,11 @@
     )
 
     (if (min-added-notes block)
-        (gil::g-rel sp added-notes gil::IRT_GQ (min-added-notes block))
+        (gil::g-rel sp notes gil::IRT_GQ (min-added-notes block))
     )
 
     (if (max-added-notes block)
-        (gil::g-rel sp added-notes gil::IRT_LQ (max-added-notes block))
+        (gil::g-rel sp notes gil::IRT_LQ (max-added-notes block))
     )
 
     ; Time constraints
@@ -298,7 +301,7 @@
                       (offset (- (name-to-note-value (chord-key block)) 60))
                       (all-notes (gil::add-set-var sp 0 127 01 127)))
                      (setf chordset (build-scaleset chord offset))
-                     (scale-follow-reify sp push chordset bool))
+                     (scale-follow-reify sp push chordset bool)
                      (setf notesets (build-notesets chord offset))
                      (gil::g-setunion sp all-notes push)
 
@@ -309,7 +312,7 @@
 
                      (gil::g-rel sp gil::BOT_OR bool-array bool2)
                      (gil::g-rel sp bool gil::SRT_EQ 1)
-                     (gil::g-rel sp bool2 gil::SRT_EQ 0)
+                     (gil::g-rel sp bool2 gil::SRT_EQ 0))
 
                 (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
                       (chord (get-chord (chord-quality block)))  ;if - mode selectionné
@@ -370,14 +373,14 @@
             )
         )
     )
-    
-    (if (/= (golomb-ruler-size block) 0)
-        (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))    
-    )
-    
-    (if (= 0 0) ; ajouter condition d'activation de note repetition
-        (repeat-note sp push (note-repetition block) (/ 192 (get-quant (quantification block))))
-    )
+
+    ; (if (/= (golomb-ruler-size block) 0)
+    ;     (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))
+    ; )
+    ;
+    ; (if (= 0 0) ; ajouter condition d'activation de note repetition
+    ;     (repeat-note sp push (note-repetition block) (/ 192 (get-quant (quantification block))))
+    ; )
 
 )
 
@@ -399,6 +402,7 @@
          (quant (seventh l))
          (notes (eighth l))
          (added-notes (ninth l))
+         (notes-array (nth 9 l))
          (check t); for the while loop
          sol score)
 
@@ -413,8 +417,12 @@
             )
         )
 
-        (print notes)
-    
+        (loop :for i :from 1 :below (length push) :by 1 :do
+            (print (gil::g-values sol (nth i push)))
+            (print (gil::g-values sol (nth i notes-array)))
+        )
+
+
          ;créer score qui retourne la liste de pitch et la rhythm tree
 
         (setq score (build-score sol push pull bars quant (tempo melodizer-object))); store the values of the solution

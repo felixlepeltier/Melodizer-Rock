@@ -641,7 +641,10 @@
                 (t (setq count (+ count 1)))
             )
         )
-        (setq rhythm (nconc rhythm (list count)))
+        (if (= rest 1)
+            (setq rhythm (nconc rhythm (list (* -1 count))))
+            (setq rhythm (nconc rhythm (list count)))
+        )
         (setq count 0)
         (setq rhythm (list '(4 4) rhythm))
 
