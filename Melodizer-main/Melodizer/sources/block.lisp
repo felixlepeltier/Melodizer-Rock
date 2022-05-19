@@ -16,8 +16,8 @@
    (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
    (min-added-notes :accessor min-added-notes :initform nil :type integer)
    (max-added-notes :accessor max-added-notes :initform nil :type integer)
-   (min-note-length :accessor min-note-length :initform nil :type integer)
-   (max-note-length :accessor max-note-length :initform nil :type integer)
+   (min-note-length :accessor min-note-length :initform nil :type string)
+   (max-note-length :accessor max-note-length :initform nil :type string)
    (quantification :accessor quantification :initform nil :type string)
    (note-repartition :accessor note-repartition :initform nil :type integer)
    (key-selection :accessor key-selection :initform nil :type string)
@@ -357,9 +357,12 @@
       (om::om-make-point 170 50)
       (om::om-make-point 200 20)
       "Minimum note length"
-      :range (loop :for n :from 0 :upto 127 collect n)
+      :range '("None" "1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
       :di-action #'(lambda (m)
-        (setf (min-note-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (min-note-length (om::object editor)) nil)
+          (setf (min-note-length  (om::object editor)) check))
       )
     )
 
@@ -376,9 +379,12 @@
       (om::om-make-point 170 100)
       (om::om-make-point 200 20)
       "Maximum note length"
-      :range (loop :for n :from 127 :downto 0 collect n)
+      :range '("None" "1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
       :di-action #'(lambda (m)
-        (setf (max-note-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (max-note-length (om::object editor)) nil)
+          (setf (max-note-length (om::object editor)) check))
       )
     )
 
@@ -587,7 +593,7 @@
         (setf (max-pitch (om::object editor)) (om::om-slider-value s))
       )
     )
-   
+
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 400)
@@ -629,7 +635,7 @@
            (setf (pitch-direction (om::object editor)) check))
        )
     )
-   
+
    (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 500)

@@ -50,8 +50,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-min-length (sp push pull min-length)
+    (setq l (/ 192 (get-quant min-length)))
     (loop :for j :from 0 :below (length push) :by 1 :do
-        (loop :for k :from 1 :below min-length :while (< (+ j k) (length pull)) :do
+        (loop :for k :from 1 :below l  :while (< (+ j k) (length pull)) :do
              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
         )
     )

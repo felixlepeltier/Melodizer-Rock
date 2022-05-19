@@ -86,19 +86,19 @@
          (max-pitch 127))
          ;(setf scaleset (build-scaleset major-natural))
 
-         (setq max-notes (* 127 (* bars quant)))
+         (setq max-notes (* 127 (+ (* bars quant) 1)))
          (print bars)
          (print quant)
 
         ;initialize the variables
 
-        (setq push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
-        (setq pull (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
-        (setq playing (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+        (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+        (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
 
         ;channeling array with time as index to array with pitch as index
-        (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
-        (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (* bars quant) 0 (* bars quant)))
+        (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
+        (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
         (gil::g-channel sp push pushMap)
         (gil::g-channel sp pull pullMap)
 
@@ -118,23 +118,23 @@
 
         ;compute notes
         (setq notes (gil::add-int-var sp 0 max-notes))
-        (setq notes-array (gil::add-int-var-array sp (* bars quant) 0 127))
-        (loop :for i :from 0 :below (* bars quant) :by 1 :do
+        (setq notes-array (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
+        (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
             (gil::g-card-var sp (nth i push) (nth i notes-array))
         )
         (gil::g-sum sp notes notes-array)
 
         ;compute added notes
-        (setq added-push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch))
+        (setq added-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq added-notes (gil::add-int-var sp 0 127))
-        (setq added-notes-array (gil::add-int-var-array sp (* bars quant) 0 127))
-        (loop :for i :from 0 :below (* bars quant) :by 1 :do
+        (setq added-notes-array (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
+        (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
             (gil::g-card-var sp (nth i added-push) (nth i added-notes-array))
         )
         (gil::g-sum sp added-notes added-notes-array)
 
         ;connect push, pull and playing
-        (loop :for j :from 1 :below (* bars quant) :do ;for each interval
+        (loop :for j :from 1 :below (+ (* bars quant) 1) :do ;for each interval
             (let (temp)
                 (setq temp (gil::add-set-var sp 0 max-pitch 0 max-pitch)); temporary variables
 
@@ -183,9 +183,9 @@
         (if (not (endp block-list))
             ; make the push and pull array supersets of the corresponding array of the child blocks
             (let ((sub-push-list (list))
-                (sub-push (gil::add-set-var-array sp (* bars quant) 0 max-pitch 0 max-pitch)))
+                (sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch)))
 
-                (loop :for i :from 0 :below (* bars quant) :by 1 :do
+                (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
                     (setq temp (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
                     (gil::g-setunion sp (nth i sub-push) temp)
                     (setq sub-push-list (nconc sub-push-list (list temp)))
