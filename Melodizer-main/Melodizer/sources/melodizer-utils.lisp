@@ -667,10 +667,13 @@
         (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
         (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
 
+        (print p-push)
+        (print p-pull)
+
         (loop :for i :from 0 :below (+ (* bars quant) 1) :do
             (if (nth i p-push)
                 (progn
-                    (setq onset (* (floor 60000 (* tempo (/ quant 4))) i))
+                    (setq onset (* (/ 60000 (* tempo (/ quant 4))) i))
                     (setq duration (list))
                     (loop :for m :in (nth i p-push) :do
                         (setq j (+ i 1))
@@ -678,7 +681,7 @@
                             (if (nth j p-pull)
                                 (if (find m (nth j p-pull))
                                     (progn
-                                        (setq dur (* (floor 60000 (* tempo (/ quant 4))) (- j i)))
+                                        (setq dur (* (/ 60000 (* tempo (/ quant 4))) (- j i)))
                                         (setq duration (nconc duration (list dur)))
 
                                         (return)

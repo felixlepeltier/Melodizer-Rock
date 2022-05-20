@@ -114,6 +114,7 @@
         ;initial constraint on pull, push and playing
         (gil::g-empty sp (first pull)) ; pull[0] == empty
         (gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
+        (gil::g-empty sp (car (last playing)))  ; playing[bars*quant] == empty
         (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
 
         ;compute notes
@@ -377,7 +378,7 @@
     ; (if (/= (golomb-ruler-size block) 0)
     ;     (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))
     ; )
-    ;
+
     ; (if (= 0 0) ; ajouter condition d'activation de note repetition
     ;     (repeat-note sp push (note-repetition block) (/ 192 (get-quant (quantification block))))
     ; )
