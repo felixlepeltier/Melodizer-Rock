@@ -21,6 +21,7 @@
    (quantification :accessor quantification :initform nil :type string)
    (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
    (note-repartition :accessor note-repartition :initform nil :type integer)
+   (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
    (key-selection :accessor key-selection :initform nil :type string)
    (mode-selection :accessor mode-selection :initform nil :type string)
    (chord-key :accessor chord-key :initform nil :type string)
@@ -32,7 +33,7 @@
    (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
    (pitch-direction :accessor pitch-direction :initform nil :type string)
    (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-   (note-repetition-flag :accessor note-repetition-flag :initform 0 :type integer)
+   (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
    (note-repetition :accessor note-repetition :initform 0 :type integer)
   )
   (:icon 225)
@@ -435,6 +436,28 @@
         (setf (note-repartition (om::object editor)) (om::om-slider-value s))
       )
     )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 250)
+      (om::om-make-point 200 20)
+      "Rhythm repetition"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 250)
+      (om::om-make-point 200 20)
+      "Rhythm repetition"
+      :range '("None" "1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (rhythm-repetition (om::object editor)) nil)
+          (setf (rhythm-repetition (om::object editor)) check))
+      )
+    )
   )
 )
 
@@ -803,11 +826,13 @@
     )
 
     (om::om-make-dialog-item
-      'om::om-button
-      (om::om-make-point 265 50) ; position (horizontal, vertical)
-      (om::om-make-point 130 20) ; size (horizontal, vertical)
-      "Stop"
-      :di-action #'(lambda (b))
+        'om::om-button
+        (om::om-make-point 265 50) ; position (horizontal, vertical)
+        (om::om-make-point 130 20) ; size (horizontal, vertical)
+        "Stop"
+        :di-action #'(lambda (b)
+          (setf (stop-search (om::object editor)) t)
+        )
     )
 
     (om::om-make-dialog-item

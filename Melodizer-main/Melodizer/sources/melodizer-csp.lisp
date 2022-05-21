@@ -52,12 +52,13 @@
         (gil::g-specify-percent-diff sp percent-diff)
 
         ; branching
-        (gil::g-branch sp push gil::SET_VAR_RND gil::SET_VAL_RND_INC)
-        (gil::g-branch sp pull gil::SET_VAR_RND gil::SET_VAL_RND_INC)
+        (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
-        (gil::time-stop-init tstop 5000); initialize it (time is expressed in ms)
+        (gil::time-stop-init tstop 500); initialize it (time is expressed in ms)
 
         ;search options
         (setq sopts (gil::search-opts)); create the search options object
@@ -127,6 +128,7 @@
 
         ;compute added notes
         (setq added-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+        (setq sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq added-notes (gil::add-int-var sp 0 127))
         (setq added-notes-array (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
         (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
@@ -183,8 +185,7 @@
 
         (if (not (endp block-list))
             ; make the push and pull array supersets of the corresponding array of the child blocks
-            (let ((sub-push-list (list))
-                (sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch)))
+            (let ((sub-push-list (list)))
 
                 (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
                     (setq temp (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
@@ -206,6 +207,13 @@
 
                                 (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_EQ (nth i (nth j sub-push-list)))
                            )
+
+                           (loop :for j :from 0 :below (length push) :by 1 :do
+                                (if (and (>= j start) (< j (+ start (length tempPlaying))))
+                                    (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_EQ (nth i (nth j sub-push-list)))
+                                    (gil::g-empty sp (nth i (nth j sub-push-list)))
+                                )
+                           )
                       )
                 )
             )
@@ -215,7 +223,7 @@
         )
 
         ;constraints
-        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array)
+        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push)
 
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing notes added-notes notes-array)
@@ -224,7 +232,7 @@
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes notes-array)
+(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes notes-array sub-push)
 
 
     ; Block constraints
@@ -247,11 +255,13 @@
     )
 
     (if (min-added-notes block)
-        (gil::g-rel sp notes gil::IRT_GQ (min-added-notes block))
+        (gil::g-rel sp added-notes gil::IRT_GQ (min-added-notes block))
     )
 
     (if (max-added-notes block)
-        (gil::g-rel sp notes gil::IRT_LQ (max-added-notes block))
+        (loop :for i :from 0 :below (length push) :by 1 :do
+            (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i sub-push))
+        )
     )
 
     ; Time constraints
@@ -260,6 +270,10 @@
     )
     (if (quantification block)
         (set-quantification sp push pull (quantification block))
+    )
+
+    (if (rhythm-repetition block)
+        (set-rhythm-repetition sp notes-array (get-length (rhythm-repetition block)))
     )
 
     ; Pitch constraints
@@ -290,7 +304,6 @@
             )
         )
     )
-
 
     (if (chord-key block)
         (if (chord-quality block)
@@ -380,7 +393,7 @@
 
     (if (note-repetition-flag block)
         (if (quantification block)
-            (repeat-note sp push (note-repetition block) (/ 192 (get-quant (quantification block))))
+            (repeat-note sp push (note-repetition block) (get-length (quantification block)))
             (repeat-note sp push (note-repetition block) 1)
         )
 

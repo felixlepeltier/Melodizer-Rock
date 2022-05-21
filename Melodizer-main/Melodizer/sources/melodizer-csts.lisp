@@ -106,6 +106,18 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; SETS REPETITION FOR PUSH CARDINALITIES ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun set-rhythm-repetition (sp notes-array length)
+    (loop :for i :from 0 :below length :while (< i (length notes-array)) :by 1 :do
+        (loop :for j :from 1 :while (< (+ i (* j length)) (length notes-array)) :by 1 :do
+            (gil::g-rel sp (nth i notes-array) gil::IRT_EQ (nth (+ i (* j length)) notes-array))
+        )
+    )
+)
+
 ;;;;;;;;;;;;;;;;;;;
 ; PITCH DIRECTION ;
 ;;;;;;;;;;;;;;;;;;;

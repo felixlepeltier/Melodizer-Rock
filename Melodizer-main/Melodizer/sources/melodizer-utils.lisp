@@ -716,6 +716,21 @@
     ((string= str "1/12 beat") 48))
 )
 
+; return the quant value based on the index selected
+(defun get-length (str)
+  (cond ((string= str "1 bar") 192)
+    ((string= str "1/2 bar") 96)
+    ((string= str "1 beat") 48)
+    ((string= str "1/2 beat") 24)
+    ((string= str "1/4 beat") 12)
+    ((string= str "1/8 beat") 6)
+    ((string= str "1/3 bar") 64)
+    ((string= str "1/6 bar") 32)
+    ((string= str "1/3 beat") 16)
+    ((string= str "1/6 beat") 8)
+    ((string= str "1/12 beat") 4))
+)
+
 ; shuffles a list
 ; from https://gist.github.com/shortsightedsid/62d0ee21bfca53d9b69e
 (defun list-shuffler (input-list &optional accumulator)
