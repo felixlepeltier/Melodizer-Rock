@@ -16,7 +16,7 @@
 
 
 ;; remplir à la fin
-(fill-library '(("ALL" nil (mldz::melodizer mldz::block mldz::search mldz::debug) nil)
+(fill-library '(("ALL" nil (mldz::melodizer mldz::block mldz::search) nil)
                 ("UTILS" Nil Nil (mldz::get-voice mldz::to-midicent) nil)
 ))
 

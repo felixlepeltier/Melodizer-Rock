@@ -19,6 +19,7 @@
    (min-note-length :accessor min-note-length :initform nil :type string)
    (max-note-length :accessor max-note-length :initform nil :type string)
    (quantification :accessor quantification :initform nil :type string)
+   (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
    (note-repartition :accessor note-repartition :initform nil :type integer)
    (key-selection :accessor key-selection :initform nil :type string)
    (mode-selection :accessor mode-selection :initform nil :type string)
@@ -26,9 +27,12 @@
    (chord-quality :accessor chord-quality :initform nil :type string)
    (all-chord-notes :accessor all-chord-notes :initform nil :type integer)
    (min-pitch :accessor min-pitch :initform 1 :type integer)
+   (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
    (max-pitch :accessor max-pitch :initform 127 :type integer)
+   (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
    (pitch-direction :accessor pitch-direction :initform nil :type string)
    (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
+   (note-repetition-flag :accessor note-repetition-flag :initform 0 :type integer)
    (note-repetition :accessor note-repetition :initform 0 :type integer)
   )
   (:icon 225)
@@ -53,18 +57,6 @@
     (tempo :accessor tempo :initform 120 :type integer :documentation
       "The tempo (BPM) of the project")
     (percent-diff :accessor percent-diff :initform 0 :type integer)
-  )
-  (:icon 225)
-  (:documentation "This class implements Melodizer.
-        Melodizer is a constraints based application aiming to improve composer's expression and exploration abilities
-        by generating interesting and innovative melodies based on a set of constraints expressing musical rules.
-        More information and a tutorial can be found at https://github.com/sprockeelsd/Melodizer")
-)
-
-(om::defclass! debug ()
-  ;attributes
-  (
-    (block-csp :accessor block-csp :initarg :block-csp :initform nil)
   )
   (:icon 225)
   (:documentation "This class implements Melodizer.
@@ -418,11 +410,24 @@
       :font om::*om-default-font1b*
     )
 
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 170 200)
+      (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (note-repartition-flag (om::object editor)) 1)
+                      (setf (note-repartition-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
     ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
     (om::om-make-dialog-item
       'om::om-slider
-      (om::om-make-point 170 200)
-      (om::om-make-point 200 20); size
+      (om::om-make-point 190 200)
+      (om::om-make-point 180 20); size
       "Note repartition"
       :range '(1 100)
       :increment 1
@@ -563,9 +568,22 @@
     )
 
     (om::om-make-dialog-item
-      'om::slider
+      'om::om-check-box
       (om::om-make-point 170 300)
       (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-pitch-flag (om::object editor)) 1)
+                      (setf (min-pitch-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 190 300)
+      (om::om-make-point 180 20)
       "Minimum pitch"
       :range '(1 127)
       :increment 1
@@ -583,9 +601,22 @@
     )
 
     (om::om-make-dialog-item
-      'om::slider
+      'om::om-check-box
       (om::om-make-point 170 350)
       (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-pitch-flag (om::object editor)) 1)
+                      (setf (max-pitch-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 190 350)
+      (om::om-make-point 180 20)
       "Maximum pitch"
       :range '(1 127)
       :increment 1
@@ -603,9 +634,22 @@
     )
 
     (om::om-make-dialog-item
-      'om::slider
+      'om::om-check-box
       (om::om-make-point 170 400)
       (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (note-repetition-flag (om::object editor)) 1)
+                      (setf (note-repetition-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 190 400)
+      (om::om-make-point 180 20)
       "Note repetition"
       :range '(0 100)
       :increment 1
@@ -802,95 +846,6 @@
       :increment 1
       :di-action #'(lambda (s)
         (setf (percent-diff (om::object editor)) (om::om-slider-value s))
-      )
-    )
-
-  )
-)
-
-
-(defclass debug-editor (om::editorview) ())
-
-(defmethod om::class-has-editor-p ((self debug)) t)
-(defmethod om::get-editor-class ((self debug)) 'debug-editor)
-
-(defmethod om::om-draw-contents ((view debug-editor))
-  (let* ((object (om::object view)))
-    (om::om-with-focused-view
-      view
-      ;;; DRAW SOMETHING ?
-    )
-  )
-)
-
-(defmethod initialize-instance ((self debug-editor) &rest args)
-  ;;; do what needs to be done by default
-  (call-next-method) ; start the search by default?
-  (make-my-interface self)
-)
-
-; function to create the tool's interface
-(defmethod make-my-interface ((self debug-editor))
-
-  ; create the main view of the object
-  (make-main-view self)
-
-  (let*
-    (
-      (debug-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 400 605)
-        :position (om::om-make-point 5 5)
-        :bg-color om::*azulito*)
-      )
-    )
-
-    (setf elements-debug-panel (make-debug-panel self debug-panel))
-
-    (om::om-add-subviews
-      self
-      debug-panel
-    )
-  )
-  self
-)
-
-(defun make-debug-panel (editor debug-panel)
-  (om::om-add-subviews
-    debug-panel
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 150 2)
-      (om::om-make-point 120 20)
-      "Printer"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::om-button
-      (om::om-make-point 15 50) ; position (horizontal, vertical)
-      (om::om-make-point 130 20) ; size (horizontal, vertical)
-      "Print"
-      :di-action #'(lambda (b)
-       (print "Debugging")
-       (print (block-list (block-csp (om::object editor))))
-       (print (melody-source (melody-source (om::object editor))))
-       (print (position-list (block-csp (om::object editor))))
-       (print (bar-length (block-csp (om::object editor))))
-       (print (beat-length (block-csp (om::object editor))))
-       (print (voices (block-csp (om::object editor))))
-       (print (style (block-csp (om::object editor))))
-       (print (min-added-note (block-csp (om::object editor))))
-       (print (max-added-note (block-csp (om::object editor))))
-       (print (min-note-length (block-csp (om::object editor))))
-       (print (max-note-length (block-csp (om::object editor))))
-       (print (quantification (block-csp (om::object editor))))
-       (print (note-repartition (block-csp (om::object editor))))
-       (print (key-selection (block-csp (om::object editor))))
-       (print (mode-selection (block-csp (om::object editor))))
-       (print (chord-key (block-csp (om::object editor))))
-       (print (chord-quality (block-csp (om::object editor))))
-       (print (min-pitch (block-csp (om::object editor))))
-       (print (max-pitch (block-csp (om::object editor))))
       )
     )
 

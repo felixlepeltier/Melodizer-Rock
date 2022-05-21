@@ -52,8 +52,8 @@
         (gil::g-specify-percent-diff sp percent-diff)
 
         ; branching
-        (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
-        (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp push gil::SET_VAR_RND gil::SET_VAL_RND_INC)
+        (gil::g-branch sp pull gil::SET_VAR_RND gil::SET_VAL_RND_INC)
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -192,7 +192,6 @@
                     (setq sub-push-list (nconc sub-push-list (list temp)))
                     (gil::g-op sp (nth i added-push) gil::SOT_DUNION (nth i push) (nth i sub-push))
                 )
-                (print "la")
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
                       (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
                            (setq tempList (get-sub-block-values sp (nth i block-list)))
@@ -379,9 +378,13 @@
     ;     (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))
     ; )
 
-    ; (if (= 0 0) ; ajouter condition d'activation de note repetition
-    ;     (repeat-note sp push (note-repetition block) (/ 192 (get-quant (quantification block))))
-    ; )
+    (if (note-repetition-flag block)
+        (if (quantification block)
+            (repeat-note sp push (note-repetition block) (/ 192 (get-quant (quantification block))))
+            (repeat-note sp push (note-repetition block) 1)
+        )
+
+    )
 
 )
 

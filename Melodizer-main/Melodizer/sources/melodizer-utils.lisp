@@ -593,7 +593,6 @@
     (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
 
     (print "Solution")
-    (print p-push)
 
     (setq count 1)
     (loop :for b :from 0 :below bars :by 1 :do
@@ -651,7 +650,6 @@
         (setq tree (nconc tree (list rhythm)))
     )
     (setq tree (list '? tree))
-    (print tree)
 
     (list chords tree)
     )
@@ -666,9 +664,6 @@
 
         (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
         (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
-
-        (print p-push)
-        (print p-pull)
 
         (loop :for i :from 0 :below (+ (* bars quant) 1) :do
             (if (nth i p-push)
@@ -691,9 +686,6 @@
                             (incf j)
                         )
                     )
-                    (print (nth i p-push))
-                    (print duration)
-                    (print onset)
                     (setq chords (nconc chords (list (nth i p-push))))
                     (setq durations (nconc durations (list duration)))
                     (setq onsets (nconc onsets (list onset)))
