@@ -14,6 +14,8 @@
    (voices :accessor voices :initform nil :type integer)
    (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
    (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+   (min-notes :accessor min-notes :initform nil :type integer)
+   (max-notes :accessor max-notes :initform nil :type integer)
    (min-added-notes :accessor min-added-notes :initform nil :type integer)
    (max-added-notes :accessor max-added-notes :initform nil :type integer)
    (min-note-length :accessor min-note-length :initform nil :type string)
@@ -278,13 +280,57 @@
       'om::om-static-text
       (om::om-make-point 15 300)
       (om::om-make-point 200 20)
-      "Minimum added notes"
+      "Minimum notes"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::pop-up-menu
       (om::om-make-point 170 300)
+      (om::om-make-point 200 20)
+      "Minimum notes"
+      :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (min-notes (om::object editor)) nil)
+          (setf (min-notes (om::object editor)) check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 350)
+      (om::om-make-point 200 20)
+      "Maximum notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 350)
+      (om::om-make-point 200 20)
+      "Maximum notes"
+      :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (max-notes (om::object editor)) nil)
+          (setf (max-notes (om::object editor)) check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 400)
+      (om::om-make-point 200 20)
+      "Minimum added notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 400)
       (om::om-make-point 200 20)
       "Minimum added notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -298,7 +344,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 350)
+      (om::om-make-point 15 450)
       (om::om-make-point 200 20)
       "Maximum added notes"
       :font om::*om-default-font1b*
@@ -306,7 +352,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 350)
+      (om::om-make-point 170 450)
       (om::om-make-point 200 20)
       "Maximum added notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
