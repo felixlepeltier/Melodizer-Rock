@@ -111,14 +111,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun set-rhythm-repetition (sp notes-array len)
-    (print "here")
     (loop :for i :from 0 :below len :while (< i (length notes-array)) :do
         (loop :for j :from 1 :below (length notes-array) :while (< (+ i (* j len)) (- (length notes-array) 1)) :do
-            (print i)
-            (print (+ i (* j len)))
             (gil::g-rel sp (nth i notes-array) gil::IRT_EQ (nth (+ i (* j len)) notes-array))
         )
     )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;
+; SETS PAUSE QUANTITY ;
+;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun set-pause-quantity (sp notes-array quantity bars quant)
+    (setq c (floor (* (* bars quant) quantity) 192))
+    (gil::g-count sp notes-array 0 gil::IRT_GQ c)
 )
 
 ;;;;;;;;;;;;;;;;;;;

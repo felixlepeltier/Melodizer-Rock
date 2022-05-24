@@ -32,14 +32,6 @@
         (setq added-notes (nth 4 temp))
         (setq notes-array (nth 5 temp))
 
-        ; chord rhythm
-        ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
-        ;      (if (= (mod j chord-rhythm) 0)
-        ;         (gil::g-card sp (nth j push) 3 3)
-        ;          (gil::g-card sp (nth j push) 0 1)
-        ;      )
-        ;)
-
         ; chord length (need previous constraint to work)
         ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
         ;      (if (= (mod j chord-rhythm) 0)
@@ -53,11 +45,7 @@
         (gil::g-specify-percent-diff sp percent-diff)
 
         ; branching
-
         (gil::g-branch sp (nconc push pull) gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
-
-
-
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -84,7 +72,7 @@
     ; constraints
     ; return pull push playing
     (let (pull push notes playing pushMap pullMap block-list positions max-notes sub-push
-          notes-array added-push added-notes added-notes-array
+          notes-array added-push added-notes added-notes-array q-push
          (bars (bar-length block-csp))
          (quant 192)
          (major-natural (list 2 2 1 2 2 2 1))
@@ -130,6 +118,7 @@
         )
         (gil::g-sum sp notes notes-array)
 
+
         ;compute added notes
         (setq added-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
@@ -139,6 +128,16 @@
             (gil::g-card-var sp (nth i added-push) (nth i added-notes-array))
         )
         (gil::g-sum sp added-notes added-notes-array)
+
+        ;compute q-push
+        (setq q-push (gil::add-set-var-array sp (* bars (get-quant (quantification block-csp))) 0 max-pitch 0 max-pitch))
+        (loop :for i :from 0 :below (length q-push) :by 1 :do
+            (gil::g-rel sp (nth i q-push) gil::SRT_EQ (nth (* i (get-length (quantification block-csp))) push))
+        )
+        (setq q-push-card (gil::add-int-var-array sp (length q-push) 0 127))
+        (loop :for i :from 0 :below (length q-push) :by 1 :do
+            (gil::g-card-var sp (nth i q-push) (nth i q-push-card))
+        )
 
         ;connect push, pull and playing
         (loop :for j :from 1 :below (+ (* bars quant) 1) :do ;for each interval
@@ -225,7 +224,7 @@
         )
 
         ;constraints
-        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push)
+        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push q-push q-push-card)
 
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing notes added-notes notes-array)
@@ -234,7 +233,7 @@
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes notes-array sub-push)
+(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes notes-array sub-push q-push q-push-card)
 
 
     ; Block constraints
@@ -290,6 +289,10 @@
 
     (if (rhythm-repetition block)
         (set-rhythm-repetition sp notes-array (get-length (rhythm-repetition block)))
+    )
+
+    (if (pause-quantity-flag block)
+        (set-pause-quantity sp q-push-card (pause-quantity block) (bar-length block) (get-quant (quantification block)))
     )
 
     ; Pitch constraints
@@ -413,11 +416,7 @@
     ; )
 
     (if (note-repetition-flag block)
-        (if (quantification block)
-            (repeat-note sp push (note-repetition block) (get-length (quantification block)))
-            (repeat-note sp push (note-repetition block) 1)
-        )
-
+        (repeat-note sp push (note-repetition block) (get-length (quantification block)))
     )
 
 )

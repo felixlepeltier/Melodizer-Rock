@@ -24,6 +24,8 @@
    (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
    (note-repartition :accessor note-repartition :initform nil :type integer)
    (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
+   (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
+   (pause-quantity :accessor pause-quantity :initform 0 :type integer)
    (key-selection :accessor key-selection :initform nil :type string)
    (mode-selection :accessor mode-selection :initform nil :type string)
    (chord-key :accessor chord-key :initform nil :type string)
@@ -502,6 +504,40 @@
         (if (string= check "None")
           (setf (rhythm-repetition (om::object editor)) nil)
           (setf (rhythm-repetition (om::object editor)) check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 300)
+      (om::om-make-point 200 20)
+      "Pause quantity"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 170 300)
+      (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (pause-quantity-flag (om::object editor)) 1)
+                      (setf (pause-quantity-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
+    (om::om-make-dialog-item
+      'om::om-slider
+      (om::om-make-point 190 300)
+      (om::om-make-point 180 20); size
+      "Pause quantity"
+      :range '(1 192)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (pause-quantity (om::object editor)) (om::om-slider-value s))
       )
     )
   )

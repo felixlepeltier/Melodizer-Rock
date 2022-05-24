@@ -716,7 +716,8 @@
     ((string= str "1/6 bar") 6)
     ((string= str "1/3 beat") 12)
     ((string= str "1/6 beat") 24)
-    ((string= str "1/12 beat") 48))
+    ((string= str "1/12 beat") 48)
+    ((not str) 192))
 )
 
 ; return the quant value based on the index selected
@@ -731,7 +732,8 @@
     ((string= str "1/6 bar") 32)
     ((string= str "1/3 beat") 16)
     ((string= str "1/6 beat") 8)
-    ((string= str "1/12 beat") 4))
+    ((string= str "1/12 beat") 4)
+    ((not str) 1))
 )
 
 ; shuffles a list
