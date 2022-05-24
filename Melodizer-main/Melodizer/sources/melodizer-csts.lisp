@@ -122,9 +122,23 @@
 ; SETS PAUSE QUANTITY ;
 ;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun set-pause-quantity (sp notes-array quantity bars quant)
-    (setq c (floor (* (* bars quant) quantity) 192))
-    (gil::g-count sp notes-array 0 gil::IRT_GQ c)
+(defun set-pause-quantity (sp q-push-card quantity bars quant)
+    (print (length q-push-card))
+    (setq c (floor (* (length q-push-card) quantity) 192))
+    (print "here")
+    (print c)
+    (gil::g-count sp q-push-card 0 gil::IRT_GQ c)
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+; SETS PAUSE REPARTITION ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun set-pause-repartition (sp q-push-card repartition)
+    (setq l (ceiling (* (length q-push-card) (- 192 repartition)) 192))
+    (print (length q-push-card))
+    (print l)
+    (gil::g-sequence sp q-push-card (list 0) l 2 l)
 )
 
 ;;;;;;;;;;;;;;;;;;;

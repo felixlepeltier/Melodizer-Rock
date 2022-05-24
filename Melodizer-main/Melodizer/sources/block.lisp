@@ -26,6 +26,8 @@
    (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
    (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
    (pause-quantity :accessor pause-quantity :initform 0 :type integer)
+   (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
+   (pause-repartition :accessor pause-repartition :initform 0 :type integer)
    (key-selection :accessor key-selection :initform nil :type string)
    (mode-selection :accessor mode-selection :initform nil :type string)
    (chord-key :accessor chord-key :initform nil :type string)
@@ -187,7 +189,7 @@
       (om::om-make-point 170 50)
       (om::om-make-point 200 20)
       "Bar length"
-      :range '(0 1 2 3 4)
+      :range (loop :for n :from 0 :upto 32 collect n)
       :di-action #'(lambda (m)
         (setf (bar-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
       )
@@ -538,6 +540,40 @@
       :increment 1
       :di-action #'(lambda (s)
         (setf (pause-quantity (om::object editor)) (om::om-slider-value s))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 350)
+      (om::om-make-point 200 20)
+      "Pause repartition"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 170 350)
+      (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (pause-repartition-flag (om::object editor)) 1)
+                      (setf (pause-repartition-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
+    (om::om-make-dialog-item
+      'om::om-slider
+      (om::om-make-point 190 350)
+      (om::om-make-point 180 20); size
+      "Pause repartition"
+      :range '(0 191)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (pause-repartition (om::object editor)) (om::om-slider-value s))
       )
     )
   )

@@ -66,13 +66,13 @@
     )
 )
 
-(defun get-sub-block-values (sp block-csp)
+(defun get-sub-block-values (sp block-csp first)
     ; for block child of block-csp
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
     ; return pull push playing
     (let (pull push notes playing pushMap pullMap block-list positions max-notes sub-push
-          notes-array added-push added-notes added-notes-array q-push
+          notes-array added-push added-notes added-notes-array q-push q-push-card
          (bars (bar-length block-csp))
          (quant 192)
          (major-natural (list 2 2 1 2 2 2 1))
@@ -293,6 +293,10 @@
 
     (if (pause-quantity-flag block)
         (set-pause-quantity sp q-push-card (pause-quantity block) (bar-length block) (get-quant (quantification block)))
+    )
+
+    (if (pause-repartition-flag block)
+        (set-pause-repartition sp q-push-card (pause-repartition block))
     )
 
     ; Pitch constraints
