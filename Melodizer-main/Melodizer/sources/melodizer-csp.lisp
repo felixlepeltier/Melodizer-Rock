@@ -14,7 +14,7 @@
 ; the search options and creating the search engine.
 (defmethod new-melodizer (block-csp percent-diff)
     (let ((sp (gil::new-space)); create the space;
-        push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp notes-array
+        push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp notes-array q-push
         pos
         (max-pitch 127)
         (bars (bar-length block-csp))
@@ -31,6 +31,7 @@
         (setq notes (nth 3 temp))
         (setq added-notes (nth 4 temp))
         (setq notes-array (nth 5 temp))
+        (setq q-push (nth 6 temp))
 
         ; chord length (need previous constraint to work)
         ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
@@ -41,7 +42,7 @@
         ;      )
         ;)
 
-        (gil::g-specify-sol-variables sp push)
+        (gil::g-specify-sol-variables sp q-push)
         (gil::g-specify-percent-diff sp percent-diff)
 
         ; branching
@@ -66,7 +67,7 @@
     )
 )
 
-(defun get-sub-block-values (sp block-csp first)
+(defun get-sub-block-values (sp block-csp)
     ; for block child of block-csp
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
@@ -227,7 +228,7 @@
         (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push q-push q-push-card)
 
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
-        (list push pull playing notes added-notes notes-array)
+        (list push pull playing notes added-notes notes-array q-push)
     )
 )
 
