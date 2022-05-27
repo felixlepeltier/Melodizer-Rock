@@ -18,6 +18,7 @@
    (max-notes :accessor max-notes :initform nil :type integer)
    (min-added-notes :accessor min-added-notes :initform nil :type integer)
    (max-added-notes :accessor max-added-notes :initform nil :type integer)
+   (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
    (min-note-length :accessor min-note-length :initform nil :type string)
    (max-note-length :accessor max-note-length :initform nil :type string)
    (quantification :accessor quantification :initform nil :type string)
@@ -396,16 +397,28 @@
     )
 
     (om::om-make-dialog-item
-      'om::pop-up-menu
+      'om::om-check-box
       (om::om-make-point 170 50)
       (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-note-length-flag (om::object editor)) 1)
+                      (setf (min-note-length-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
+    (om::om-make-dialog-item
+      'om::om-slider
+      (om::om-make-point 190 50)
+      (om::om-make-point 180 20); size
       "Minimum note length"
-      :range '("None" "1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (min-note-length (om::object editor)) nil)
-          (setf (min-note-length  (om::object editor)) check))
+      :range '(0 192)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (min-note-length (om::object editor)) (om::om-slider-value s))
       )
     )
 

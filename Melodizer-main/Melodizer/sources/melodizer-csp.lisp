@@ -16,6 +16,7 @@
     (let ((sp (gil::new-space)); create the space;
         push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp notes-array q-push
         pos
+
         (max-pitch 127)
         (bars (bar-length block-csp))
         (quant 192)
@@ -24,6 +25,12 @@
         (chord-min-length 2)) ; minimum length of a chord with associated constraint
 
         (print block-csp)
+
+        (setq push-list (list))
+        (setq pull-list (list))
+        (setq playing-list (list))
+        (setq debug nil)
+
         (setq temp (get-sub-block-values sp block-csp))
         (setq push (nth 0 temp))
         (setq pull (nth 1 temp))
@@ -41,12 +48,18 @@
         ;          )
         ;      )
         ;)
+<<<<<<< Updated upstream
 
         (gil::g-specify-sol-variables sp q-push)
+=======
+        (print "here")
+        (print debug)
+        (gil::g-specify-sol-variables sp push)
+>>>>>>> Stashed changes
         (gil::g-specify-percent-diff sp percent-diff)
 
         ; branching
-        (gil::g-branch sp (nconc push pull) gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp (append push pull) gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -63,7 +76,7 @@
 
         (print "new-melodizer CSP constructed")
         ; return
-        (list se push pull tstop sopts bars quant notes added-notes notes-array)
+        (list se push pull tstop sopts bars quant push-list pull-list playing-list debug)
     )
 )
 
@@ -89,6 +102,10 @@
         (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+
+        (setq push-list (nconc push-list (list push)))
+        (setq pull-list (nconc pull-list (list pull)))
+        (setq playing-list (nconc playing-list (list playing)))
 
         ;channeling array with time as index to array with pitch as index
         (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
@@ -226,7 +243,6 @@
 
         ;constraints
         (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push q-push q-push-card)
-
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing notes added-notes notes-array q-push)
     )
@@ -274,6 +290,7 @@
                 (loop :for i :from 0 :below (length push) :by 1 :do
                     (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i sub-push))
                 )
+                (setq debug (nconc debug (list sub-push)))
             )
             (gil::g-rel sp notes gil::IRT_LQ (max-added-notes block))
         )
@@ -281,7 +298,7 @@
     )
 
     ; Time constraints
-    (if (min-note-length block)
+    (if (min-note-length-flag block)
         (note-min-length sp push pull (min-note-length block))
     )
     (if (quantification block)
@@ -338,25 +355,30 @@
                       (bool2 (gil::add-bool-var sp 0 1))
                       (chord (get-chord (chord-quality block)))  ;if - mode selectionné
                       (offset (- (name-to-note-value (chord-key block)) 60))
-                      (all-notes (gil::add-set-var sp 0 127 01 127))
+                      (all-notes (gil::add-set-var sp 0 127 0 127))
                       chordset notesets bool-array)
                      (setq chordset (build-scaleset chord offset))
                      (scale-follow-reify sp push chordset bool)
                      (setq notesets (build-notesets chord offset))
                      (gil::g-setunion sp all-notes push)
-
                      (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
+                     ;(print bool-array)
                      (loop :for i :from 0 :below (length notesets) :do
                           (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array))
                      )
+                     ;(setq debug (nconc debug (list bool-array)))
+                     ;(print debug)
 
                      (gil::g-rel sp gil::BOT_OR bool-array 0)
-                     (gil::g-rel sp bool gil::SRT_EQ 1))
+                     (gil::g-rel sp bool gil::SRT_EQ 1)
+                     )
 
                 (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
                       (chord (get-chord (chord-quality block)))  ;if - mode selectionné
                       (offset (- (name-to-note-value (chord-key block)) 60))
+                      (all-notes (gil::add-set-var sp 0 127 0 127))
                       chordset)
+                     (gil::g-setunion sp all-notes push)
                      (setq chordset (build-scaleset chord offset))
                      (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
                      (scale-follow-reify sp push chordset bool))
@@ -364,23 +386,25 @@
         )
         (if (chord-quality block)
             (if (all-chord-notes block)
-                (let (chord chordset notesets bool-array-note bool
+                (let (chord chordset notesets
                       (bool-array (gil::add-bool-var-array sp 12 0 1)); créer le booleen pour la reify
                       (all-notes (gil::add-set-var sp 0 127 01 127)))
                     (gil::g-setunion sp all-notes push)
                     (loop :for key :from 0 :below 12 :by 1 :do
-                        (setq chord (get-chord (chord-quality block)))
-                        (setq chordset (build-scaleset chord key))
-                        (setq notesets (build-notesets chord key))
+                        (let ((bool1 (gil::add-bool-var sp 0 1))
+                              (bool2 (gil::add-bool-var sp 0 1))
+                              (bool-array-note (gil::add-bool-var-array sp (length notesets) 0 1))
+                              chordset notesets)
+                            (setq chord (get-chord (chord-quality block)))
+                            (setq chordset (build-scaleset chord key))
+                            (setq notesets (build-notesets chord key))
 
-                        (setq bool-array-note (gil::add-bool-var-array sp (length notesets) 0 1))
-                        (loop :for i :from 0 :below (length notesets) :do
-                             (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array-note))
-                        )
-                        (setq bool (gil::add-bool-var sp 0 1))
-                        (gil::g-rel sp gil::BOT_OR bool-array-note bool)
-                        (scale-follow-reify sp push chordset (nth key bool-array))
-                        (gil::g-op sp (nth key bool-array) gil::BOT_AND bool 0)
+                            (loop :for i :from 0 :below (length notesets) :do
+                                 (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array-note))
+                            )
+                            (gil::g-rel sp gil::BOT_AND bool-array-note bool1)
+                            (scale-follow-reify sp push chordset bool2)
+                            (gil::g-op sp (nth key bool-array) gil::BOT_AND bool 0))
                     )
                     (gil::g-rel sp gil::BOT_OR bool-array 1)
                 )
@@ -442,9 +466,10 @@
          (sopts (fifth l))
          (bars (sixth l))
          (quant (seventh l))
-         (notes (eighth l))
-         (added-notes (ninth l))
-         (notes-array (nth 9 l))
+         (push-list (eighth l))
+         (pull-list (ninth l))
+         (playing-list (nth 9 l))
+         (debug (nth 10 l))
          (check t); for the while loop
          sol score)
 
@@ -459,11 +484,39 @@
             )
         )
 
-        (print (gil::g-values sol notes))
-        ; (print (length added-notes-array))
-        ; (setq p-sub-push (list))
-        ; (setq p-sub-push (nconc p-sub-push (mapcar (lambda (n) (gil::g-values sol n)) added-notes-array)))
-        ; (print p-sub-push)
+        (print "PUSH")
+        (loop :for p :in push-list :do
+            (let (l (list))
+                (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
+                (print l)
+            )
+        )
+
+        (print "PULL")
+        (loop :for p :in pull-list :do
+            (let (l (list))
+                (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
+                (print l)
+            )
+        )
+
+        (print "PLAYING")
+        (loop :for p :in playing-list :do
+            (let (l (list))
+                (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
+                (print l)
+            )
+        )
+
+        (print "DEBUG")
+        (print debug)
+        (loop :for p :in debug :do
+          (let (l (list))
+              (setq l (nconc l (mapcar (lambda (n) (gil::g-values sol n)) p)))
+              (print l)
+          )
+        )
+
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
         (setq score-chord-seq (build-chord-seq sol push pull bars quant (tempo melodizer-object)))

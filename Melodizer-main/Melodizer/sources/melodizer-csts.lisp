@@ -50,7 +50,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-min-length (sp push pull min-length)
-    (setq l (/ 192 (get-quant min-length)))
+    (print "length")
+    (print (length push))
+    (setq l (floor (* (- (length push) 1) min-length) 192))
+    (print l)
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below l  :while (< (+ j k) (length pull)) :do
              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
@@ -123,11 +126,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun set-pause-quantity (sp q-push-card quantity bars quant)
-    (print (length q-push-card))
     (setq c (floor (* (length q-push-card) quantity) 192))
-    (print "here")
-    (print c)
-    (gil::g-count sp q-push-card 0 gil::IRT_GQ c)
+    (gil::g-count sp q-push-card 0 gil::IRT_EQ c)
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -136,8 +136,6 @@
 
 (defun set-pause-repartition (sp q-push-card repartition)
     (setq l (ceiling (* (length q-push-card) (- 192 repartition)) 192))
-    (print (length q-push-card))
-    (print l)
     (gil::g-sequence sp q-push-card (list 0) l 2 l)
 )
 

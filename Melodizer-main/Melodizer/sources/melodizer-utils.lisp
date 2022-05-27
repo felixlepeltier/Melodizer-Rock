@@ -665,9 +665,6 @@
         (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
         (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
 
-        ; (print p-pull)
-        ; (print p-push)
-
         (loop :for i :from 0 :below (+ (* bars quant) 1) :do
             (if (nth i p-push)
                 (progn
