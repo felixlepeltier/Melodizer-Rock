@@ -136,7 +136,7 @@
 
 (defun set-pause-repartition (sp q-push-card repartition)
     (setq l (ceiling (* (length q-push-card) (- 192 repartition)) 192))
-    (gil::g-sequence sp q-push-card (list 0) l 2 l)
+    (gil::g-sequence sp q-push-card (list 0) l 1 l)
 )
 
 ;;;;;;;;;;;;;;;;;;;

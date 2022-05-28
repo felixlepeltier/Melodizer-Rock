@@ -29,7 +29,8 @@
         (setq push-list (list))
         (setq pull-list (list))
         (setq playing-list (list))
-        (setq debug nil)
+        (setq debug (list))
+        (setq debug2 (list))
 
         (setq temp (get-sub-block-values sp block-csp))
         (setq push (nth 0 temp))
@@ -48,18 +49,27 @@
         ;          )
         ;      )
         ;)
-<<<<<<< Updated upstream
 
         (gil::g-specify-sol-variables sp q-push)
-=======
-        (print "here")
-        (print debug)
-        (gil::g-specify-sol-variables sp push)
->>>>>>> Stashed changes
         (gil::g-specify-percent-diff sp percent-diff)
 
+        (setq branch-push (list))
+        (setq branch-pull (list))
+
+        (loop :for l :in push-list :do
+            (setq branch-push (append branch-push l))
+        )
+
+        (loop :for l :in pull-list :do
+            (setq branch-pull (append branch-pull l))
+        )
+
         ; branching
-        (gil::g-branch sp (append push pull) gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp (append branch-push branch-pull) gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+
+        ; (loop :for i :from (- (length push-list) 1) :downto 0 :do
+        ;     (gil::g-branch sp (append (nth i push-list) (nth i pull-list)) gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        ; )
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -76,7 +86,7 @@
 
         (print "new-melodizer CSP constructed")
         ; return
-        (list se push pull tstop sopts bars quant push-list pull-list playing-list debug)
+        (list se push pull tstop sopts bars quant push-list pull-list playing-list debug debug2)
     )
 )
 
@@ -85,7 +95,7 @@
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
     ; return pull push playing
-    (let (pull push notes playing pushMap pullMap block-list positions max-notes sub-push
+    (let (pull push notes playing pushMap pullMap block-list positions max-notes sub-push sub-pull
           notes-array added-push added-notes added-notes-array q-push q-push-card
          (bars (bar-length block-csp))
          (quant 192)
@@ -131,6 +141,7 @@
         ;compute notes
         (setq notes (gil::add-int-var sp 0 max-notes))
         (setq notes-array (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
+
         (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
             (gil::g-card-var sp (nth i push) (nth i notes-array))
         )
@@ -139,7 +150,9 @@
 
         ;compute added notes
         (setq added-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+
         (setq sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+        (setq sub-pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq added-notes (gil::add-int-var sp 0 127))
         (setq added-notes-array (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
         (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
@@ -206,13 +219,16 @@
 
         (if (not (endp block-list))
             ; make the push and pull array supersets of the corresponding array of the child blocks
-            (let ((sub-push-list (list)))
+            (let ((sub-push-list (list)) (sub-pull-list (list)))
 
                 (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
-                    (setq temp (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
-                    (gil::g-setunion sp (nth i sub-push) temp)
-                    (setq sub-push-list (nconc sub-push-list (list temp)))
-                    ;(gil::g-op sp (nth i added-push) gil::SOT_DUNION (nth i push) (nth i sub-push))
+                    (setq temp1 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
+                    (setq temp2 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
+                    (gil::g-setunion sp (nth i sub-push) temp1)
+                    (setq sub-push-list (nconc sub-push-list (list temp1)))
+                    (gil::g-setunion sp (nth i sub-pull) temp2)
+                    (setq sub-pull-list (nconc sub-pull-list (list temp2)))
+                    (gil::g-op sp (nth i push) gil::SOT_MINUS (nth i sub-push) (nth i added-push))
                 )
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
                       (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
@@ -233,16 +249,29 @@
                                     (gil::g-empty sp (nth i (nth j sub-push-list)))
                                 )
                            )
+
+                           (loop :for j :from 0 :below (length pull) :by 1 :do
+                                (if (and (>= j start) (< j (+ start (length tempPlaying))))
+                                    (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_EQ (nth i (nth j sub-pull-list)))
+                                    (gil::g-empty sp (nth i (nth j sub-pull-list)))
+                                )
+                           )
                       )
                 )
             )
             ; if no block-list
-            (gil::g-rel sp added-notes gil::SRT_EQ notes)
+            (progn
+                ;(print "here")
+                (gil::g-rel sp added-notes gil::SRT_EQ notes)
+                (loop :for p :in sub-push :do (gil::g-empty sp p))
+                (loop :for p :in sub-pull :do (gil::g-empty sp p))
+            )
+
 
         )
 
         ;constraints
-        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push q-push q-push-card)
+        (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push sub-pull q-push q-push-card)
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
         (list push pull playing notes added-notes notes-array q-push)
     )
@@ -250,7 +279,7 @@
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes notes-array sub-push q-push q-push-card)
+(defun post-optional-constraints (sp block push pull playing pushMap notes added-notes notes-array sub-push sub-pull q-push q-push-card)
 
 
     ; Block constraints
@@ -273,7 +302,10 @@
     )
 
     (if (min-notes block)
-        (gil::g-rel sp notes gil::IRT_GQ (min-notes block))
+        (progn
+            (print (gil::vid notes))
+            (gil::g-rel sp notes gil::IRT_GQ (min-notes block))
+        )
     )
 
     (if (max-notes block)
@@ -281,7 +313,7 @@
     )
 
     (if (min-added-notes block)
-        (gil::g-rel sp notes gil::IRT_GQ (min-added-notes block))
+        (gil::g-rel sp added-notes gil::IRT_GQ (min-added-notes block))
     )
 
     (if (max-added-notes block)
@@ -289,10 +321,10 @@
             (progn
                 (loop :for i :from 0 :below (length push) :by 1 :do
                     (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i sub-push))
+                    ;(gil::g-rel sp (nth i pull) gil::SRT_EQ (nth i sub-pull))
                 )
-                (setq debug (nconc debug (list sub-push)))
             )
-            (gil::g-rel sp notes gil::IRT_LQ (max-added-notes block))
+            (gil::g-rel sp added-notes gil::IRT_LQ (max-added-notes block))
         )
 
     )
@@ -360,17 +392,25 @@
                      (setq chordset (build-scaleset chord offset))
                      (scale-follow-reify sp push chordset bool)
                      (setq notesets (build-notesets chord offset))
-                     (gil::g-setunion sp all-notes push)
+                     (print notesets)
+                     ;(gil::g-setunion sp all-notes push)
                      (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
                      ;(print bool-array)
                      (loop :for i :from 0 :below (length notesets) :do
-                          (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array))
+                          (let ((push-bool-array (gil::add-bool-var-array sp (length push) 0 1)))
+                              (loop :for j :from 0 :below (length push) :do
+                                  (gil::g-rel-reify sp (nth j push) gil::SRT_DISJ (nth i notesets) (nth j push-bool-array))
+                              )
+                              (gil::g-rel sp gil::BOT_AND push-bool-array (nth i bool-array))
+                          )
                      )
-                     ;(setq debug (nconc debug (list bool-array)))
+                     (setq debug (nconc debug (list bool-array)))
+                     (setq debug2 (nconc debug2 (list bool2)))
                      ;(print debug)
 
-                     (gil::g-rel sp gil::BOT_OR bool-array 0)
+                     (gil::g-rel sp gil::BOT_OR bool-array bool2)
                      (gil::g-rel sp bool gil::SRT_EQ 1)
+                     ;(gil::g-rel sp bool2 gil::SRT_EQ 0)
                      )
 
                 (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
@@ -470,6 +510,7 @@
          (pull-list (ninth l))
          (playing-list (nth 9 l))
          (debug (nth 10 l))
+         (debug2 (nth 11 l))
          (check t); for the while loop
          sol score)
 
@@ -487,6 +528,7 @@
         (print "PUSH")
         (loop :for p :in push-list :do
             (let (l (list))
+                (print (gil::vid p))
                 (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
                 (print l)
             )
@@ -509,13 +551,18 @@
         )
 
         (print "DEBUG")
-        (print debug)
         (loop :for p :in debug :do
           (let (l (list))
               (setq l (nconc l (mapcar (lambda (n) (gil::g-values sol n)) p)))
               (print l)
           )
         )
+
+        (print "DEBUG")
+        (loop :for p :in debug2 :do
+          (print (gil::g-values sol p))
+        )
+        (print "here")
 
 
          ;créer score qui retourne la liste de pitch et la rhythm tree

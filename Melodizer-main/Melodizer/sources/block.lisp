@@ -196,28 +196,28 @@
       )
     )
 
+    ; (om::om-make-dialog-item
+    ;   'om::om-static-text
+    ;   (om::om-make-point 15 100)
+    ;   (om::om-make-point 200 20)
+    ;   "Beat length"
+    ;   :font om::*om-default-font1b*
+    ; )
+    ;
+    ; (om::om-make-dialog-item
+    ;   'om::pop-up-menu
+    ;   (om::om-make-point 170 100)
+    ;   (om::om-make-point 200 20)
+    ;   "Beat length"
+    ;   :range '(0 1 2 3)
+    ;   :di-action #'(lambda (m)
+    ;     (setf (beat-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;   )
+    ; )
+
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 100)
-      (om::om-make-point 200 20)
-      "Beat length"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 100)
-      (om::om-make-point 200 20)
-      "Beat length"
-      :range '(0 1 2 3)
-      :di-action #'(lambda (m)
-        (setf (beat-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-      )
-    )
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 150)
       (om::om-make-point 200 20)
       "Voices"
       :font om::*om-default-font1b*
@@ -225,7 +225,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 150)
+      (om::om-make-point 170 100)
       (om::om-make-point 200 20)
       "Voices"
       :range (append '("None") (loop :for n :from 0 :upto 15 collect n))
@@ -239,7 +239,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 200)
+      (om::om-make-point 15 150)
       (om::om-make-point 200 20)
       "Minimum pushed notes"
       :font om::*om-default-font1b*
@@ -247,7 +247,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 200)
+      (om::om-make-point 170 150)
       (om::om-make-point 200 20)
       "Minimum pushed notes"
       :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
@@ -261,7 +261,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 250)
+      (om::om-make-point 15 200)
       (om::om-make-point 200 20)
       "Maximum pushed notes"
       :font om::*om-default-font1b*
@@ -269,7 +269,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 250)
+      (om::om-make-point 170 200)
       (om::om-make-point 200 20)
       "Maximum pushed notes"
       :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
@@ -283,7 +283,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 300)
+      (om::om-make-point 15 250)
       (om::om-make-point 200 20)
       "Minimum notes"
       :font om::*om-default-font1b*
@@ -291,7 +291,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 300)
+      (om::om-make-point 170 250)
       (om::om-make-point 200 20)
       "Minimum notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -305,7 +305,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 350)
+      (om::om-make-point 15 300)
       (om::om-make-point 200 20)
       "Maximum notes"
       :font om::*om-default-font1b*
@@ -313,7 +313,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 350)
+      (om::om-make-point 170 300)
       (om::om-make-point 200 20)
       "Maximum notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -327,7 +327,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 400)
+      (om::om-make-point 15 350)
       (om::om-make-point 200 20)
       "Minimum added notes"
       :font om::*om-default-font1b*
@@ -335,7 +335,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 400)
+      (om::om-make-point 170 350)
       (om::om-make-point 200 20)
       "Minimum added notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -349,7 +349,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 450)
+      (om::om-make-point 15 400)
       (om::om-make-point 200 20)
       "Maximum added notes"
       :font om::*om-default-font1b*
@@ -357,7 +357,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 450)
+      (om::om-make-point 170 400)
       (om::om-make-point 200 20)
       "Maximum added notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
