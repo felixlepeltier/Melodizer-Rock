@@ -19,8 +19,9 @@
    (min-added-notes :accessor min-added-notes :initform nil :type integer)
    (max-added-notes :accessor max-added-notes :initform nil :type integer)
    (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-   (min-note-length :accessor min-note-length :initform nil :type string)
-   (max-note-length :accessor max-note-length :initform nil :type string)
+   (min-note-length :accessor min-note-length :initform 0 :type integer)
+   (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
+   (max-note-length :accessor max-note-length :initform 192 :type integer)
    (quantification :accessor quantification :initform nil :type string)
    (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
    (note-repartition :accessor note-repartition :initform nil :type integer)
@@ -41,6 +42,7 @@
    (pitch-direction :accessor pitch-direction :initform nil :type string)
    (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
    (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
+   (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
    (note-repetition :accessor note-repetition :initform 0 :type integer)
   )
   (:icon 225)
@@ -63,6 +65,8 @@
     (input-rhythm :accessor input-rhythm :input-rhythm :initform (make-instance 'voice) :documentation
       "The rhythm of the melody or a melody in the form of a voice object. ")
     (tempo :accessor tempo :initform 120 :type integer :documentation
+      "The tempo (BPM) of the project")
+    (branching :accessor branching :initform "Top down" :type string :documentation
       "The tempo (BPM) of the project")
     (percent-diff :accessor percent-diff :initform 0 :type integer)
   )
@@ -196,28 +200,28 @@
       )
     )
 
+    ; (om::om-make-dialog-item
+    ;   'om::om-static-text
+    ;   (om::om-make-point 15 100)
+    ;   (om::om-make-point 200 20)
+    ;   "Beat length"
+    ;   :font om::*om-default-font1b*
+    ; )
+    ;
+    ; (om::om-make-dialog-item
+    ;   'om::pop-up-menu
+    ;   (om::om-make-point 170 100)
+    ;   (om::om-make-point 200 20)
+    ;   "Beat length"
+    ;   :range '(0 1 2 3)
+    ;   :di-action #'(lambda (m)
+    ;     (setf (beat-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;   )
+    ; )
+
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 100)
-      (om::om-make-point 200 20)
-      "Beat length"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 100)
-      (om::om-make-point 200 20)
-      "Beat length"
-      :range '(0 1 2 3)
-      :di-action #'(lambda (m)
-        (setf (beat-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-      )
-    )
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 150)
       (om::om-make-point 200 20)
       "Voices"
       :font om::*om-default-font1b*
@@ -225,7 +229,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 150)
+      (om::om-make-point 170 100)
       (om::om-make-point 200 20)
       "Voices"
       :range (append '("None") (loop :for n :from 0 :upto 15 collect n))
@@ -239,7 +243,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 200)
+      (om::om-make-point 15 150)
       (om::om-make-point 200 20)
       "Minimum pushed notes"
       :font om::*om-default-font1b*
@@ -247,7 +251,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 200)
+      (om::om-make-point 170 150)
       (om::om-make-point 200 20)
       "Minimum pushed notes"
       :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
@@ -261,7 +265,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 250)
+      (om::om-make-point 15 200)
       (om::om-make-point 200 20)
       "Maximum pushed notes"
       :font om::*om-default-font1b*
@@ -269,7 +273,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 250)
+      (om::om-make-point 170 200)
       (om::om-make-point 200 20)
       "Maximum pushed notes"
       :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
@@ -283,7 +287,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 300)
+      (om::om-make-point 15 250)
       (om::om-make-point 200 20)
       "Minimum notes"
       :font om::*om-default-font1b*
@@ -291,7 +295,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 300)
+      (om::om-make-point 170 250)
       (om::om-make-point 200 20)
       "Minimum notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -305,7 +309,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 350)
+      (om::om-make-point 15 300)
       (om::om-make-point 200 20)
       "Maximum notes"
       :font om::*om-default-font1b*
@@ -313,7 +317,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 350)
+      (om::om-make-point 170 300)
       (om::om-make-point 200 20)
       "Maximum notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -327,7 +331,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 400)
+      (om::om-make-point 15 350)
       (om::om-make-point 200 20)
       "Minimum added notes"
       :font om::*om-default-font1b*
@@ -335,7 +339,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 400)
+      (om::om-make-point 170 350)
       (om::om-make-point 200 20)
       "Minimum added notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -349,7 +353,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 450)
+      (om::om-make-point 15 400)
       (om::om-make-point 200 20)
       "Maximum added notes"
       :font om::*om-default-font1b*
@@ -357,7 +361,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 450)
+      (om::om-make-point 170 400)
       (om::om-make-point 200 20)
       "Maximum added notes"
       :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
@@ -431,16 +435,27 @@
     )
 
     (om::om-make-dialog-item
-      'om::pop-up-menu
+      'om::om-check-box
       (om::om-make-point 170 100)
       (om::om-make-point 200 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-note-length-flag (om::object editor)) 1)
+                      (setf (max-note-length-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-slider
+      (om::om-make-point 190 100)
+      (om::om-make-point 180 20); size
       "Maximum note length"
-      :range '("None" "1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (max-note-length (om::object editor)) nil)
-          (setf (max-note-length (om::object editor)) check))
+      :range '(0 192)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (max-note-length (om::object editor)) (om::om-slider-value s))
       )
     )
 
@@ -466,43 +481,43 @@
       )
     )
 
+    ; (om::om-make-dialog-item
+    ;   'om::om-static-text
+    ;   (om::om-make-point 15 200)
+    ;   (om::om-make-point 200 20)
+    ;   "Note repartition"
+    ;   :font om::*om-default-font1b*
+    ; )
+    ;
+    ; (om::om-make-dialog-item
+    ;   'om::om-check-box
+    ;   (om::om-make-point 170 200)
+    ;   (om::om-make-point 200 20)
+    ;   ""
+    ;   :di-action #'(lambda (c)
+    ;                 (if (om::om-checked-p c)
+    ;                   (setf (note-repartition-flag (om::object editor)) 1)
+    ;                   (setf (note-repartition-flag (om::object editor)) nil)
+    ;                 )
+    ;   )
+    ; )
+    ;
+    ; ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
+    ; (om::om-make-dialog-item
+    ;   'om::om-slider
+    ;   (om::om-make-point 190 200)
+    ;   (om::om-make-point 180 20); size
+    ;   "Note repartition"
+    ;   :range '(1 100)
+    ;   :increment 1
+    ;   :di-action #'(lambda (s)
+    ;     (setf (note-repartition (om::object editor)) (om::om-slider-value s))
+    ;   )
+    ; )
+
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 200)
-      (om::om-make-point 200 20)
-      "Note repartition"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::om-check-box
-      (om::om-make-point 170 200)
-      (om::om-make-point 20 20)
-      ""
-      :di-action #'(lambda (c)
-                    (if (om::om-checked-p c)
-                      (setf (note-repartition-flag (om::object editor)) 1)
-                      (setf (note-repartition-flag (om::object editor)) nil)
-                    )
-      )
-    )
-
-    ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
-    (om::om-make-dialog-item
-      'om::om-slider
-      (om::om-make-point 190 200)
-      (om::om-make-point 180 20); size
-      "Note repartition"
-      :range '(1 100)
-      :increment 1
-      :di-action #'(lambda (s)
-        (setf (note-repartition (om::object editor)) (om::om-slider-value s))
-      )
-    )
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 250)
       (om::om-make-point 200 20)
       "Rhythm repetition"
       :font om::*om-default-font1b*
@@ -510,7 +525,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 250)
+      (om::om-make-point 170 200)
       (om::om-make-point 200 20)
       "Rhythm repetition"
       :range '("None" "1 bar" "1/2 bar" "1 beat" "1/2 beat" "1/4 beat" "1/8 beat" "1/3 bar" "1/6 bar" "1/3 beat" "1/6 beat" "1/12 beat")
@@ -524,7 +539,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 300)
+      (om::om-make-point 15 250)
       (om::om-make-point 200 20)
       "Pause quantity"
       :font om::*om-default-font1b*
@@ -532,7 +547,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 170 300)
+      (om::om-make-point 170 250)
       (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
@@ -546,7 +561,7 @@
     ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
     (om::om-make-dialog-item
       'om::om-slider
-      (om::om-make-point 190 300)
+      (om::om-make-point 190 250)
       (om::om-make-point 180 20); size
       "Pause quantity"
       :range '(1 192)
@@ -558,7 +573,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 350)
+      (om::om-make-point 15 300)
       (om::om-make-point 200 20)
       "Pause repartition"
       :font om::*om-default-font1b*
@@ -566,7 +581,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 170 350)
+      (om::om-make-point 170 300)
       (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
@@ -580,7 +595,7 @@
     ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
     (om::om-make-dialog-item
       'om::om-slider
-      (om::om-make-point 190 350)
+      (om::om-make-point 190 300)
       (om::om-make-point 180 20); size
       "Pause repartition"
       :range '(0 191)
@@ -697,24 +712,25 @@
       )
     )
 
-    ;checkbox for all-different constraint
-    (om::om-make-dialog-item
-      'om::om-check-box
-      (om::om-make-point 170 250)
-      (om::om-make-point 200 20)
-      "All chord notes"
-      :di-action #'(lambda (c)
-                    (if (om::om-checked-p c)
-                      (setf (all-chord-notes (om::object editor)) 1)
-                      (setf (all-chord-notes (om::object editor)) nil)
-                    )
-      )
-      :font om::*om-default-font1*
-    )
+    ; ;checkbox for all-different constraint
+    ; (om::om-make-dialog-item
+    ;   'om::om-check-box
+    ;   (om::om-make-point 170 250)
+    ;   (om::om-make-point 200 20)
+    ;   "All chord notes"
+    ;   ;:checked-p (find "all-different-notes" (optional-constraints (om::object editor)) :test #'equal)
+    ;   :di-action #'(lambda (c)
+    ;                 (if (om::om-checked-p c)
+    ;                   (setf (all-chord-notes (om::object editor)) 1)
+    ;                   (setf (all-chord-notes (om::object editor)) nil)
+    ;                 )
+    ;   )
+    ;   :font om::*om-default-font1*
+    ; )
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 300)
+      (om::om-make-point 15 250)
       (om::om-make-point 200 20)
       "Minimum pitch"
       :font om::*om-default-font1b*
@@ -722,7 +738,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 170 300)
+      (om::om-make-point 170 250)
       (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
@@ -735,7 +751,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 190 300)
+      (om::om-make-point 190 250)
       (om::om-make-point 180 20)
       "Minimum pitch"
       :range '(1 127)
@@ -747,7 +763,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 350)
+      (om::om-make-point 15 300)
       (om::om-make-point 200 20)
       "Maximum pitch"
       :font om::*om-default-font1b*
@@ -755,7 +771,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 170 350)
+      (om::om-make-point 170 300)
       (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
@@ -768,7 +784,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 190 350)
+      (om::om-make-point 190 300)
       (om::om-make-point 180 20)
       "Maximum pitch"
       :range '(1 127)
@@ -780,7 +796,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 400)
+      (om::om-make-point 15 350)
       (om::om-make-point 200 20)
       "Note repetition"
       :font om::*om-default-font1b*
@@ -788,7 +804,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 170 400)
+      (om::om-make-point 170 350)
       (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
@@ -801,7 +817,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 190 400)
+      (om::om-make-point 190 350)
       (om::om-make-point 180 20)
       "Note repetition"
       :range '(0 100)
@@ -809,6 +825,26 @@
       :di-action #'(lambda (s)
         (setf (note-repetition (om::object editor)) (om::om-slider-value s))
       )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 400)
+      (om::om-make-point 200 20)
+      "Repetition type"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+       'om::pop-up-menu
+       (om::om-make-point 170 400)
+       (om::om-make-point 200 20)
+       "Repetition type"
+       :range '("Random" "Soft" "Hard")
+       :di-action #'(lambda (m)
+          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+          (setf (note-repetition-type (om::object editor)) check)
+       )
     )
 
     (om::om-make-dialog-item
@@ -919,7 +955,7 @@
       "Start"
       :di-action #'(lambda (b)
         (let init
-          (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor))))
+          (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor)) (branching (om::object editor))))
           (setf (result (om::object editor)) init)
           ; TO TEST THE GOLOMB RULER PROGRAM
           ;(setq init (golomb-ruler 5))
@@ -985,9 +1021,29 @@
       )
     )
 
-   (om::om-make-dialog-item
+    (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 15 150)
+      (om::om-make-point 200 20)
+      "Branching"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 150)
+      (om::om-make-point 200 20)
+      "Branching"
+      :range '("Top down" "Full" "Top down random")
+      :di-action #'(lambda (m)
+        (setf (branching (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+      )
+    )
+
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 200)
       (om::om-make-point 200 20)
       "Difference Percentage"
       :font om::*om-default-font1b*
@@ -995,7 +1051,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 170 150)
+      (om::om-make-point 170 200)
       (om::om-make-point 200 20)
       "Difference Percentage"
       :range '(0 100)
@@ -1004,6 +1060,5 @@
         (setf (percent-diff (om::object editor)) (om::om-slider-value s))
       )
     )
-
   )
 )

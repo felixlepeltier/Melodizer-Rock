@@ -58,6 +58,24 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; LIMITING MAXIMUM NOTE LENGTH ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun note-max-length (sp push pull max-length)
+    (setq l (floor (* (- (length push) 1) max-length) 192))
+    (loop :for j :from 0 :below (+ (- (length push) l) 1) :by 1 :do
+        (let ((l-pull (gil::add-set-var-array sp l 0 127 0 127))
+              (l-pull-union (gil::add-set-var sp 0 127 0 127)))
+            (loop :for k :from 0 :below l :by 1 :do
+                (gil::g-rel sp (nth k l-pull) gil::SRT_EQ (nth (+ 1 (+ j k)) pull))
+            )
+            (gil::g-setunion sp l-pull-union l-pull)
+            (gil::g-rel sp (nth j push) gil::SRT_SUB l-pull-union)
+        )
+    )
+)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ; DEFINING CHORD RHYTHM ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,10 +128,10 @@
 ; SETS REPETITION FOR PUSH CARDINALITIES ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun set-rhythm-repetition (sp notes-array len)
-    (loop :for i :from 0 :below len :while (< i (length notes-array)) :do
-        (loop :for j :from 1 :below (length notes-array) :while (< (+ i (* j len)) (- (length notes-array) 1)) :do
-            (gil::g-rel sp (nth i notes-array) gil::IRT_EQ (nth (+ i (* j len)) notes-array))
+(defun set-rhythm-repetition (sp push-card len)
+    (loop :for i :from 0 :below len :while (< i (length push-card)) :do
+        (loop :for j :from 1 :below (length push-card) :while (< (+ i (* j len)) (- (length push-card) 1)) :do
+            (gil::g-rel sp (nth i push-card) gil::IRT_EQ (nth (+ i (* j len)) push-card))
         )
     )
 )
@@ -124,7 +142,7 @@
 
 (defun set-pause-quantity (sp q-push-card quantity bars quant)
     (setq c (floor (* (length q-push-card) quantity) 192))
-    (gil::g-count sp q-push-card 0 gil::IRT_EQ c)
+    (gil::g-count sp q-push-card 0 gil::IRT_GQ c)
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -133,7 +151,7 @@
 
 (defun set-pause-repartition (sp q-push-card repartition)
     (setq l (ceiling (* (length q-push-card) (- 192 repartition)) 192))
-    (gil::g-sequence sp q-push-card (list 0) l 2 l)
+    (gil::g-sequence sp q-push-card (list 0) l 1 l)
 )
 
 ;;;;;;;;;;;;;;;;;;;
@@ -233,13 +251,25 @@
 ; NOTE REPETITION ;
 ;;;;;;;;;;;;;;;;;;;
 
-(defun repeat-note (sp push percent quant)
+(defun random-repeat-note (sp push percent quant)
     (let ((index (list-shuffler (range (length push) :min 0 :step quant))))
-    (loop :for i :from 0 :below (- (length index) 1) :by 1 :do
-        (if (< (random 100) percent)
-            (gil::g-rel sp (nth (nth i index) push) gil::SRT_EQ (nth (+ (nth i index) 1) push))
-            (gil::g-rel sp (nth (nth i index) push) gil::SRT_DISJ (nth (+ (nth i index) 1) push))
+        (loop :for i :from 0 :below (- (length index) 1) :by 1 :do
+            (if (< (random 100) percent)
+                (gil::g-rel sp (nth (nth i index) push) gil::SRT_EQ (nth (+ (nth i index) 1) push))
+                (gil::g-rel sp (nth (nth i index) push) gil::SRT_DISJ (nth (+ (nth i index) 1) push))
+            )
         )
     )
+)
+
+(defun soft-repeat-note (sp percent pushMap-card)
+    (let ((c (round (* percent (- (length pushMap-card) 1)) 100)))
+        (gil::g-count sp pushMap-card 0 gil::IRT_GQ c)
+    )
+)
+
+(defun hard-repeat-note (sp percent pushMap-card max-repetition)
+    (let ((repetition (round (* percent max-repetition) 100)))
+        (gil::g-count sp pushMap-card repetition gil::IRT_GQ 1)
     )
 )

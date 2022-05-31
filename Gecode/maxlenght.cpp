@@ -19,7 +19,7 @@ private:
 
   const int bars = 4;
   const int quantification = 48;
-  
+
   const int chord_notes = 3;// to begin with we will concentrate in chords of three notes, seventh chords will come later
   //const int key = 21;// from 21(A0) to 108(C8)
 
@@ -46,7 +46,7 @@ private:
   //and set the constraint push == push_harmonic|push_melody|push_countermelody|push_trumpet
   //this would eventually facilitate a lot the constraints especially when we have to make some constraints specific to the melody
   // SAME with pull and playing
-  
+
 
 public:
 
@@ -65,10 +65,10 @@ public:
 
     int minLength = 24;
     int maxLength = 48;
-    
+
     int scaleSize = sizeof(majorNatural)/sizeof(int);
     int progressionSize = sizeof(progression)/sizeof(int);
-    
+
     rel(*this, pull[0] == IntSet::empty);
     rel(*this, push[bars*quantification] == IntSet::empty);
     rel(*this, playing[bars*quantification] == IntSet::empty);
@@ -78,7 +78,7 @@ public:
 
     for(int i = 1; i <= bars*quantification; i++){
       // Notes that are playing
-      rel(*this, playing[i] == ((playing[i-1] - pull[i]) | push[i])); 
+      rel(*this, playing[i] == ((playing[i-1] - pull[i]) | push[i]));
       // Cannot pull a note not playing
       rel(*this, pull[i] <= playing[i-1]);
       // Cannot push a note still playing
@@ -86,13 +86,13 @@ public:
       // duration domain and cardinality
       rel(*this, cardinality(drt[i])<=cardinality(push[i]));
       if(i+maxLength <= bars*quantification+1){
-	dom(*this, drt[i], SRT_SUB, i+minLength, i+maxLength);
+    	  dom(*this, drt[i], SRT_SUB, i+minLength, i+maxLength);
       }else{
-	if(i+minLength <= bars*quantification+1){
-	  dom(*this, drt[i], SRT_SUB, i+minLength, bars*quantification+1);
-	}else{
-	  rel(*this, drt[i] == IntSet::empty);
-	}
+    	if(i+minLength <= bars*quantification+1){
+    	  dom(*this, drt[i], SRT_SUB, i+minLength, bars*quantification+1);
+    	}else{
+    	  rel(*this, drt[i] == IntSet::empty);
+    	}
       }
     }
 
@@ -100,7 +100,7 @@ public:
     // min and max length of notes
     for(int i = 0;  i <= bars*quantification; i++){
       for (int j = 1; j < minLength && i+j <= bars*quantification ; j++){
-	rel(*this, pull[i+j] || push[i]);
+	        rel(*this, pull[i+j] || push[i]);
       }
       SetVar z(*this, IntSet::empty, IntSet(0, max_pitch), 0, max_pitch+1);
       element(*this, SOT_UNION, pull, drt[i], z);
@@ -112,25 +112,25 @@ public:
     for(int i=0; i<quantification; i++){
       rel(*this, push[i], SRT_EQ, push_1stmeasure[i]);
     }// and then we could channel push_1stmeasure and/or put constraints only on this part
-    
-    // If we are in C Major for example and we want our melody to oscilate around the tonic note 
+
+    // If we are in C Major for example and we want our melody to oscilate around the tonic note
     rel (*this, cardinality(pushMap[62])>=10);
     // And if we want to give importance to dominant note
     rel (*this, cardinality(pushMap[69])>=5);
-    
+
     // All different notes applied to the melodic part only (high pitched notes)
     for (int i=60; i<=max_pitch; i++){
       rel(*this, cardinality(pushMap[i])<=1);
     }
-    
+
     //Rhythmic constraint: Fast or slow pace should also influence min length notes (and max length)
     IntVarArray cardinality_push(*this, bars*quantification+1, 0, max_simultaneous_notes);
     for(int i; i<bars*quantification+1; i++){
       rel(*this, cardinality(push[i])== cardinality_push[i]);
     }
-    // Fast pace explain problem to do with union 
+    // Fast pace explain problem to do with union
     linear(*this, cardinality_push, IRT_GQ, 60);
-    // Slow pace 
+    // Slow pace
     linear(*this, cardinality_push, IRT_LQ, 30);
     //Alternative way to do and probably faster, great idea but problem with disjoint union
     //SetVar allPushed;
@@ -139,8 +139,8 @@ public:
     //rel(*this, cardinality(allPushed)>=60);
     //slow pace also should also influence min length notes (and max length)
     //rel(*this, cardinality(allPushed)<=30);
-    
-    
+
+
     // strictly decreasing/increasing pitch
     SetVar allPlayed(*this, IntSet::empty, IntSet(0, max_pitch), 0, max_pitch+1);
     BoolVarArray isPlayed(*this, max_pitch+1, 0, 1);
@@ -156,7 +156,7 @@ public:
 	// we put a <= rather than a < since we allow multiple notes to be played simoultaneously
 	// unfortunately, this constraint doesn't work when there are pitches that aren't pushed :
 	// the logic behind was that we constraint the pitch only if it was pushed
-      } 
+      }
     }
     // strictly decreasing pitch
     for (int i=60; i<=max_pitch-1; i++){
@@ -167,7 +167,7 @@ public:
 	// we put a >= rather than a > since we allow multiple notes to be played simoultaneously
 	// unfortunately, this constraint doesn't work when there are pitches that aren't pushed :
 	// the logic behind was that we constraint the pitch only if it was pushed
-      } 
+      }
     }
 
 
@@ -196,7 +196,7 @@ public:
 	}
       }
     }
-    
+
 
     // increasing/decreasing pitch // TODO re check, something is going wrong
     SetVar allPlayed(*this, IntSet::empty, IntSet(0, max_pitch), 0, max_pitch+1);
@@ -223,8 +223,8 @@ public:
 	// the logic behind was that we constraint the pitch only if it was pushed
       }
     }
-    
-    // TODO ADD the intervals as in damien 
+
+    // TODO ADD the intervals as in damien
     IntVarArgs max_push;
     IntVarArgs min_push;
     //first << zero;
@@ -245,9 +245,9 @@ public:
     IntVar dec ;
     count(*this, most_dec, 0, IRT_GR, dec);
     rel(*this, dec >= 0.8*max_push.size());
-    
-    
-    /*/max length 
+
+
+    /*/max length
     int maxLength = 60;
     for(int i=0; i<max_pitch; i++){
       IntVarArgs pushTmp;
@@ -258,13 +258,13 @@ public:
       rel(*this, diff == pullTmp - pushTmp);
       rel(*this, diff<=maxLength);
       }*/
-    
-    
+
+
     cardinality(*this, playing, 0, max_simultaneous_notes); //We should maybe do it in the constructor in order to be more performant
     cardinality(*this, pull, 0, max_simultaneous_notes);
     cardinality(*this, push, 0, max_simultaneous_notes);
-    
-    
+
+
     // Create scale
     int scale[7];
     int key = 0;
@@ -273,23 +273,23 @@ public:
       if(is_major)
 	key += majorNatural[i];
     }
-    
+
     // Following a scale
-    
+
     std::vector<int> v;
     for (int octave = 0; octave < 8; octave++){
       for (int i = 0; i<scaleSize; i++){
 	v.push_back(octave*12+scale[i]);
       }
     }
-    
+
     IntArgs a(v);
     IntSet scaleSet(a);
-    
+
     for(int i = 0; i < bars*quantification; i++){
       rel(*this, push[i] <= scaleSet);
     }
-    
+
     /*  Following a chord progression
 	for (int i = 0; i < progressionSize; i++){
         std::vector<int> v;
@@ -298,16 +298,16 @@ public:
 	v.push_back(octave*12 + scale[(progression[i]+1)%scaleSize]);
 	v.push_back(octave*12 + scale[(progression[i]+3)%scaleSize]);
         }
-	
+
         IntArgs a(v);
         IntSet chordSet(a);
-        for(int j = 0; j < bars*quantification/progressionSize; j++){//this forloop will constrain the push to be a subset of the chord progression for the whole measure 
+        for(int j = 0; j < bars*quantification/progressionSize; j++){//this forloop will constrain the push to be a subset of the chord progression for the whole measure
 	  //since here we chose a quantification of 48 and a min_length of 24 we will have chord 1 twice, 5 twice ....
           rel(*this, push[j + i*bars*quantification/progressionSize] <= chordSet);// push subset of chordset
         }
 	}//*/
 
-      
+
     //If we know the chord progression and the chord rhythm, it would make sense to put them togehter if the composer wants to do 1 5 6 4 and then 1 5 6 4 again
     for (int i = 0; i < chords_per_bar*bars; i++){
       std::vector<int> v;
@@ -320,7 +320,7 @@ public:
       IntSet chordSet(a);
       rel(*this, push[i*quantification/chords_per_bar] <= chordSet);
     }
-    
+
     // Constraining chord rhythm
     for (int i = 0; i < bars*quantification; i++){
       if (i % (quantification/chords_per_bar) == 0){
@@ -329,11 +329,11 @@ public:
 	cardinality(*this, push[i], 0, 1);
       }
     }
-    
-    
+
+
     // Limiting the range of notes
     dom(*this, push, SRT_SUB, 2*12, 4*12);
-      
+
     /*/ Constraining the min length of the notes
     int minlength = 24;
     for (int i = 0; i <= bars*quantification; i++){
@@ -341,8 +341,8 @@ public:
 	rel(*this, pull[i+j] || push[i]);
       }
       }*/
-    
-    
+
+
     // TO DO Test with different r1 and r2 and see results
     for (int i = 0; i <= bars*quantification; i++){
       //Rnd r1(opt.seed());
@@ -352,8 +352,8 @@ public:
       branch(*this, push[i], SET_VAL_RND_INC(r2));
       branch(*this, pull[i], SET_VAL_RND_INC(r2));
     }
-    
-    
+
+
 
   }
 
