@@ -4,12 +4,8 @@
 ; NEW-MELODIZER ;
 ;;;;;;;;;;;;;;;;;
 
-; <input> is a voice object with the chords on top of which the melody will be played
-; <rhythm> the rhythm of the melody to be found in the form of a voice object
-; <optional-constraints> is a list of optional constraint names that have to be applied to the problem
-; <global interval> is the global interval that the melody should cover if the mostly increasing/decreasing constraint is selected
-; <key> is the key in which the melody is
-; <mode> is the mode of the tonality (major, minor)
+; <block-csp> list of the child block objects
+; <percent-diff> percentage of difference wanted for the solutions
 ; This function creates the CSP by creating the space and the variables, posting the constraints and the branching, specifying
 ; the search options and creating the search engine.
 (defmethod new-melodizer (block-csp percent-diff)
@@ -31,6 +27,7 @@
         (setq playing-list (list))
         (setq debug nil)
 
+        ;Setting constraint for this block and child blocks
         (setq temp (get-sub-block-values sp block-csp))
         (setq push (nth 0 temp))
         (setq pull (nth 1 temp))
@@ -39,23 +36,9 @@
         (setq added-notes (nth 4 temp))
         (setq notes-array (nth 5 temp))
         (setq q-push (nth 6 temp))
-
-        ; chord length (need previous constraint to work)
-        ;(loop :for j :from 0 :below (* bars quant) :by 1 :do
-        ;      (if (= (mod j chord-rhythm) 0)
-        ;          (loop :for k :from 1 :below chord-min-length :while (< (+ j k) (* bars quant)) :do
-        ;              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
-        ;          )
-        ;      )
-        ;)
-<<<<<<< Updated upstream
+        (setq debug (nth 7 temp))
 
         (gil::g-specify-sol-variables sp q-push)
-=======
-        (print "here")
-        (print debug)
-        (gil::g-specify-sol-variables sp push)
->>>>>>> Stashed changes
         (gil::g-specify-percent-diff sp percent-diff)
 
         ; branching
@@ -80,22 +63,17 @@
     )
 )
 
+;recursive function to set the constraint on all the blocks in the tree structure
 (defun get-sub-block-values (sp block-csp)
-    ; for block child of block-csp
-    ; (pull supersets de get-sub-block-values(block) )
-    ; constraints
-    ; return pull push playing
     (let (pull push notes playing pushMap pullMap block-list positions max-notes sub-push
           notes-array added-push added-notes added-notes-array q-push q-push-card
          (bars (bar-length block-csp))
          (quant 192)
+         (prevNotes (list))
          (major-natural (list 2 2 1 2 2 2 1))
          (max-pitch 127))
-         ;(setf scaleset (build-scaleset major-natural))
 
          (setq max-notes (* 127 (+ (* bars quant) 1)))
-         (print bars)
-         (print quant)
 
         ;initialize the variables
 
@@ -116,9 +94,7 @@
 
         (setq block-list (block-list block-csp))
         (if (not (typep block-list 'list))
-            (progn
-            (print "in typep")
-            (setq block-list (list block-list)))
+            (setq block-list (list block-list))
         )
         (setq positions (position-list block-csp))
 
@@ -198,7 +174,6 @@
                 (loop :for j :from 0 :below (length melody-push) :by 1 :do
                         (gil::g-rel sp (nth j melody-push) gil::SRT_SUB (nth j push))
                         (gil::g-rel sp (nth j melody-pull) gil::SRT_SUB (nth j pull))
-                        ;(gil::g-rel sp (nth j melody-playing) gil::SRT_SUB (nth j playing))
                 )
             )
         )
@@ -212,7 +187,6 @@
                     (setq temp (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
                     (gil::g-setunion sp (nth i sub-push) temp)
                     (setq sub-push-list (nconc sub-push-list (list temp)))
-                    ;(gil::g-op sp (nth i added-push) gil::SOT_DUNION (nth i push) (nth i sub-push))
                 )
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
                       (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
@@ -220,6 +194,7 @@
                            (setq tempPush (first tempList))
                            (setq tempPull (second tempList))
                            (setq tempPlaying (third tempList))
+                           (setq prevNotes (nth 7 tempList))
 
                            (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
                                 (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_SUB (nth j push))
@@ -244,7 +219,7 @@
         ;constraints
         (post-optional-constraints sp block-csp push pull playing pushMap notes added-notes notes-array sub-push q-push q-push-card)
         (pitch-range sp push (min-pitch block-csp) (max-pitch block-csp))
-        (list push pull playing notes added-notes notes-array q-push)
+        (list push pull playing notes added-notes notes-array q-push (nconc prevNotes (list notes)))
     )
 )
 
@@ -362,12 +337,9 @@
                      (setq notesets (build-notesets chord offset))
                      (gil::g-setunion sp all-notes push)
                      (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
-                     ;(print bool-array)
                      (loop :for i :from 0 :below (length notesets) :do
                           (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array))
                      )
-                     ;(setq debug (nconc debug (list bool-array)))
-                     ;(print debug)
 
                      (gil::g-rel sp gil::BOT_OR bool-array 0)
                      (gil::g-rel sp bool gil::SRT_EQ 1)
@@ -430,19 +402,17 @@
              (gil::g-channel sp isPlayed allPlayed)
 
             (cond
-                ;((string= (pitch-direction block) "Moslty increasing")    (moslty-increasing-pitch sp))
                 ((string= (pitch-direction block) "Increasing")           (increasing-pitch sp push isPlayed))
                 ((string= (pitch-direction block) "Strictly increasing")  (strictly-increasing-pitch sp push isPlayed))
-                ;((string= (pitch-direction block) "Moslty decreasing")    (mostly-decreasig-pitch sp))
                 ((string= (pitch-direction block) "Decreasing")           (decreasing-pitch sp push isPlayed))
                 ((string= (pitch-direction block) "Strictly decreasing")  (strictly-decreasing-pitch sp push isPlayed))
             )
         )
     )
 
-    ; (if (/= (golomb-ruler-size block) 0)
-    ;     (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))
-    ; )
+    (if (/= (golomb-ruler-size block) 0)
+         (golomb-rule sp (golomb-ruler-size block) push (/ 192 (get-quant (quantification block))))
+    )
 
     (if (note-repetition-flag block)
         (repeat-note sp push (note-repetition block) (get-length (quantification block)))
@@ -455,7 +425,6 @@
 ;;;;;;;;;;;;;;;
 
 ; <l> is a list containing the search engine for the problem and the variables
-; <rhythm> is the input rhythm as given by the user
 ; <melodizer-object> is a melodizer object
 ; this function finds the next solution of the CSP using the search engine given as an argument
 (defmethod new-search-next (l melodizer-object)
@@ -484,49 +453,44 @@
             )
         )
 
-        (print "PUSH")
-        (loop :for p :in push-list :do
-            (let (l (list))
-                (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
-                (print l)
-            )
-        )
+        ;SOME CODE PIECES FOR DEBUGGING
+         
+        ;(print "PUSH")
+        ;(loop :for p :in push-list :do
+        ;    (let (l (list))
+        ;        (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
+        ;        (print l)
+        ;    )
+        ;)
 
-        (print "PULL")
-        (loop :for p :in pull-list :do
-            (let (l (list))
-                (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
-                (print l)
-            )
-        )
+        ;(print "PULL")
+        ;(loop :for p :in pull-list :do
+        ;    (let (l (list))
+        ;        (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
+        ;        (print l)
+        ;    )
+        ;)
 
-        (print "PLAYING")
-        (loop :for p :in playing-list :do
-            (let (l (list))
-                (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
-                (print l)
-            )
-        )
+        ;(print "PLAYING")
+        ;(loop :for p :in playing-list :do
+        ;    (let (l (list))
+        ;        (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
+        ;        (print l)
+        ;    )
+        ;)
 
-        (print "DEBUG")
-        (print debug)
-        (loop :for p :in debug :do
-          (let (l (list))
-              (setq l (nconc l (mapcar (lambda (n) (gil::g-values sol n)) p)))
-              (print l)
-          )
-        )
+        ;(print "DEBUG")
+        ;(print debug)
+        ;(loop :for p :in debug :do
+        ;  (let (l (list))
+        ;      (setq l (nconc l (mapcar (lambda (n) (gil::g-values sol n)) p)))
+        ;      (print l)
+        ;  )
+        ;)
 
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
         (setq score-chord-seq (build-chord-seq sol push pull bars quant (tempo melodizer-object)))
-
-        ;return a voice object that is the solution we just found
-        ; (make-instance 'voice
-        ;     :tree (second score)
-        ;     :chords (first score)
-        ;     :tempo (tempo melodizer-object)
-        ; )
 
         (make-instance 'chord-seq
             :LMidic (first score-chord-seq)

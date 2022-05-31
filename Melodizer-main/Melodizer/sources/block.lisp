@@ -399,7 +399,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 170 50)
-      (om::om-make-point 200 20)
+      (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
@@ -477,7 +477,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 170 200)
-      (om::om-make-point 200 20)
+      (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
@@ -533,7 +533,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 170 300)
-      (om::om-make-point 200 20)
+      (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
@@ -567,7 +567,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 170 350)
-      (om::om-make-point 200 20)
+      (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
@@ -703,7 +703,6 @@
       (om::om-make-point 170 250)
       (om::om-make-point 200 20)
       "All chord notes"
-      ;:checked-p (find "all-different-notes" (optional-constraints (om::object editor)) :test #'equal)
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
                       (setf (all-chord-notes (om::object editor)) 1)
@@ -724,7 +723,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 170 300)
-      (om::om-make-point 200 20)
+      (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
@@ -757,7 +756,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 170 350)
-      (om::om-make-point 200 20)
+      (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
@@ -790,7 +789,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 170 400)
-      (om::om-make-point 200 20)
+      (om::om-make-point 20 20)
       ""
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
@@ -825,7 +824,7 @@
        (om::om-make-point 170 450)
        (om::om-make-point 200 20)
        "Pitch direction"
-       :range '("None" "Mostly increasing" "Increasing" "Strictly increasing" "Mostly decreasing" "Decreasing" "Strictly decreasing")
+       :range '("None" "Increasing" "Strictly increasing" "Decreasing" "Strictly decreasing")
        :di-action #'(lambda (m)
          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
          (if (string= check "None")
@@ -922,6 +921,7 @@
         (let init
           (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor))))
           (setf (result (om::object editor)) init)
+          ; TO TEST THE GOLOMB RULER PROGRAM
           ;(setq init (golomb-ruler 5))
           ;(setf (result (om::object editor)) init)
         )
@@ -946,8 +946,8 @@
           nil ; process initialization keywords, not needed here
           (lambda () ; function to call
             (setf (solution (om::object editor)) (new-search-next (result (om::object editor)) (om::object editor)))
+            ;TO TEST THE GOLOMB-RULER PROGRAM
             ;(setf (solution (om::object editor)) (search-next-golomb-ruler (result (om::object editor))))
-            ;(setf (om::tempo (solution (om::object editor))) (om::tempo (input-rhythm (om::object editor)))); set the tempo of the new voice object to be the same as the input
             (om::openeditorframe ; open a voice window displaying the solution
               (om::omNG-make-new-instance (solution (om::object editor)) "current solution")
             )

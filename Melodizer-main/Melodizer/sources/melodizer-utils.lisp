@@ -110,7 +110,6 @@
       size ;(om::om-make-point 320 20)
       "list of solutions"
       :range (loop for item in (make-data-sol data) collect (car item))
-      ;:value (mode (object self)); change so it goes to the newest added solution?
       :di-action #'(lambda (m)
                     (cond
                         ((string-equal output "output-solution")
@@ -438,22 +437,18 @@
 ;recursive function to read a rhythm tree and create push and pull
 (defun read-tree (push pull playing tree pitch pos length next)
     (progn
-        (print tree)
         (setf length (/ length (length tree)))
         (loop :for i :from 0 :below (length tree) :by 1 :do
             (if (typep (nth i tree) 'list)
                 (let (temp)
-                    (print "not ok")
                     (setq temp (read-tree push pull playing (second (nth i tree)) pitch pos length next))
                     (setq push (first temp))
                     (setq pull (second temp))
                     (setq playing (third temp))
                     (setf next (fourth temp))
                     (setf pos (fifth temp))
-                    (print "out")
                 )
                 (progn
-                    (print "ok")
                     (setf (nth pos push) (nth next pitch))
                     (loop :for j :from pos :below (+ pos (* length (nth i tree))) :by 1 :do
                          (setf (nth j playing) (nth next pitch))
@@ -479,9 +474,6 @@
           (push-list (list))
           (chords (to-pitch-list (om::chords input-chords))) ; get chords list
          )
-         (print tree)
-         (print quant)
-         (print note-starting-times)
          (setf note-starting-times (mapcar (lambda (n) (/ n quant)) note-starting-times)) ; dividing note-starting-times by quant
          (loop :for j :from 0 :below (+ (max-list note-starting-times) 1) :by 1 :do
             (if (= j (car note-starting-times)); if j == note-starting-times[0]
@@ -491,7 +483,6 @@
                     (setf note-starting-times (cdr note-starting-times))) ;add chords[0] to push and prune qt[0] and pchords[0]
                 (setq push-list (nconc push-list (list -1)))) ; else add -1 to push
         )
-        ; (print push-list)
     )
 )
 
@@ -508,16 +499,11 @@
           (pull-list (list))
           (pitch (to-pitch-list (om::chords input-chords))) ; get chords list
          )
-         ; (print pitch)
          (setf note-starting-times (mapcar (lambda (n) (/ n quant)) note-starting-times)) ; dividing note-starting-times by quant
-         ; (print note-starting-times)
          (setf note-dur-times (mapcar (lambda (n) (mapcar (lambda (m) (/ m quant)) n)) note-dur-times)) ; dividing note-dur-times by quant
-         ; (print note-dur-times)
          (loop :for j :from 0 :below (length note-starting-times) :by 1 :do
              (setq note-stopping-times (nconc note-stopping-times (list (mapcar (lambda (n) (+ n (nth j note-starting-times))) (nth j note-dur-times))))) ; Adding note-starting-times to note-dur-times to get note-stopping-times
         )
-        ; (print note-stopping-times)
-        ; (print (max-list-list note-stopping-times))
         (loop :for j :from 0 :below (+ (max-list-list note-stopping-times) 1) :by 1 :do
               (setq pull-list (nconc pull-list (list -1))))
         (loop for l in note-stopping-times
@@ -529,7 +515,6 @@
                       (setf (nth i pull-list) (list j)))
              )
         )
-        ; (print pull-list)
     )
 )
 
@@ -591,8 +576,6 @@
 
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) pull)))
     (setq p-push (nconc p-push (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) push)))
-
-    (print "Solution")
 
     (setq count 1)
     (loop :for b :from 0 :below bars :by 1 :do
