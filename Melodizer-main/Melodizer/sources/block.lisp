@@ -954,12 +954,12 @@
       (om::om-make-point 130 20) ; size (horizontal, vertical)
       "Start"
       :di-action #'(lambda (b)
-        (let init
-          (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor)) (branching (om::object editor))))
+        (let ((init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor)) (branching (om::object editor)))))
+          ;; (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor)) (branching (om::object editor))))
           (setf (result (om::object editor)) init)
           ; TO TEST THE GOLOMB RULER PROGRAM
           ;(setq init (golomb-ruler 5))
-          ;(setf (result (om::object editor)) init)
+          ;; (setf (result (om::object editor)) init)
         )
       )
     )
