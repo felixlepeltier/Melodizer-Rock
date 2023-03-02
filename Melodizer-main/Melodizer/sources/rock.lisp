@@ -42,7 +42,7 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (rock-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 345 100)
+        :size (om::om-make-point 600 150)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
@@ -79,20 +79,47 @@
         (om::om-make-point 100 50) ; size (horizontal, vertical)
         "A"
         :di-action #'(lambda (b)
-          (
+        
+          (print "Selected A1")
 
+          (mp:process-run-function ; start a new thread for the execution of the next method
+            "next thread" ; name of the thread, not necessary but useful for debugging
+            nil ; process initialization keywords, not needed here
+            (lambda () ; function to call
+            
+              (om::openeditorframe ;
+                ;; opens a voice window
+                ;; (om::omNG-make-new-instance (make-instance 'voice) "Window A1")
+                (om::omNG-make-new-instance (make-instance 'pop-up-menu) "Window A1")
+              )
+            )
           )
         )
     )
-    
+
+
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 115 10) ; position (horizontal, vertical)
         (om::om-make-point 100 50) ; size (horizontal, vertical)
         "A"
         :di-action #'(lambda (b)
-          (
+        
+          (print "Selected A2")
 
+          (mp:process-run-function ; start a new thread for the execution of the next method
+            "next thread" ; name of the thread, not necessary but useful for debugging
+            nil ; process initialization keywords, not needed here
+            (lambda () ; function to call
+            
+              (om::openeditorframe ;
+                ;; opens a voice window
+                (om::omNG-make-new-instance (make-instance 'pop-up-menu) "Window A2")
+                ;; (om::omNG-make-new-instance (make-instance 'text-box) "Window B")
+                ;; (om::omNG-make-new-instance (make-instance 'temporalbox) "Window B")
+
+              )
+            )
           )
         )
     )
@@ -102,8 +129,22 @@
         (om::om-make-point 100 50) ; size (horizontal, vertical)
         "B"
         :di-action #'(lambda (b)
-          (
+        
+          (print "Selected B")
 
+          (mp:process-run-function ; start a new thread for the execution of the next method
+            "next thread" ; name of the thread, not necessary but useful for debugging
+            nil ; process initialization keywords, not needed here
+            (lambda () ; function to call
+            
+              (om::openeditorframe ;
+                ;; opens a voice window
+                (om::omNG-make-new-instance (make-instance 'pop-up-menu) "Window B")
+                ;; (om::omNG-make-new-instance (make-instance 'text-box) "Window B")
+                ;; (om::omNG-make-new-instance (make-instance 'temporalbox) "Window B")
+
+              )
+            )
           )
         )
     )
@@ -113,8 +154,22 @@
         (om::om-make-point 100 50) ; size (horizontal, vertical)
         "A"
         :di-action #'(lambda (b)
-          (
+        
+          (print "Selected A3")
 
+          (mp:process-run-function ; start a new thread for the execution of the next method
+            "next thread" ; name of the thread, not necessary but useful for debugging
+            nil ; process initialization keywords, not needed here
+            (lambda () ; function to call
+            
+              (om::openeditorframe ;
+                ;; opens a voice window
+                (om::omNG-make-new-instance (make-instance 'pop-up-menu) "Window A3")
+                ;; (om::omNG-make-new-instance (make-instance 'text-box) "Window B")
+                ;; (om::omNG-make-new-instance (make-instance 'temporalbox) "Window B")
+
+              )
+            )
           )
         )
     )
