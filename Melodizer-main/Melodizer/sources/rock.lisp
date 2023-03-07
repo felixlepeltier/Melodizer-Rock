@@ -450,7 +450,7 @@
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-      (B-panel (om::om-make-view 'om::om-view
+      (c-panel (om::om-make-view 'om::om-view
         :size (om::om-make-point 600 150)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
