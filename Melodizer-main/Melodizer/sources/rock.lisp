@@ -19,6 +19,14 @@
     (A-second :accessor A-second :initarg :A-second :initform nil :documentation "")
     (object-B :accessor object-B :initarg :object-B :initform nil :documentation "")
     (A-third :accessor A-third :initarg :A-third :initform nil :documentation "")
+    (voices :accessor voices :initform nil :type integer)
+    (chord-key :accessor chord-key :initform nil :type string)
+    (bar-length :accessor bar-length :initform 0 :type integer)
+    (min-pitch :accessor min-pitch :initform 1 :type integer)
+    (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
+    (max-pitch :accessor max-pitch :initform 127 :type integer)
+    (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+    (beat-length :accessor beat-length :initform 0 :type integer)
     )
 )
 
@@ -55,18 +63,25 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (rock-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 600 150)
+        :size (om::om-make-point 500 150)
         :position (om::om-make-point 5 5)
+        :bg-color om::*azulito*)
+      )
+      (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 500 500)
+        :position (om::om-make-point 5 160)
         :bg-color om::*azulito*)
       )
     )
 
     (setf elements-rock-panel (make-rock-panel self rock-panel))
+    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       rock-panel
+      constraints-panel
     )
   )
   ; return the editor
@@ -88,6 +103,13 @@
       (d-block :accessor d-block :initarg :d-block :initform nil :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform nil :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
+      (chord-key :accessor chord-key :initform nil :type string)
+      (bar-length :accessor bar-length :initform 0 :type integer)
+      (min-pitch :accessor min-pitch :initform 1 :type integer)
+      (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
+      (max-pitch :accessor max-pitch :initform 127 :type integer)
+      (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (beat-length :accessor beat-length :initform 0 :type integer)
     )
 )
 
@@ -129,14 +151,21 @@
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
+       (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 500 500)
+        :position (om::om-make-point 5 160)
+        :bg-color om::*azulito*)
+      )
     )
 
     (setf elements-A-panel (make-A-panel self A-panel))
+    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       A-panel
+      constraints-panel
     )
   )
   ; return the editor
@@ -158,6 +187,13 @@
       (d-block :accessor d-block :initarg :d-block :initform nil :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform nil :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
+      (chord-key :accessor chord-key :initform nil :type string)
+      (bar-length :accessor bar-length :initform 0 :type integer)
+      (min-pitch :accessor min-pitch :initform 1 :type integer)
+      (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
+      (max-pitch :accessor max-pitch :initform 127 :type integer)
+      (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (beat-length :accessor beat-length :initform 0 :type integer)
     )
 )
 
@@ -201,14 +237,22 @@
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
+       (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 500 500)
+        :position (om::om-make-point 5 160)
+        :bg-color om::*azulito*)
+      )
+      
     )
 
     (setf elements-B-panel (make-B-panel self B-panel))
+    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       B-panel
+      constraints-panel
     )
   )
   ; return the editor
@@ -225,6 +269,13 @@
 (om::defclass! s ()
     ((block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
     (parent :accessor parent :initarg :parent :initform nil :documentation "")
+    (chord-key :accessor chord-key :initform nil :type string)
+    (bar-length :accessor bar-length :initform 0 :type integer)
+    (min-pitch :accessor min-pitch :initform 1 :type integer)
+    (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
+    (max-pitch :accessor max-pitch :initform 127 :type integer)
+    (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+    (beat-length :accessor beat-length :initform 0 :type integer)
     )
 )
 
@@ -259,20 +310,19 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-      (s-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 600 150)
+       (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 500 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
     )
 
-    (setf elements-s-panel (make-s-panel self s-panel))
+    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
-      s-panel
+      constraints-panel
     )
   )
   ; return the editor
@@ -289,6 +339,13 @@
 (om::defclass! r ()
     ((block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
     (parent :accessor parent :initarg :parent :initform nil :documentation "")
+    (chord-key :accessor chord-key :initform nil :type string)
+    (bar-length :accessor bar-length :initform 0 :type integer)
+    (min-pitch :accessor min-pitch :initform 1 :type integer)
+    (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
+    (max-pitch :accessor max-pitch :initform 127 :type integer)
+    (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+    (beat-length :accessor beat-length :initform 0 :type integer)
     )
 )
 
@@ -323,20 +380,19 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-      (r-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 600 150)
+       (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 500 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
     )
 
-    (setf elements-r-panel (make-r-panel self r-panel))
+    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
-      r-panel
+      constraints-panel
     )
   )
   ; return the editor
@@ -353,6 +409,13 @@
 (om::defclass! d ()
     ((block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
     (parent :accessor parent :initarg :parent :initform nil :documentation "")
+    (chord-key :accessor chord-key :initform nil :type string)
+    (bar-length :accessor bar-length :initform 0 :type integer)
+    (min-pitch :accessor min-pitch :initform 1 :type integer)
+    (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
+    (max-pitch :accessor max-pitch :initform 127 :type integer)
+    (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+    (beat-length :accessor beat-length :initform 0 :type integer)
     )
 )
 
@@ -386,20 +449,19 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-      (d-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 600 150)
+       (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 500 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
     )
 
-    (setf elements-d-panel (make-d-panel self d-panel))
+    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
-      d-panel
+      constraints-panel
     )
   )
   ; return the editor
@@ -416,6 +478,13 @@
 (om::defclass! c ()
     ((block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
     (parent :accessor parent :initarg :parent :initform nil :documentation "")
+    (chord-key :accessor chord-key :initform nil :type string)
+    (bar-length :accessor bar-length :initform 0 :type integer)
+    (min-pitch :accessor min-pitch :initform 1 :type integer)
+    (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
+    (max-pitch :accessor max-pitch :initform 127 :type integer)
+    (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+    (beat-length :accessor beat-length :initform 0 :type integer)
     )
 )
 
@@ -450,19 +519,19 @@
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-      (c-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 600 150)
+       (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 500 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
     )
 
-    (setf elements-c-panel (make-c-panel self c-panel))
+    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
-      c-panel
+      constraints-panel
     )
   )
   ; return the editor
@@ -510,7 +579,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (A-first (om::object editor)) (make-instance 'A :parent editor (om::object editor)))
+              (setf (A-first (om::object editor)) (make-instance 'A :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (A-first (om::object editor)) "Window A1")
               )
@@ -533,7 +602,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (A-second (om::object editor)) (make-instance 'A :parent editor (om::object editor)))
+              (setf (A-second (om::object editor)) (make-instance 'A :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a voice window displaying the solution
                 (om::omNG-make-new-instance (A-second (om::object editor)) "Window A2")
               )
@@ -554,7 +623,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (object-B (om::object editor)) (make-instance 'B :parent editor (om::object editor)))
+              (setf (object-B (om::object editor)) (make-instance 'B :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a voice window displaying the solution
                 (om::omNG-make-new-instance (object-B (om::object editor)) "Window B")
               )
@@ -575,7 +644,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (A-third (om::object editor)) (make-instance 'A :parent editor (om::object editor)))
+              (setf (A-third (om::object editor)) (make-instance 'A :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a voice window displaying the solution
                 (om::omNG-make-new-instance (A-third (om::object editor)) "Window A3")
               )
@@ -611,7 +680,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (s-block (om::object editor)) (make-instance 's :parent editor (om::object editor)))
+              (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (s-block (om::object editor)) "Window s")
               )
@@ -630,7 +699,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (r-block (om::object editor)) (make-instance 'r :parent editor (om::object editor)))
+              (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (r-block (om::object editor)) "Window r")
               )
@@ -649,7 +718,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (d-block (om::object editor)) (make-instance 'd :parent editor (om::object editor)))
+              (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (d-block (om::object editor)) "Window d")
               )
@@ -668,7 +737,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (c-block (om::object editor)) (make-instance 'c :parent editor (om::object editor)))
+              (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (c-block (om::object editor)) "Window c")
               )
@@ -702,7 +771,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (s-block (om::object editor)) (make-instance 's :parent editor (om::object editor)))
+              (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (s-block (om::object editor)) "Window s")
               )
@@ -721,7 +790,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (r-block (om::object editor)) (make-instance 'r :parent editor (om::object editor)))
+              (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (r-block (om::object editor)) "Window r")
               )
@@ -740,7 +809,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (d-block (om::object editor)) (make-instance 'd :parent editor (om::object editor)))
+              (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (d-block (om::object editor)) "Window d")
               )
@@ -759,7 +828,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (c-block (om::object editor)) (make-instance 'c :parent editor (om::object editor)))
+              (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (c-block (om::object editor)) "Window c")
               )
@@ -783,6 +852,149 @@
 )
 
 (defun make-c-panel (editor c-panel)
+
+)
+
+(defun make-constraints-panel (editor panel)
+  (om::om-add-subviews
+    panel
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 150 2)
+      (om::om-make-point 120 20)
+      "Block constraints"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 50)
+      (om::om-make-point 200 20)
+      "Bar length"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 50)
+      (om::om-make-point 200 20)
+      "Bar length"
+      :range (loop :for n :from 0 :upto 32 collect n)
+      :di-action #'(lambda (m)
+        (setf (bar-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 100)
+      (om::om-make-point 200 20)
+      "Voices"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 100)
+      (om::om-make-point 200 20)
+      "Voices"
+      :range (append '("None") (loop :for n :from 0 :upto 15 collect n))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (voices (om::object editor)) nil)
+          (setf (voices (om::object editor)) check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 150)
+      (om::om-make-point 200 20)
+      "Chord key"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 150)
+      (om::om-make-point 200 20)
+      "Chord key"
+      :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-key (om::object editor)) nil)
+          (setf (chord-key (om::object editor)) check))
+      )
+    )
+     (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 250)
+      (om::om-make-point 200 20)
+      "Minimum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 170 250)
+      (om::om-make-point 20 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-pitch-flag (om::object editor)) 1)
+                      (setf (min-pitch-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 190 250)
+      (om::om-make-point 180 20)
+      "Minimum pitch"
+      :range '(1 127)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (min-pitch (om::object editor)) (om::om-slider-value s))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 300)
+      (om::om-make-point 200 20)
+      "Maximum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 170 300)
+      (om::om-make-point 20 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-pitch-flag (om::object editor)) 1)
+                      (setf (max-pitch-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 190 300)
+      (om::om-make-point 180 20)
+      "Maximum pitch"
+      :range '(1 127)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (max-pitch (om::object editor)) (om::om-slider-value s))
+      )
+    )
+
+  )
 
 )
 
