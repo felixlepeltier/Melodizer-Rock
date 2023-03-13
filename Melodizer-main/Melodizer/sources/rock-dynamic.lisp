@@ -54,18 +54,18 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (rock-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 150)
+        :size (om::om-make-point 450 70)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
-        :position (om::om-make-point 5 160)
+        :size (om::om-make-point 450 500)
+        :position (om::om-make-point 5 80)
         :bg-color om::*azulito*)
       )
       (structure-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 200 655)
-        :position (om::om-make-point 510 5)
+        :size (om::om-make-point 110 575)
+        :position (om::om-make-point 460 5)
         :bg-color om::*azulito*)
       )
     )
@@ -558,19 +558,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-    ;; (setq L '(1 2 3))
-    ;; >> (1 2 3)
-    ;; (setq L (append L '(4)))
-    ;; >> (1 2 3 4)
-
-
 (defun make-rock-panel (editor rock-panel)
   (om::om-add-subviews
     rock-panel
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 10) ; position (horizontal, vertical)
-        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        (om::om-make-point 130 50) ; size (horizontal, vertical)
         "Add A to structure"
         :di-action #'(lambda (b)
         
@@ -584,8 +578,8 @@
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 5 65) ; position (horizontal, vertical)
-        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        (om::om-make-point 140 10) ; position (horizontal, vertical)
+        (om::om-make-point 130 50) ; size (horizontal, vertical)
         "Add B to structure"
         :di-action #'(lambda (b)
           (print "Added B to structure")
@@ -597,8 +591,8 @@
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 5 120) ; position (horizontal, vertical)
-        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        (om::om-make-point 275 10) ; position (horizontal, vertical)
+        (om::om-make-point 130 50) ; size (horizontal, vertical)
         "Done"
         :di-action #'(lambda (b)
           (print "Finished structure")
@@ -636,16 +630,15 @@
           (om::om-make-point 100 50) ; size (horizontal, vertical)
           "A"
           :di-action #'(lambda (b)
-          
+
             (print "Selected A")
 
             (mp:process-run-function ; start a new thread for the execution of the next method
               "next thread" ; name of the thread, not necessary but useful for debugging
               nil ; process initialization keywords, not needed here
-              (lambda () ; function to call
+              #'(lambda () ; function to call
                 (om::openeditorframe ; open a window displaying the editor of the first A block
-                  (om::omNG-make-new-instance (nth loop-index (block-list (om::object editor))) (concatenate 'string "Window A" (write-to-string loop-index)))
-                  ;; (om::omNG-make-new-instance (x) (concatenate 'string "Window A" (write-to-string loop-index)))
+                  (om::omNG-make-new-instance (nth (position b subview-list) (block-list (om::object editor))) (concatenate 'string "Window A" (write-to-string (position b subview-list))))
                 )
               )
             )
@@ -660,19 +653,14 @@
           (om::om-make-point 100 50) ; size (horizontal, vertical)
           "B"
           :di-action #'(lambda (b)
-          
             (print "Selected B")
 
             (mp:process-run-function ; start a new thread for the execution of the next method
               "next thread" ; name of the thread, not necessary but useful for debugging
               nil ; process initialization keywords, not needed here
-              (lambda () ; function to call
-                ;; (print "before print")
-                ;; (print (block-list (om::object editor)))
-                ;; (print "after print")
+              #'(lambda () ; function to call
                 (om::openeditorframe ; open a window displaying the editor of the first A block
-                  (om::omNG-make-new-instance (nth loop-index (block-list (om::object editor))) (concatenate 'string "Window B" (write-to-string loop-index)))
-                  ;; (om::omNG-make-new-instance (x) (concatenate 'string "Window B" (write-to-string loop-index)))
+                  (om::omNG-make-new-instance (nth (position b subview-list) (block-list (om::object editor))) (concatenate 'string "Window B" (write-to-string (position b subview-list))))
                 )
               )
             )
