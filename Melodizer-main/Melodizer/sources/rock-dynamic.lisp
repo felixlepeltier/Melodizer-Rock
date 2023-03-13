@@ -8,24 +8,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-;; block list should be composed of the meta blocks forming the song
-;; such as A A B A in our case ?
-;; same thing should be the case for A and B with their sub blocks
-;; s r d c for example
 (om::defclass! rock ()
     (
-    ;; add the blocks in block-list instead of using the A-first, A- ... for the 
-    ;; fixed AABA structure
-    ;; (setq L '(1 2 3))
-    ;; >> (1 2 3)
-    ;; (setq L (append L '(4)))
-    ;; >> (1 2 3 4)
     (block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
-    ;; (struct-list :accessor struct-list :initarg :struct-list :initform nil :documentation "")
-    ;; (A-first :accessor A-first :initarg :A-first :initform nil :documentation "")
-    ;; (A-second :accessor A-second :initarg :A-second :initform nil :documentation "")
-    ;; (object-B :accessor object-B :initarg :object-B :initform nil :documentation "")
-    ;; (A-third :accessor A-third :initarg :A-third :initform nil :documentation "")
     (voices :accessor voices :initform nil :type integer)
     (chord-key :accessor chord-key :initform nil :type string)
     (bar-length :accessor bar-length :initform 0 :type integer)
@@ -62,81 +47,6 @@
 
   ; create the main view of the object
   (make-main-view self)
-  ;; (if (not (slot-value self 'block-list))
-  ;;   (let*
-  ;;     (
-  ;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;       ;;; setting the different regions of the tool ;;;
-  ;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  ;;       (rock-panel (om::om-make-view 'om::om-view
-  ;;         :size (om::om-make-point 500 150)
-  ;;         :position (om::om-make-point 5 5)
-  ;;         :bg-color om::*azulito*)
-  ;;       )
-  ;;       (constraints-panel (om::om-make-view 'om::om-view
-  ;;         :size (om::om-make-point 500 500)
-  ;;         :position (om::om-make-point 5 160)
-  ;;         :bg-color om::*azulito*)
-  ;;       )
-  ;;       ;; (structure-panel (om::om-make-view 'om::om-view
-  ;;       ;;   :size (om::om-make-point 200 655)
-  ;;       ;;   :position (om::om-make-point 510 5)
-  ;;       ;;   :bg-color om::*azulito*)
-  ;;       ;; )
-  ;;     )
-
-  ;;     (setf elements-rock-panel (make-rock-panel self rock-panel))
-  ;;     (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
-  ;;     (setf elements-structure-panel (make-structure-panel self structure-panel))
-
-  ;;     ; add the subviews for the different parts into the main view
-  ;;     (om::om-add-subviews
-  ;;       self
-  ;;       rock-panel
-  ;;       constraints-panel
-  ;;       structure-panel
-  ;;     )
-  ;;   )
-  ;; )
-  ;; (if ((slot-value self 'block-list))
-  ;;   (let*
-  ;;     (
-  ;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;       ;;; setting the different regions of the tool ;;;
-  ;;       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  ;;       (rock-panel (om::om-make-view 'om::om-view
-  ;;         :size (om::om-make-point 500 150)
-  ;;         :position (om::om-make-point 5 5)
-  ;;         :bg-color om::*azulito*)
-  ;;       )
-  ;;       (constraints-panel (om::om-make-view 'om::om-view
-  ;;         :size (om::om-make-point 500 500)
-  ;;         :position (om::om-make-point 5 160)
-  ;;         :bg-color om::*azulito*)
-  ;;       )
-  ;;       (structure-panel (om::om-make-view 'om::om-view
-  ;;         :size (om::om-make-point 200 655)
-  ;;         :position (om::om-make-point 510 5)
-  ;;         :bg-color om::*azulito*)
-  ;;       )
-  ;;     )
-
-  ;;     (setf elements-rock-panel (make-rock-panel self rock-panel))
-  ;;     (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
-  ;;     (setf elements-structure-panel (make-structure-panel self structure-panel))
-
-  ;;     ; add the subviews for the different parts into the main view
-  ;;     (om::om-add-subviews
-  ;;       self
-  ;;       rock-panel
-  ;;       constraints-panel
-  ;;       structure-panel
-  ;;     )
-  ;;   )
-  ;; )
-
   (let*
     (
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -657,30 +567,6 @@
 (defun make-rock-panel (editor rock-panel)
   (om::om-add-subviews
     rock-panel
-    ;; (om::om-make-dialog-item
-    ;;     'om::om-button
-    ;;     (om::om-make-point 5 10) ; position (horizontal, vertical)
-    ;;     (om::om-make-point 150 50) ; size (horizontal, vertical)
-    ;;     "Add A to structure"
-    ;;     :di-action #'(lambda (b)
-    ;;       (print "Added A to structure")
-    ;;       (setf (struct-list (om::object editor)) (append (struct-list (om::object editor)) '(nil)))
-    ;;       (print (struct-list (om::object editor)))
-    ;;     )
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;     'om::om-button
-    ;;     (om::om-make-point 5 65) ; position (horizontal, vertical)
-    ;;     (om::om-make-point 150 50) ; size (horizontal, vertical)
-    ;;     "Add B to structure"
-    ;;     :di-action #'(lambda (b)
-    ;;       (print "Added B to structure")
-    ;;       (setf (struct-list (om::object editor)) (append (struct-list (om::object editor)) '(t)))
-    ;;       (print (struct-list (om::object editor)))
-    ;;     )
-    ;; )
-
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 10) ; position (horizontal, vertical)
@@ -690,13 +576,6 @@
         
           (print "Added A to structure")
           (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'A :parent (om::object editor) (om::object editor)))))
-          ;; (lambda () ; function to call
-            
-          ;;   ;; (print (block-list (om::object editor)))
-          ;;   (print "after appending new block to block-list")
-          ;; )
-          ;; (print "after lambda function")
-          ;; (print (block-list (om::object editor)))
           (print (block-list (om::object editor)))
         )
     )
@@ -709,24 +588,8 @@
         (om::om-make-point 150 50) ; size (horizontal, vertical)
         "Add B to structure"
         :di-action #'(lambda (b)
-          ;; check if block-list is nill before adding; it is
-          ;; (print (block-list (om::object editor)))
           (print "Added B to structure")
-          ;; (let (new-b-block ((make-instance 'B :parent (om::object editor) (om::object editor)))))
           (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
-          ;; (lambda () ; function to call
-            
-          ;;   ;; (print (block-list (om::object editor)))
-          ;;   (print "after appending new block to block-list")
-          ;; )
-          ;; (print "after lambda function")
-          ;; (print (block-list (om::object editor)))
-          
-          ;; (if (block-list (om::object editor))
-          ;;   (loop for x in (block-list (om::object editor))
-          ;;     do (print (typep x 'b))
-          ;;   )
-          ;; )
           (print (block-list (om::object editor)))
         )
     )
@@ -749,96 +612,6 @@
           )
         )
     )
-    ;; (loop for x in (block-list (om::object editor))
-    ;;   collect (* x 10))
-
-    
-    ;; (om::om-make-dialog-item
-    ;;     'om::om-button
-    ;;     (om::om-make-point 5 10) ; position (horizontal, vertical)
-    ;;     (om::om-make-point 100 50) ; size (horizontal, vertical)
-    ;;     "A"
-    ;;     :di-action #'(lambda (b)
-        
-    ;;       (print "Selected A1")
-
-    ;;       (mp:process-run-function ; start a new thread for the execution of the next method
-    ;;         "next thread" ; name of the thread, not necessary but useful for debugging
-    ;;         nil ; process initialization keywords, not needed here
-    ;;         (lambda () ; function to call
-    ;;           (setf (A-first (om::object editor)) (make-instance 'A :parent (om::object editor) (om::object editor)))
-    ;;           (om::openeditorframe ; open a window displaying the editor of the first A block
-    ;;             (om::omNG-make-new-instance (A-first (om::object editor)) "Window A1")
-    ;;           )
-    ;;         )
-    ;;       )
-    ;;     )
-    ;; )
-
-
-    ;; (om::om-make-dialog-item
-    ;;     'om::om-button
-    ;;     (om::om-make-point 115 10) ; position (horizontal, vertical)
-    ;;     (om::om-make-point 100 50) ; size (horizontal, vertical)
-    ;;     "A"
-    ;;     :di-action #'(lambda (b)
-        
-    ;;       (print "Selected A2")
-
-    ;;       (mp:process-run-function ; start a new thread for the execution of the next method
-    ;;         "next thread" ; name of the thread, not necessary but useful for debugging
-    ;;         nil ; process initialization keywords, not needed here
-    ;;         (lambda () ; function to call
-    ;;           (setf (A-second (om::object editor)) (make-instance 'A :parent (om::object editor) (om::object editor)))
-    ;;           (om::openeditorframe ; open a voice window displaying the solution
-    ;;             (om::omNG-make-new-instance (A-second (om::object editor)) "Window A2")
-    ;;           )
-    ;;         )
-    ;;       )
-    ;;     )
-    ;; )
-    ;; (om::om-make-dialog-item
-    ;;     'om::om-button
-    ;;     (om::om-make-point 225 10) ; position (horizontal, vertical)
-    ;;     (om::om-make-point 100 50) ; size (horizontal, vertical)
-    ;;     "B"
-    ;;     :di-action #'(lambda (b)
-        
-    ;;       (print "Selected B")
-
-    ;;       (mp:process-run-function ; start a new thread for the execution of the next method
-    ;;         "next thread" ; name of the thread, not necessary but useful for debugging
-    ;;         nil ; process initialization keywords, not needed here
-    ;;         (lambda () ; function to call
-    ;;           (setf (object-B (om::object editor)) (make-instance 'B :parent (om::object editor) (om::object editor)))
-    ;;           (om::openeditorframe ; open a voice window displaying the solution
-    ;;             (om::omNG-make-new-instance (object-B (om::object editor)) "Window B")
-    ;;           )
-    ;;         )
-    ;;       )
-    ;;     )
-    ;; )
-    ;; (om::om-make-dialog-item
-    ;;     'om::om-button
-    ;;     (om::om-make-point 335 10) ; position (horizontal, vertical)
-    ;;     (om::om-make-point 100 50) ; size (horizontal, vertical)
-    ;;     "A"
-    ;;     :di-action #'(lambda (b)
-        
-    ;;       (print "Selected A3")
-
-    ;;       (mp:process-run-function ; start a new thread for the execution of the next method
-    ;;         "next thread" ; name of the thread, not necessary but useful for debugging
-    ;;         nil ; process initialization keywords, not needed here
-    ;;         (lambda () ; function to call
-    ;;           (setf (A-third (om::object editor)) (make-instance 'A :parent (om::object editor) (om::object editor)))
-    ;;           (om::openeditorframe ; open a voice window displaying the solution
-    ;;             (om::omNG-make-new-instance (A-third (om::object editor)) "Window A3")
-    ;;           )
-    ;;         )
-    ;;       )
-    ;;     )
-    ;; )
   )
 )
 
@@ -851,14 +624,11 @@
 
 ;; if we have access to the rock-editor
 (defun make-structure-panel (editor structure-panel)
-  ;; (print "in make-structure-panel")
-  ;; (print (struct-list (om::object editor)))
-  (defvar loop-index 0)
+
+  (setq loop-index 0)
   (defvar subview-list '())
   (loop for x in (block-list (om::object editor))
     do 
-      (setq loop-index (+ loop-index 1))
-      (print (type-of x))
       (if (typep x 'mldz::a)
         (setf subview-list (append subview-list (list (om::om-make-dialog-item
           'om::om-button
@@ -874,7 +644,8 @@
               nil ; process initialization keywords, not needed here
               (lambda () ; function to call
                 (om::openeditorframe ; open a window displaying the editor of the first A block
-                  (om::omNG-make-new-instance (x) (concatenate 'string "Window A" (write-to-string loop-in)))
+                  (om::omNG-make-new-instance (nth loop-index (block-list (om::object editor))) (concatenate 'string "Window A" (write-to-string loop-index)))
+                  ;; (om::omNG-make-new-instance (x) (concatenate 'string "Window A" (write-to-string loop-index)))
                 )
               )
             )
@@ -896,122 +667,40 @@
               "next thread" ; name of the thread, not necessary but useful for debugging
               nil ; process initialization keywords, not needed here
               (lambda () ; function to call
+                ;; (print "before print")
+                ;; (print (block-list (om::object editor)))
+                ;; (print "after print")
                 (om::openeditorframe ; open a window displaying the editor of the first A block
-                  (om::omNG-make-new-instance (x) (concatenate 'string "Window B" (write-to-string loop-in)))
+                  (om::omNG-make-new-instance (nth loop-index (block-list (om::object editor))) (concatenate 'string "Window B" (write-to-string loop-index)))
+                  ;; (om::omNG-make-new-instance (x) (concatenate 'string "Window B" (write-to-string loop-index)))
                 )
               )
             )
           )
         ))))
       )
-
+      (setq loop-index (+ loop-index 1))
   )
-  ;; Make a list of subviews based off of the info gathered in struct-list
-  ;; then give this list of subviews to om-add-subviews
-  ;; in struct-list the blocks are encoded as such 
-  ;; A == nil
-  ;; B == t
 
   (print "before printing subview list")
-  (print subview-list)
-  
 
   (if (not subview-list)
     (om::om-add-subviews
       structure-panel
     )
-    
-    (om::om-add-subviews
-      structure-panel
-      subview-list
+    (loop for x in subview-list
+      do
+        (om::om-add-subviews
+          structure-panel
+          x
+        )
     )
-    ;; (
-    ;;   (remove nil subview-list)
-    ;;   (om::om-add-subviews
-    ;;     structure-panel
-    ;;     subview-list
-    ;;   )
+    ;; (om::om-add-subviews
+    ;;   structure-panel
+    ;;   (multiple-value-list subview-list)
     ;; )
   )
 )
-
-  ;; (om::om-make-dialog-item
-  ;;     'om::om-button
-  ;;     (om::om-make-point 5 10) ; position (horizontal, vertical)
-  ;;     (om::om-make-point 100 50) ; size (horizontal, vertical)
-  ;;     "A"
-  ;;     :di-action #'(lambda (b)
-      
-  ;;       (print "Selected A1")
-
-  ;;       (mp:process-run-function ; start a new thread for the execution of the next method
-  ;;         "next thread" ; name of the thread, not necessary but useful for debugging
-  ;;         nil ; process initialization keywords, not needed here
-  ;;         (lambda () ; function to call
-  ;;           (setf (A-first (om::object editor)) (make-instance 'A :parent (om::object editor) (om::object editor)))
-  ;;           (om::openeditorframe ; open a window displaying the editor of the first A block
-  ;;             (om::omNG-make-new-instance (A-first (om::object editor)) "Window A1")
-  ;;           )
-  ;;         )
-  ;;       )
-  ;;     )
-  ;; )
-
-;;     (om::om-make-dialog-item
-;;         'om::om-button
-;;         (om::om-make-point 5 10) ; position (horizontal, vertical)
-;;         (om::om-make-point 150 50) ; size (horizontal, vertical)
-;;         "Add A to structure"
-;;         :di-action #'(lambda (b)
-        
-;;           (print "Added A to structure")
-;;           ;; (om::om-make-dialog-item
-;;           ;;     'om::om-button
-;;           ;;     (om::om-make-point 5 70) ; position (horizontal, vertical)
-;;           ;;     (om::om-make-point 100 50) ; size (horizontal, vertical)
-;;           ;;     "New button"
-;;           ;; )
-
-;;         )
-;;     )
-
-;;     (om::om-make-dialog-item
-;;         'om::om-button
-;;         (om::om-make-point 5 65) ; position (horizontal, vertical)
-;;         (om::om-make-point 150 50) ; size (horizontal, vertical)
-;;         "Add B to structure"
-;;         :di-action #'(lambda (b)
-        
-;;           (print "Added B to structure")
-;;           ;; (om::om-make-dialog-item
-;;           ;;     'om::om-button
-;;           ;;     (om::om-make-point 5 70) ; position (horizontal, vertical)
-;;           ;;     (om::om-make-point 100 50) ; size (horizontal, vertical)
-;;           ;;     "New button"
-;;           ;; )
-
-;;         )
-;;     )
-
-;;     (om::om-make-dialog-item
-;;         'om::om-button
-;;         (om::om-make-point 5 120) ; position (horizontal, vertical)
-;;         (om::om-make-point 150 50) ; size (horizontal, vertical)
-;;         "Done"
-;;         :di-action #'(lambda (b)
-;;           (print "Finished structure")
-;;           (mp:process-run-function ; start a new thread for the execution of the next method
-;;             "next thread" ; name of the thread, not necessary but useful for debugging
-;;             nil ; process initialization keywords, not needed here
-;;             (lambda () ; function to call
-;;               ;; (make-my-interface )
-;;             )
-;;           )
-;;         )
-;;     )
-;;   )
-;; )
-
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
