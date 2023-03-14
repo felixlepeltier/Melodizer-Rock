@@ -54,17 +54,17 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (rock-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 450 70)
+        :size (om::om-make-point 450 140)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
         :size (om::om-make-point 450 500)
-        :position (om::om-make-point 5 80)
+        :position (om::om-make-point 5 150)
         :bg-color om::*azulito*)
       )
       (structure-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 110 575)
+        :size (om::om-make-point 110 645)
         :position (om::om-make-point 460 5)
         :bg-color om::*azulito*)
       )
@@ -563,14 +563,14 @@
     rock-panel
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 5 10) ; position (horizontal, vertical)
-        (om::om-make-point 130 50) ; size (horizontal, vertical)
+        (om::om-make-point 50 10) ; position (horizontal, vertical)
+        (om::om-make-point 150 50) ; size (horizontal, vertical)
         "Add A to structure"
         :di-action #'(lambda (b)
         
           (print "Added A to structure")
           (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'A :parent (om::object editor) (om::object editor)))))
-          (print (block-list (om::object editor)))
+          ;; (print (block-list (om::object editor)))
         )
     )
 
@@ -578,21 +578,23 @@
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 140 10) ; position (horizontal, vertical)
-        (om::om-make-point 130 50) ; size (horizontal, vertical)
+        (om::om-make-point 250 10) ; position (horizontal, vertical)
+        (om::om-make-point 150 50) ; size (horizontal, vertical)
         "Add B to structure"
         :di-action #'(lambda (b)
           (print "Added B to structure")
           (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
-          (print (block-list (om::object editor)))
+          ;; (print (block-list (om::object editor)))
         )
     )
     
+        ;;     :size (om::om-make-point 450 140)
+        ;; :position (om::om-make-point 5 5)
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 275 10) ; position (horizontal, vertical)
-        (om::om-make-point 130 50) ; size (horizontal, vertical)
+        (om::om-make-point 50 80) ; position (horizontal, vertical)
+        (om::om-make-point 150 50) ; size (horizontal, vertical)
         "Done"
         :di-action #'(lambda (b)
           (print "Finished structure")
@@ -601,7 +603,24 @@
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
               (make-my-interface editor)
-              (print "after make-my-interface in lambda function")
+            )
+          )
+        )
+    )
+
+    (om::om-make-dialog-item
+        'om::om-button
+        (om::om-make-point 250 80) ; position (horizontal, vertical)
+        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        "Clear structure"
+        :di-action #'(lambda (b)
+          (print "Cleared structure")
+          (mp:process-run-function ; start a new thread for the execution of the next method
+            "next thread" ; name of the thread, not necessary but useful for debugging
+            nil ; process initialization keywords, not needed here
+            (lambda () ; function to call
+              (setf (block-list (om::object editor)) nil)
+              (make-my-interface editor)
             )
           )
         )
@@ -669,8 +688,6 @@
       )
       (setq loop-index (+ loop-index 1))
   )
-
-  (print "before printing subview list")
 
   (if (not subview-list)
     (om::om-add-subviews
