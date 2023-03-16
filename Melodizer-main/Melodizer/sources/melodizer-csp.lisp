@@ -99,7 +99,7 @@
          (prevNotes (list))
          (major-natural (list 2 2 1 2 2 2 1))
          (max-pitch 127))
-
+        (print "start sub-block")
          (setq max-notes (* 127 (+ (* bars quant) 1)))
 
         ;initialize the variables
@@ -128,6 +128,8 @@
             (setq block-list (list block-list))
         )
         (setq positions (position-list block-csp))
+        (print "before positions")
+        (print positions)
 
         ;initial constraint on pull, push, playing and durations
         (gil::g-empty sp (first pull)) ; pull[0] == empty
@@ -178,9 +180,11 @@
 
             )
         )
-
+        (print "before melody")
+        (print (melody-source block-csp))
         (if (melody-source block-csp)
             (let (melody-temp melody-push melody-pull melody-playing)
+                (print "after melody")
                 (setq melody-temp (create-push-pull (melody-source block-csp) quant))
                 (setq melody-push (gil::add-set-var-array sp (length (first melody-temp)) 0 max-pitch 0 max-pitch))
                 (setq melody-pull (gil::add-set-var-array sp (length (second melody-temp)) 0 max-pitch 0 max-pitch))

@@ -29,7 +29,7 @@
         (setq debug2 (list))
 
         ;Setting constraint for this block and child blocks
-        (setq temp (get-sub-block-values sp rock-csp))
+        (setq temp (get-sub-rock-values sp rock-csp))
         (setq push (nth 0 temp))
         (setq pull (nth 1 temp))
         (setq playing (nth 2 temp))
@@ -88,7 +88,7 @@
 
 ;recursive function to set the constraint on all the blocks in the tree structure
 ; TODO : adapt function for A A B A and launch functions for s r d c
-(defun get-sub-block-values (sp rock-csp)
+(defun get-sub-rock-values (sp rock-csp)
     ; for block child of rock-csp
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
@@ -100,7 +100,7 @@
          (prevNotes (list))
          (major-natural (list 2 2 1 2 2 2 1))
          (max-pitch 127))
-
+        (print "get subblocks")
          (setq max-notes (* 127 (+ (* bars quant) 1)))
 
         ;initialize the variables
@@ -126,13 +126,37 @@
 
 
         ;--------------------------------------
-        ;    Rock block have no block-list
+        ;Not all rocks block have no block-list
         ;--------------------------------------
-        (setq block-list (block-list rock-csp))
-        (if (not (typep block-list 'list))
-            (setq block-list (list block-list))
+        (print "before set of block-list and position")
+        (if (typep rock-csp 'mldz::rock)
+            (progn 
+            (setq block-list (block-list rock-csp))
+            (if (not (typep block-list 'list))
+                (setq block-list (list block-list))
+            )
+            (setq positions (position-list rock-csp))
+            )
         )
-        (setq positions (position-list rock-csp))
+        (if (or (typep rock-csp 'mldz::a) (typep rock-csp 'mldz::b))
+            (progn 
+            (setq block-list 
+                (list (s-block rock-csp)(r-block rock-csp)(d-block rock-csp)(c-block rock-csp)))
+            (setq positions (list 0 1 2 3))
+            )
+        )
+        (if (or (typep rock-csp 'mldz::s) 
+            (typep rock-csp 'mldz::r) 
+            (typep rock-csp 'mldz::d) 
+            (typep rock-csp 'mldz::c))
+            (progn 
+            (print "before set of block-list and position")
+            (setq block-list (list (melody-source rock-csp)))
+            (print "before set of position")
+            (setq positions (list 0))
+            (print "after set of block-list and position")
+            )
+        )
 
         ;initial constraint on pull, push, playing and durations
         (gil::g-empty sp (first pull)) ; pull[0] == empty
@@ -183,38 +207,46 @@
 
             )
         )
-
-        ; If melody given in input of the block
-        ;; (if (melody-source rock-csp)
-        ;;     (let (melody-temp melody-push melody-pull melody-playing)
-        ;;         (setq melody-temp (create-push-pull (melody-source rock-csp) quant))
-        ;;         (setq melody-push (gil::add-set-var-array sp (length (first melody-temp)) 0 max-pitch 0 max-pitch))
-        ;;         (setq melody-pull (gil::add-set-var-array sp (length (second melody-temp)) 0 max-pitch 0 max-pitch))
-        ;;         (setq melody-playing (gil::add-set-var-array sp (length (third melody-temp)) 0 max-pitch 0 max-pitch))
-        ;;         (loop :for i :from 0 :below (length (first melody-temp)) :by 1 :do
-        ;;             (if (or (typep (nth i (first melody-temp)) 'list) (/= (nth i (first melody-temp)) -1))
-        ;;                 (gil::g-rel sp (nth i melody-push) gil::SRT_EQ (nth i (first melody-temp)))
-        ;;                 (gil::g-empty sp (nth i push))
-        ;;             )
-        ;;         )
-        ;;         (loop :for i :from 0 :below (length (second melody-temp)) :by 1 :do
-        ;;             (if (or (typep (nth i (second melody-temp)) 'list) (/= (nth i (second melody-temp)) -1))
-        ;;                 (gil::g-rel sp (nth i melody-pull) gil::SRT_EQ (nth i (second melody-temp)))
-        ;;                 (gil::g-empty sp (nth i pull))
-        ;;             )
-        ;;         )
-        ;;         (loop :for i :from 0 :below (length (third melody-temp)) :by 1 :do
-        ;;             (if (or (typep (nth i (third melody-temp)) 'list) (/= (nth i (third melody-temp)) -1))
-        ;;                 (gil::g-rel sp (nth i melody-playing) gil::SRT_EQ (nth i (third melody-temp)))
-        ;;                 (gil::g-empty sp (nth i melody-playing))
-        ;;             )
-        ;;         )
-        ;;         (loop :for j :from 0 :below (length melody-push) :by 1 :do
-        ;;                 (gil::g-rel sp (nth j melody-push) gil::SRT_SUB (nth j push))
-        ;;                 (gil::g-rel sp (nth j melody-pull) gil::SRT_SUB (nth j pull))
-        ;;         )
-        ;;     )
-        ;; )
+        (print (melody-source rock-csp))
+        ; If melody given in input of the block (mandatory for r d c to have s)
+        (if (melody-source rock-csp)
+            (let (melody-temp melody-push melody-pull melody-playing)
+                (print "1")
+                (setq melody-temp (create-push-pull (melody-source rock-csp) quant))
+                (print "2")
+                (setq melody-push (gil::add-set-var-array sp (length (first melody-temp)) 0 max-pitch 0 max-pitch))
+                (print "3")
+                (setq melody-pull (gil::add-set-var-array sp (length (second melody-temp)) 0 max-pitch 0 max-pitch))
+                (print "4")
+                (setq melody-playing (gil::add-set-var-array sp (length (third melody-temp)) 0 max-pitch 0 max-pitch))
+                (print "5")
+                (loop :for i :from 0 :below (length (first melody-temp)) :by 1 :do
+                    (if (or (typep (nth i (first melody-temp)) 'list) (/= (nth i (first melody-temp)) -1))
+                        (gil::g-rel sp (nth i melody-push) gil::SRT_EQ (nth i (first melody-temp)))
+                        (gil::g-empty sp (nth i push))
+                    )
+                )
+                (print "after first loop")
+                (loop :for i :from 0 :below (length (second melody-temp)) :by 1 :do
+                    (if (or (typep (nth i (second melody-temp)) 'list) (/= (nth i (second melody-temp)) -1))
+                        (gil::g-rel sp (nth i melody-pull) gil::SRT_EQ (nth i (second melody-temp)))
+                        (gil::g-empty sp (nth i pull))
+                    )
+                )
+                (print "after second loop")
+                (loop :for i :from 0 :below (length (third melody-temp)) :by 1 :do
+                    (if (or (typep (nth i (third melody-temp)) 'list) (/= (nth i (third melody-temp)) -1))
+                        (gil::g-rel sp (nth i melody-playing) gil::SRT_EQ (nth i (third melody-temp)))
+                        (gil::g-empty sp (nth i melody-playing))
+                    )
+                )
+                (print "after third loop")
+                (loop :for j :from 0 :below (length melody-push) :by 1 :do
+                        (gil::g-rel sp (nth j melody-push) gil::SRT_SUB (nth j push))
+                        (gil::g-rel sp (nth j melody-pull) gil::SRT_SUB (nth j pull))
+                )
+            )
+        )
 
 
         ;------------------------------------------
@@ -238,7 +270,7 @@
                         ;-------------------------------------------------
                         ; Part to change: the recursive not good for rock
                         ;-------------------------------------------------
-                           (setq tempList (get-sub-block-values sp (nth i block-list)))
+                           (setq tempList (get-sub-rock-values sp (nth i block-list)))
                            (setq tempPush (first tempList))
                            (setq tempPull (second tempList))
                            (setq tempPlaying (third tempList))

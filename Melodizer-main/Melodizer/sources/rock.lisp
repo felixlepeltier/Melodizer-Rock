@@ -15,6 +15,7 @@
 (om::defclass! rock ()
     (
     (block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
+    (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
     (A-first :accessor A-first :initarg :A-first :initform nil :documentation "")
     (A-second :accessor A-second :initarg :A-second :initform nil :documentation "")
     (object-B :accessor object-B :initarg :object-B :initform nil :documentation "")
@@ -276,6 +277,7 @@
     (max-pitch :accessor max-pitch :initform 127 :type integer)
     (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
     (beat-length :accessor beat-length :initform 0 :type integer)
+    (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
     )
 )
 

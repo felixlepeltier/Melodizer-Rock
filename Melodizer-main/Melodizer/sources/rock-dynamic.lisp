@@ -333,6 +333,7 @@
 
 (om::defclass! r ()
     ((block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
+    (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
     (parent :accessor parent :initarg :parent :initform nil :documentation "")
     (chord-key :accessor chord-key :initform nil :type string)
     (bar-length :accessor bar-length :initform 0 :type integer)
@@ -341,6 +342,7 @@
     (max-pitch :accessor max-pitch :initform 127 :type integer)
     (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
     (beat-length :accessor beat-length :initform 0 :type integer)
+    (quantification :accessor quantification :initform nil :type string)
     )
 )
 
