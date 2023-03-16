@@ -419,6 +419,8 @@
          (tree (om::tree input-chords))
          (pitch (to-pitch-list (om::chords input-chords))))
          (setq tree (second tree))
+         (print "before chords")
+         (print input-chords)
          (loop :for i :from 0 :below (length tree) :by 1 :do
             (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (first (second (nth i tree)))) pitch 0 quant next))
             (setq push (append push (first temp)))
