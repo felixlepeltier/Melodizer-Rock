@@ -1156,6 +1156,7 @@
       (om::om-make-point 170 50)
       (om::om-make-point 200 20)
       "Bar length"
+      ;; :value (bar-length (om::object editor))
       :range (loop :for n :from 0 :upto 32 collect n)
       :di-action #'(lambda (m)
         (setf (bar-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
@@ -1199,6 +1200,7 @@
       (om::om-make-point 200 20)
       "Chord key"
       :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :value (chord-key (om::object editor))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
         (if (string= check "None")
@@ -1234,6 +1236,7 @@
       "Minimum pitch"
       :range '(1 127)
       :increment 1
+      :value (min-pitch (om::object editor))
       :di-action #'(lambda (s)
         (setf (min-pitch (om::object editor)) (om::om-slider-value s))
       )
@@ -1267,8 +1270,54 @@
       "Maximum pitch"
       :range '(1 127)
       :increment 1
+      :value (max-pitch (om::object editor))
       :di-action #'(lambda (s)
         (setf (max-pitch (om::object editor)) (om::om-slider-value s))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 200)
+      (om::om-make-point 200 20)
+      "Maximum pushed notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 200)
+      (om::om-make-point 200 20)
+      "Maximum pushed notes"
+      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (max-pushed-notes (om::object editor)) nil)
+          (setf (max-pushed-notes (om::object editor)) check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 400)
+      (om::om-make-point 200 20)
+      "Maximum notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 400)
+      (om::om-make-point 200 20)
+      "Maximum notes"
+      :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
+      ;; :value (max-notes (om::object editor))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (max-notes (om::object editor)) nil)
+          (setf (max-notes (om::object editor)) check))
       )
     )
 
