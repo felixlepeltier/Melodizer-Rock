@@ -93,6 +93,8 @@
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
     ; return pull push playing
+    (print "get sub-blocks")
+    (print rock-csp)
     (let (pull push notes playing pushMap pushMap-card pullMap block-list positions max-notes sub-push sub-pull
           push-card added-push added-notes added-push-card q-push q-push-card
          (bars (bar-length rock-csp))
@@ -600,12 +602,18 @@
 
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
-        (setq score-chord-seq (build-chord-seq sol push pull bars quant 80))
+        ;; (setq score-chord-seq (build-chord-seq sol push pull bars quant 80))
+        (setq score-voice (build-voice sol push pull bars quant 80))
 
-        (make-instance 'chord-seq
-            :LMidic (first score-chord-seq)
-            :LOnset (second score-chord-seq)
-            :Ldur (third score-chord-seq)
+        ;; (setq chords-sequence (make-instance 'chord-seq
+        ;;     :LMidic (first score-chord-seq)
+        ;;     :LOnset (second score-chord-seq)
+        ;;     :Ldur (third score-chord-seq)
+        ;; ))
+        (print (second score-voice))
+        (make-instance 'om::voice
+            :chords (first score-voice)
+            :tree (second score-voice)
         )
     )
 )

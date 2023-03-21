@@ -626,7 +626,7 @@
             )
         )
         (if (= rest 1)
-            (setq rhythm (nconc rhythm '(list (* -1 count))))
+            (setq rhythm (nconc rhythm (list (* -1 count))))
             (setq rhythm (nconc rhythm (list count)))
         )
         (setq count 0)
@@ -634,6 +634,7 @@
 
         (setq tree (nconc tree (list rhythm)))
     )
+    (print tree)
     (setq tree (list '? tree))
 
     (list chords tree)
