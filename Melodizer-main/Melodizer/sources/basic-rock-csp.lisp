@@ -443,12 +443,12 @@
         )
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
-        (setq score-chord-seq (build-chord-seq sol push pull bars quant 80))
+        (setq score-voice (build-voice sol push pull bars quant 80))
 
-        (make-instance 'chord-seq
-            :LMidic (first score-chord-seq)
-            :LOnset (second score-chord-seq)
-            :Ldur (third score-chord-seq)
+
+        (make-instance 'om::voice
+            :chords (first score-voice)
+            :tree (second score-voice)
         )
     )
 )
