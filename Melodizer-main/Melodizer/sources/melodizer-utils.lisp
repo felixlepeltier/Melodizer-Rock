@@ -732,7 +732,6 @@
 				 (append accumulator (list (car input-list)))))))
 
 (defun change-sublocks-bar-length (rock-block bar-length)
-    (print "change bar-length")
     (if (typep rock-block 'mldz::rock)
         (progn
             (loop :for x in (block-list rock-block) do 
@@ -745,11 +744,67 @@
     (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
         (progn
             (setq n-bars (/ bar-length 4))
-            (print n-bars)
             (setf (bar-length (s-block rock-block)) n-bars)
             (setf (bar-length (r-block rock-block)) n-bars)
             (setf (bar-length (d-block rock-block)) n-bars)
             (setf (bar-length (c-block rock-block)) n-bars)
+        )
+    )
+)
+
+(defun change-sublocks-chord-key (rock-block chord-key)
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setf (chord-key x) chord-key)
+                (change-sublocks-chord-key x chord-key)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setf (chord-key (s-block rock-block)) chord-key)
+            (setf (chord-key (r-block rock-block)) chord-key)
+            (setf (chord-key (d-block rock-block)) chord-key)
+            (setf (chord-key (c-block rock-block)) chord-key)
+        )
+    )
+)
+
+(defun change-sublocks-min-pitch (rock-block min-pitch-flag min-pitch)
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setf (min-pitch-flag x) min-pitch-flag (min-pitch x) min-pitch)
+                (change-sublocks-min-pitch x min-pitch-flag min-pitch)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setf (min-pitch-flag (s-block rock-block)) min-pitch-flag (min-pitch (s-block rock-block)) min-pitch)
+            (setf (min-pitch-flag (r-block rock-block)) min-pitch-flag (min-pitch (r-block rock-block)) min-pitch)
+            (setf (min-pitch-flag (d-block rock-block)) min-pitch-flag (min-pitch (d-block rock-block)) min-pitch)
+            (setf (min-pitch-flag (c-block rock-block)) min-pitch-flag (min-pitch (c-block rock-block)) min-pitch)
+        )
+    )
+)
+
+(defun change-sublocks-max-pitch (rock-block max-pitch-flag max-pitch)
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setf (max-pitch-flag x) max-pitch-flag (max-pitch x) max-pitch)
+                (change-sublocks-max-pitch x max-pitch-flag max-pitch)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setf (max-pitch-flag (s-block rock-block)) max-pitch-flag (max-pitch (s-block rock-block)) max-pitch)
+            (setf (max-pitch-flag (r-block rock-block)) max-pitch-flag (max-pitch (r-block rock-block)) max-pitch)
+            (setf (max-pitch-flag (d-block rock-block)) max-pitch-flag (max-pitch (d-block rock-block)) max-pitch)
+            (setf (max-pitch-flag (c-block rock-block)) max-pitch-flag (max-pitch (c-block rock-block)) max-pitch)
         )
     )
 )
