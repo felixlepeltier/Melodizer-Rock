@@ -97,8 +97,8 @@
 
 ; create a list from min to max by step
 (defun range (max &key (min 0) (step 1))
-   (loop for n from min below max by step
-      collect n))
+   (loop :for n :from min :below max :by step
+      :collect n))
 
 ; function to update the list of solutions in a pop-up menu without having to close and re-open the window
 ; TODO find a more efficient way to do this
@@ -730,3 +730,46 @@
 		 (nth (random (length input-list)) input-list))
 	(list-shuffler (cdr input-list)
 				 (append accumulator (list (car input-list)))))))
+
+(defun change-sublocks-bar-length (rock-block bar-length)
+    (print "change bar-length")
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setq n-bars (/ bar-length (list-length (block-list rock-block))))
+                (setf (bar-length x) n-bars)
+                (change-sublocks-bar-length x n-bars)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setq n-bars (/ bar-length 4))
+            (print n-bars)
+            (setf (bar-length (s-block rock-block)) n-bars)
+            (setf (bar-length (r-block rock-block)) n-bars)
+            (setf (bar-length (d-block rock-block)) n-bars)
+            (setf (bar-length (c-block rock-block)) n-bars)
+        )
+    )
+)
+
+(defun bar-length-range (rock-block)
+    (let (result (list)) 
+        (if (typep rock-block 'mldz::rock)
+            (if (block-list rock-block) 
+                (progn
+                    (setq n-block (list-length (block-list rock-block)))
+                    (setq result (append '("None") (loop :for n 
+                                            :from (* 4 n-block)  
+                                            :below (+ (* 16 n-block) 1)
+                                            :by (* 4 n-block) 
+                                            :collect (number-to-string n))))
+                )
+                (setf result '("None"))
+            )
+            (setq result (list (number-to-string (bar-length rock-block))))
+        )
+        result
+    )
+)

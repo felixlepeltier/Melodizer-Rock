@@ -610,7 +610,6 @@
         ;;     :LOnset (second score-chord-seq)
         ;;     :Ldur (third score-chord-seq)
         ;; ))
-        (print (second score-voice))
         (make-instance 'om::voice
             :chords (first score-voice)
             :tree (second score-voice)

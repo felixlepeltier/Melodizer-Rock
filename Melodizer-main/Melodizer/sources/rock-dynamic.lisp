@@ -145,10 +145,10 @@
 
 (om::defclass! A ()
     (
-      (s-block :accessor s-block :initarg :s-block :initform nil :documentation "")
-      (r-block :accessor r-block :initarg :r-block :initform nil :documentation "")
-      (d-block :accessor d-block :initarg :d-block :initform nil :documentation "")
-      (c-block :accessor c-block :initarg :c-block :initform nil :documentation "")
+      (s-block :accessor s-block :initarg :s-block :initform (make-instance 's) :documentation "")
+      (r-block :accessor r-block :initarg :r-block :initform (make-instance 'r) :documentation "")
+      (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
+      (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
@@ -259,15 +259,14 @@
 
 (om::defclass! B ()
     (
-      (s-block :accessor s-block :initarg :s-block :initform nil :documentation "")
-      (r-block :accessor r-block :initarg :r-block :initform nil :documentation "")
-      (d-block :accessor d-block :initarg :d-block :initform nil :documentation "")
-      (c-block :accessor c-block :initarg :c-block :initform nil :documentation "")
+      (s-block :accessor s-block :initarg :s-block :initform (make-instance 's) :documentation "")
+      (r-block :accessor r-block :initarg :r-block :initform (make-instance 'r) :documentation "")
+      (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
+      (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
-      (beat-length :accessor beat-length :initform 0 :type integer)
       (voices :accessor voices :initform nil :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
       (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
@@ -957,7 +956,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
+              ;; (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (s-block (om::object editor)) "Window s")
               )
@@ -976,7 +975,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
+              ;; (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (r-block (om::object editor)) "Window r")
               )
@@ -995,7 +994,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
+              ;; (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (d-block (om::object editor)) "Window d")
               )
@@ -1014,7 +1013,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
+              ;; (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (c-block (om::object editor)) "Window c")
               )
@@ -1048,7 +1047,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
+              ;; (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (s-block (om::object editor)) "Window s")
               )
@@ -1067,7 +1066,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
+              ;; (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (r-block (om::object editor)) "Window r")
               )
@@ -1086,7 +1085,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
+              ;; (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (d-block (om::object editor)) "Window d")
               )
@@ -1105,7 +1104,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
+              ;; (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (c-block (om::object editor)) "Window c")
               )
@@ -1116,23 +1115,9 @@
   )
 )
 
-(defun make-s-panel (editor s-panel)
-
-)
-
-(defun make-r-panel (editor r-panel)
-
-)
-
-(defun make-d-panel (editor d-panel)
-
-)
-
-(defun make-c-panel (editor c-panel)
-
-)
-
 (defun make-constraints-panel (editor panel)
+  (print "constraints")
+  (print (bar-length-range (om::object editor)))
   (om::om-add-subviews
     panel
     (om::om-make-dialog-item
@@ -1147,7 +1132,7 @@
       'om::om-static-text
       (om::om-make-point 15 50)
       (om::om-make-point 200 20)
-      "Bar length"
+      "Number of bars"
       :font om::*om-default-font1b*
     )
 
@@ -1156,11 +1141,12 @@
       (om::om-make-point 170 50)
       (om::om-make-point 200 20)
       "Bar length"
-      ;; :value (bar-length (om::object editor))
-      :range (loop :for n :from 0 :upto 32 collect n)
+      :range (bar-length-range (om::object editor))
+      :value (number-to-string (bar-length (om::object editor)))
       :di-action #'(lambda (m)
-        (setf (bar-length (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (bar-length (om::object editor)) (string-to-number (nth (om::om-get-selected-item-index m) (om::om-get-item-list m))))
         (print (bar-length (om::object editor)))
+        (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
       )
     )
 

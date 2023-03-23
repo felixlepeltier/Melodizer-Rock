@@ -135,41 +135,44 @@
         ;--------------------------------------
         ;Not all rocks block have no block-list
         ;--------------------------------------
-        ;; (if (typep rock-csp 'mldz::rock)
-        ;;     (progn 
-        ;;     (setq block-list (block-list rock-csp))
-        ;;     (if (not (typep block-list 'list))
-        ;;         (setq block-list (list block-list))
-        ;;     )
-        ;;     (setq positions (position-list rock-csp))
-        ;;     )
-        ;; )
-        ;; (if (or (typep rock-csp 'mldz::a) (typep rock-csp 'mldz::b))
-        ;;     (progn 
-        ;;     (setq block-list 
-        ;;         (list (s-block rock-csp)(r-block rock-csp)(d-block rock-csp)(c-block rock-csp)))
-        ;;     (setq positions (list 0 1 2 3))
-        ;;     )
-        ;; )
-        ;; (if (or (typep rock-csp 'mldz::s) 
-        ;;     (typep rock-csp 'mldz::r) 
-        ;;     (typep rock-csp 'mldz::d) 
-        ;;     (typep rock-csp 'mldz::c))
-        ;;     (progn 
-        ;;     (if (melody-source rock-csp)
-        ;;         (progn
-        ;;             (setq block-list (list (melody-source rock-csp)))
-        ;;             (setq positions (list 0))
-        ;;         )
-        ;;     )
-        ;;     )
-        ;; )
+        (print rock-csp)
+        (if (typep rock-csp 'mldz::rock)
+            (progn 
+            (setq block-list (block-list rock-csp))
+            (if (not (typep block-list 'list))
+                (setq block-list (list block-list))
+            )
+            (setq positions (range (list-length block-list)))
+            (print "rock")
+            (print positions)
+            )
+        )
+        (if (or (typep rock-csp 'mldz::a) (typep rock-csp 'mldz::b))
+            (progn 
+            (setq block-list 
+                (list (s-block rock-csp)(r-block rock-csp)(d-block rock-csp)(c-block rock-csp)))
+            (setq positions '(0 1 2 3))
+            )
+        )
+        (if (or (typep rock-csp 'mldz::s) 
+            (typep rock-csp 'mldz::r) 
+            (typep rock-csp 'mldz::d) 
+            (typep rock-csp 'mldz::c))
+            (progn 
+            (if (melody-source rock-csp)
+                (progn
+                    (setq block-list (list (melody-source rock-csp)))
+                    (setq positions '(0))
+                )
+            )
+            )
+        )
 
 
         ;; DEBUG BY USING WHAT WAS DONE IN melodizer-csp.lisp
-        (setq positions (position-list rock-csp))
-        (print "before positions")
-        (print positions)
+        ;; (setq positions (position-list rock-csp))
+        ;; (print "before positions")
+        ;; (print positions)
 
         ;initial constraint on pull, push, playing and durations
         (gil::g-empty sp (first pull)) ; pull[0] == empty
@@ -238,7 +241,9 @@
                     (setq sub-pull-list (nconc sub-pull-list (list temp2)))
                     (gil::g-op sp (nth i push) gil::SOT_MINUS (nth i sub-push) (nth i added-push))
                 )
-
+                (print "Before bug")
+                (print block-list)
+                (print positions)
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
                       (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
                         ;-------------------------------------------------
