@@ -96,23 +96,23 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (rock-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 450 140)
+        :size (om::om-make-point 200 300)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 450 500)
-        :position (om::om-make-point 5 150)
+        :size (om::om-make-point 810 500)
+        :position (om::om-make-point 5 310)
         :bg-color om::*azulito*)
       )
       (structure-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 110 645)
-        :position (om::om-make-point 460 5)
+        :size (om::om-make-point 200 300)
+        :position (om::om-make-point 210 5)
         :bg-color om::*azulito*)
       )
       (search-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 400 645)
-        :position (om::om-make-point 575 5)
+        :size (om::om-make-point 400 300)
+        :position (om::om-make-point 415 5)
         :bg-color om::*azulito*)
       )
     )
@@ -224,12 +224,12 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (A-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 600 150)
+        :size (om::om-make-point 810 150)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 810 500)
         :position (om::om-make-point 5 160)
         :bg-color om::*azulito*)
       )
@@ -336,12 +336,12 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (B-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 600 150)
+        :size (om::om-make-point 810 150)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 810 500)
         :position (om::om-make-point 5 160)
         :bg-color om::*azulito*)
       )
@@ -444,7 +444,7 @@
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 810 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
@@ -544,7 +544,7 @@
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 810 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
@@ -642,7 +642,7 @@
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 810 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
@@ -741,7 +741,7 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 810 500)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
@@ -789,8 +789,8 @@
     rock-panel
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 50 10) ; position (horizontal, vertical)
-        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        (om::om-make-point 5 5) ; position (horizontal, vertical)
+        (om::om-make-point 150 40) ; size (horizontal, vertical)
         "Add A to structure"
         :di-action #'(lambda (b)
         
@@ -808,8 +808,8 @@
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 250 10) ; position (horizontal, vertical)
-        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        (om::om-make-point 5 50) ; position (horizontal, vertical)
+        (om::om-make-point 150 40) ; size (horizontal, vertical)
         "Add B to structure"
         :di-action #'(lambda (b)
           (print "Added B to structure")
@@ -827,8 +827,8 @@
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 50 80) ; position (horizontal, vertical)
-        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        (om::om-make-point 5 95) ; position (horizontal, vertical)
+        (om::om-make-point 150 40) ; size (horizontal, vertical)
         "Done"
         :di-action #'(lambda (b)
           (print "Finished structure")
@@ -844,8 +844,8 @@
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 250 80) ; position (horizontal, vertical)
-        (om::om-make-point 150 50) ; size (horizontal, vertical)
+        (om::om-make-point 5 140) ; position (horizontal, vertical)
+        (om::om-make-point 150 40) ; size (horizontal, vertical)
         "Clear structure"
         :di-action #'(lambda (b)
           (print "Cleared structure")
@@ -1130,7 +1130,7 @@
     panel
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 150 2)
+      (om::om-make-point 15 2)
       (om::om-make-point 120 20)
       "Block constraints"
       :font om::*om-default-font1b*
@@ -1147,7 +1147,7 @@
     (om::om-make-dialog-item
       'om::pop-up-menu
       (om::om-make-point 170 50)
-      (om::om-make-point 200 20)
+      (om::om-make-point 80 20)
       "Bar length"
       :range (bar-length-range (om::object editor))
       :value (number-to-string (bar-length (om::object editor)))
@@ -1161,6 +1161,260 @@
         (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
       )
     )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 150)
+      (om::om-make-point 200 20)
+      "Minimum pushed notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 150)
+      (om::om-make-point 80 20)
+      "Minimum pushed notes"
+      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (min-pushed-notes (om::object editor)) nil)
+          (setf (min-pushed-notes (om::object editor)) check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 200)
+      (om::om-make-point 200 20)
+      "Maximum pushed notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 200)
+      (om::om-make-point 80 20)
+      "Maximum pushed notes"
+      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (typep check 'string)
+          (setf (max-pushed-notes (om::object editor)) nil)
+          (setf (max-pushed-notes (om::object editor)) check))
+      )
+    )
+
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 300 2)
+      (om::om-make-point 120 20)
+      "Time constraints"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 300 50)
+      (om::om-make-point 200 20)
+      "Minimum note length"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 430 50)
+      (om::om-make-point 20 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-note-length-flag (om::object editor)) 1)
+                      (setf (min-note-length-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
+    (om::om-make-dialog-item
+      'om::om-slider
+      (om::om-make-point 450 50)
+      (om::om-make-point 80 20); size
+      "Minimum note length"
+      :range '(0 192)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (min-note-length (om::object editor)) (om::om-slider-value s))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 300 100)
+      (om::om-make-point 200 20)
+      "Maximum note length"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 430 100)
+      (om::om-make-point 20 20)
+      ""
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-note-length-flag (om::object editor)) 1)
+                      (setf (max-note-length-flag (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-slider
+      (om::om-make-point 450 100)
+      (om::om-make-point 80 20); size
+      "Maximum note length"
+      :range '(0 192)
+      :increment 1
+      :di-action #'(lambda (s)
+        (setf (max-note-length (om::object editor)) (om::om-slider-value s))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 2)
+      (om::om-make-point 200 20)
+      "Pitch constraints"
+      :font om::*om-default-font1b*
+    )
+
+    ; Key
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 50)
+      (om::om-make-point 200 20)
+      "Key selection"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 50)
+      (om::om-make-point 80 20)
+      "Key selection"
+      :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (key-selection (om::object editor)) nil)
+          (setf (key-selection (om::object editor)) check))
+      )
+    )
+
+
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 100)
+      (om::om-make-point 200 20)
+      "Chord key"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 100)
+      (om::om-make-point 80 20)
+      "Chord key"
+      :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :value (chord-key (om::object editor))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-key (om::object editor)) nil)
+          (setf (chord-key (om::object editor)) check))
+          (change-sublocks-chord-key (om::object editor) check)
+      )
+    )
+     (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 150)
+      (om::om-make-point 200 20)
+      "Minimum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 670 150)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (min-pitch-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-pitch-flag (om::object editor)) 1)
+                      (setf (min-pitch-flag (om::object editor)) nil)
+                    )
+                    (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 690 150)
+      (om::om-make-point 80 20)
+      "Minimum pitch"
+      :range '(1 127)
+      :increment 1
+      :value (min-pitch (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (min-pitch (om::object editor)) (om::om-slider-value s))
+        (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 200)
+      (om::om-make-point 200 20)
+      "Maximum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 670 200)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (max-pitch-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-pitch-flag (om::object editor)) 1)
+                      (setf (max-pitch-flag (om::object editor)) nil)
+                    )
+                    (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 690 200)
+      (om::om-make-point 80 20)
+      "Maximum pitch"
+      :range '(1 127)
+      :increment 1
+      :value (max-pitch (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (max-pitch (om::object editor)) (om::om-slider-value s))
+        (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+      )
+    )
+
+
+
 
     ;; (om::om-make-dialog-item
     ;;   'om::om-static-text
@@ -1184,147 +1438,127 @@
     ;;   )
     ;; )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 150)
-      (om::om-make-point 200 20)
-      "Chord key"
-      :font om::*om-default-font1b*
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 15 150)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Chord key"
+    ;;   :font om::*om-default-font1b*
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 150)
-      (om::om-make-point 200 20)
-      "Chord key"
-      :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
-      :value (chord-key (om::object editor))
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (chord-key (om::object editor)) nil)
-          (setf (chord-key (om::object editor)) check))
-          (change-sublocks-chord-key (om::object editor) check)
-      )
-    )
-     (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 250)
-      (om::om-make-point 200 20)
-      "Minimum pitch"
-      :font om::*om-default-font1b*
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::pop-up-menu
+    ;;   (om::om-make-point 170 150)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Chord key"
+    ;;   :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+    ;;   :value (chord-key (om::object editor))
+    ;;   :di-action #'(lambda (m)
+    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;;     (if (string= check "None")
+    ;;       (setf (chord-key (om::object editor)) nil)
+    ;;       (setf (chord-key (om::object editor)) check))
+    ;;       (change-sublocks-chord-key (om::object editor) check)
+    ;;   )
+    ;; )
+    ;;  (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 15 250)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Minimum pitch"
+    ;;   :font om::*om-default-font1b*
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::om-check-box
-      (om::om-make-point 170 250)
-      (om::om-make-point 20 20)
-      ""
-      :checked-p (min-pitch-flag (om::object editor))
-      :di-action #'(lambda (c)
-                    (if (om::om-checked-p c)
-                      (setf (min-pitch-flag (om::object editor)) 1)
-                      (setf (min-pitch-flag (om::object editor)) nil)
-                    )
-                    (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-check-box
+    ;;   (om::om-make-point 170 250)
+    ;;   (om::om-make-point 20 20)
+    ;;   ""
+    ;;   :checked-p (min-pitch-flag (om::object editor))
+    ;;   :di-action #'(lambda (c)
+    ;;                 (if (om::om-checked-p c)
+    ;;                   (setf (min-pitch-flag (om::object editor)) 1)
+    ;;                   (setf (min-pitch-flag (om::object editor)) nil)
+    ;;                 )
+    ;;                 (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
+    ;;   )
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::slider
-      (om::om-make-point 190 250)
-      (om::om-make-point 180 20)
-      "Minimum pitch"
-      :range '(1 127)
-      :increment 1
-      :value (min-pitch (om::object editor))
-      :di-action #'(lambda (s)
-        (setf (min-pitch (om::object editor)) (om::om-slider-value s))
-        (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::slider
+    ;;   (om::om-make-point 190 250)
+    ;;   (om::om-make-point 180 20)
+    ;;   "Minimum pitch"
+    ;;   :range '(1 127)
+    ;;   :increment 1
+    ;;   :value (min-pitch (om::object editor))
+    ;;   :di-action #'(lambda (s)
+    ;;     (setf (min-pitch (om::object editor)) (om::om-slider-value s))
+    ;;     (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
+    ;;   )
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 300)
-      (om::om-make-point 200 20)
-      "Maximum pitch"
-      :font om::*om-default-font1b*
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 15 300)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Maximum pitch"
+    ;;   :font om::*om-default-font1b*
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::om-check-box
-      (om::om-make-point 170 300)
-      (om::om-make-point 20 20)
-      ""
-      :checked-p (max-pitch-flag (om::object editor))
-      :di-action #'(lambda (c)
-                    (if (om::om-checked-p c)
-                      (setf (max-pitch-flag (om::object editor)) 1)
-                      (setf (max-pitch-flag (om::object editor)) nil)
-                    )
-                    (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-check-box
+    ;;   (om::om-make-point 170 300)
+    ;;   (om::om-make-point 20 20)
+    ;;   ""
+    ;;   :checked-p (max-pitch-flag (om::object editor))
+    ;;   :di-action #'(lambda (c)
+    ;;                 (if (om::om-checked-p c)
+    ;;                   (setf (max-pitch-flag (om::object editor)) 1)
+    ;;                   (setf (max-pitch-flag (om::object editor)) nil)
+    ;;                 )
+    ;;                 (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+    ;;   )
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::slider
-      (om::om-make-point 190 300)
-      (om::om-make-point 180 20)
-      "Maximum pitch"
-      :range '(1 127)
-      :increment 1
-      :value (max-pitch (om::object editor))
-      :di-action #'(lambda (s)
-        (setf (max-pitch (om::object editor)) (om::om-slider-value s))
-        (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::slider
+    ;;   (om::om-make-point 190 300)
+    ;;   (om::om-make-point 180 20)
+    ;;   "Maximum pitch"
+    ;;   :range '(1 127)
+    ;;   :increment 1
+    ;;   :value (max-pitch (om::object editor))
+    ;;   :di-action #'(lambda (s)
+    ;;     (setf (max-pitch (om::object editor)) (om::om-slider-value s))
+    ;;     (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+    ;;   )
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 200)
-      (om::om-make-point 200 20)
-      "Maximum pushed notes"
-      :font om::*om-default-font1b*
-    )
 
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 200)
-      (om::om-make-point 200 20)
-      "Maximum pushed notes"
-      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (typep check 'string)
-          (setf (max-pushed-notes (om::object editor)) nil)
-          (setf (max-pushed-notes (om::object editor)) check))
-      )
-    )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 400)
-      (om::om-make-point 200 20)
-      "Maximum notes"
-      :font om::*om-default-font1b*
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 15 400)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Maximum notes"
+    ;;   :font om::*om-default-font1b*
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 400)
-      (om::om-make-point 200 20)
-      "Maximum notes"
-      :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
-      ;; :value (max-notes (om::object editor))
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (typep check 'string)
-          (setf (max-notes (om::object editor)) nil)
-          (setf (max-notes (om::object editor)) check))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::pop-up-menu
+    ;;   (om::om-make-point 170 400)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Maximum notes"
+    ;;   :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
+    ;;   ;; :value (max-notes (om::object editor))
+    ;;   :di-action #'(lambda (m)
+    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;;     (if (typep check 'string)
+    ;;       (setf (max-notes (om::object editor)) nil)
+    ;;       (setf (max-notes (om::object editor)) check))
+    ;;   )
+    ;; )
 
   )
 
