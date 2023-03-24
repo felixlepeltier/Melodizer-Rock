@@ -800,7 +800,6 @@
           (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
           (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
           (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-          ;; (print (block-list (om::object editor)))
         )
     )
 
@@ -818,7 +817,6 @@
           (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
           (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
           (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-          ;; (print (block-list (om::object editor)))
         )
     )
     
@@ -836,6 +834,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
+              (om::om-remove-subviews rock-panel)
               (make-my-interface editor)
             )
           )
@@ -850,9 +849,10 @@
         :di-action #'(lambda (b)
           (print "Cleared structure")
           (mp:process-run-function ; start a new thread for the execution of the next method
-            "next thread" ; name of the thread, not necessary but useful for debugging
+            "clear struct" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
+              (om::om-remove-subviews rock-panel)
               (setf (block-list (om::object editor)) nil)
               (make-my-interface editor)
             )
@@ -872,8 +872,7 @@
 ;; if we have access to the rock-editor
 (defun make-structure-panel (editor structure-panel)
 
-  (setq loop-index 0)
-  (defvar subview-list '())
+  (let ((loop-index 0) (subview-list '()))
   (loop for x in (block-list (om::object editor))
     do 
       (if (typep x 'mldz::a)
@@ -885,7 +884,6 @@
           :di-action #'(lambda (b)
 
             (print "Selected A")
-
             (mp:process-run-function ; start a new thread for the execution of the next method
               "next thread" ; name of the thread, not necessary but useful for debugging
               nil ; process initialization keywords, not needed here
@@ -922,6 +920,7 @@
       )
       (setq loop-index (+ loop-index 1))
   )
+  
 
   (if (not subview-list)
     (om::om-add-subviews
@@ -938,6 +937,7 @@
     ;;   structure-panel
     ;;   (multiple-value-list subview-list)
     ;; )
+  )
   )
 )
 
@@ -1124,8 +1124,6 @@
 )
 
 (defun make-constraints-panel (editor panel)
-  (print "constraints")
-  (print (bar-length-range (om::object editor)))
   (om::om-add-subviews
     panel
     (om::om-make-dialog-item
@@ -1156,8 +1154,6 @@
         (if (string= check "None")
           (setf (bar-length (om::object editor)) 0)
           (setf (bar-length (om::object editor)) (string-to-number check)))
-        ;; (setf (bar-length (om::object editor)) (string-to-number (nth (om::om-get-selected-item-index m) (om::om-get-item-list m))))
-        ;; (print (bar-length (om::object editor)))
         (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
       )
     )
