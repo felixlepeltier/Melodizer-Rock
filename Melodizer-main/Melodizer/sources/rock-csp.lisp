@@ -39,6 +39,8 @@
         (setq push-card (nth 5 temp))
         (setq q-push (nth 6 temp))
 
+        (print "Percent diff : ")
+        (print percent-diff)
         (gil::g-specify-sol-variables sp q-push)
         (gil::g-specify-percent-diff sp percent-diff)
 
@@ -258,9 +260,9 @@
                            (setq prevNotes (nth 7 tempList))
 
                            (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
-                                (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_SUB (nth j push))
-                                (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_SUB (nth j pull))
-                                (gil::g-rel sp (nth (- j start) tempPlaying) gil::SRT_SUB (nth j playing))
+                                (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_EQ (nth j push))
+                                (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_EQ (nth j pull))
+                                (gil::g-rel sp (nth (- j start) tempPlaying) gil::SRT_EQ (nth j playing))
                            )
 
                            (loop :for j :from 0 :below (length push) :by 1 :do
@@ -300,11 +302,6 @@
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-constraints (sp rock push pull playing pushMap pushMap-card notes added-notes push-card sub-push sub-pull q-push q-push-card)
-
-    ; rock constraints
-    (if (voices rock)
-        (gil::g-card sp playing 0 (voices rock))
-    )
 
     (if (min-pushed-notes rock)
         (loop :for i :from 0 :below (length push-card) :by 1 :do
