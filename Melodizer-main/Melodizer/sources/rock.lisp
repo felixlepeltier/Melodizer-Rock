@@ -12,7 +12,6 @@
     (
       (block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
     (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
-    (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
     (bar-length :accessor bar-length :initform 0 :type integer)
     (beat-length :accessor beat-length :initform 0 :type integer)
     (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
@@ -44,7 +43,7 @@
       "The tempo (BPM) of the project")
     (branching :accessor branching :initform "Top down" :type string :documentation
       "The tempo (BPM) of the project")
-    (percent-diff :accessor percent-diff :initform 100 :type integer)
+    (percent-diff :accessor percent-diff :initform 1 :type integer)
     )
 )
 
@@ -135,7 +134,7 @@
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
-      (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
+      
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
@@ -233,7 +232,7 @@
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
-      (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
+      
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
       (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
@@ -325,7 +324,7 @@
     (
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
-      (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
+      
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
@@ -409,7 +408,7 @@
     (
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
-      (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
+      
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
@@ -492,7 +491,7 @@
 (om::defclass! d ()
     (
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
-      (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
+      
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
@@ -574,7 +573,6 @@
 (om::defclass! c ()
     (
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
-      (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
