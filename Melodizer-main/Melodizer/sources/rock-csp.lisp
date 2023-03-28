@@ -15,7 +15,8 @@
 
         (max-pitch 127)
         (bars (bar-length rock-csp))
-        (quant 192)
+        (quant 8)
+        ;; (quant 192)
         (min-length 1) ;minimum length of a note with associated constraint
         (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
         (chord-min-length 2)) ; minimum length of a chord with associated constraint
@@ -89,24 +90,29 @@
 ;recursive function to set the constraint on all the blocks in the tree structure
 ; TODO : adapt function for A A B A and launch functions for s r d c
 (defun get-sub-rock-values (sp rock-csp)
+    (print "At the start of get-sub-rock-values (sp rock-csp)")
+
     ; for block child of rock-csp
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
     ; return pull push playing
-    (print "get sub-blocks")
-    (print rock-csp)
     (let (pull push notes playing pushMap pushMap-card pullMap block-list positions max-notes sub-push sub-pull
           push-card added-push added-notes added-push-card q-push q-push-card
+
          (bars (bar-length rock-csp))
-         (quant 192)
+        ;;  (quant 192)
+         (quant 8)
          (prevNotes (list))
          (major-natural (list 2 2 1 2 2 2 1))
          (max-pitch 127))
+        (print bars)
         (print "get subblocks")
-         (setq max-notes (* 127 (+ (* bars quant) 1)))
+        (setq max-notes (* 127 (+ (* bars quant) 1)))
+        ;; (setq max-notes 1)
 
         ;initialize the variables
 
+        
         (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
@@ -116,34 +122,38 @@
         (setq playing-list (nconc playing-list (list playing)))
 
         ;channeling array with time as index to array with pitch as index
+        
         (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
         (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
         (gil::g-channel sp push pushMap)
         (gil::g-channel sp pull pullMap)
 
         (setq pushMap-card (gil::add-int-var-array sp 128 0 (+ (* bars quant) 1)))
+        
         (loop :for i :from 0 :below (length pushMap) :by 1 :do
             (gil::g-card-var sp (nth i pushMap) (nth i pushMap-card))
         )
 
-
         ;--------------------------------------
         ;Not all rocks block have no block-list
         ;--------------------------------------
+        (print rock-csp)
         (if (typep rock-csp 'mldz::rock)
             (progn 
             (setq block-list (block-list rock-csp))
             (if (not (typep block-list 'list))
                 (setq block-list (list block-list))
             )
-            (setq positions (position-list rock-csp))
+            (setq positions (range (list-length block-list)))
+            (print "rock")
+            (print positions)
             )
         )
         (if (or (typep rock-csp 'mldz::a) (typep rock-csp 'mldz::b))
             (progn 
             (setq block-list 
                 (list (s-block rock-csp)(r-block rock-csp)(d-block rock-csp)(c-block rock-csp)))
-            (setq positions (list 0 1 2 3))
+            (setq positions '(0 1 2 3))
             )
         )
         (if (or (typep rock-csp 'mldz::s) 
@@ -154,11 +164,17 @@
             (if (melody-source rock-csp)
                 (progn
                     (setq block-list (list (melody-source rock-csp)))
-                    (setq positions (list 0))
+                    (setq positions '(0))
                 )
             )
             )
         )
+
+
+        ;; DEBUG BY USING WHAT WAS DONE IN melodizer-csp.lisp
+        ;; (setq positions (position-list rock-csp))
+        ;; (print "before positions")
+        ;; (print positions)
 
         ;initial constraint on pull, push, playing and durations
         (gil::g-empty sp (first pull)) ; pull[0] == empty
@@ -175,17 +191,20 @@
         )
         (gil::g-sum sp notes push-card)
 
-
+        
         ;compute added notes
         (setq added-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq sub-pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
         (setq added-notes (gil::add-int-var sp 0 127))
         (setq added-push-card (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
+
+
         (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
             (gil::g-card-var sp (nth i added-push) (nth i added-push-card))
         )
         (gil::g-sum sp added-notes added-push-card)
+
 
         ;compute q-push
         (setq q-push (gil::add-set-var-array sp (* bars (get-quant (quantification rock-csp))) 0 max-pitch 0 max-pitch))
@@ -196,8 +215,7 @@
         (loop :for i :from 0 :below (length q-push) :by 1 :do
             (gil::g-card-var sp (nth i q-push) (nth i q-push-card))
         )
-
-
+        
         ;connect push, pull and playing
         (loop :for j :from 1 :below (+ (* bars quant) 1) :do ;for each interval
             (let (temp z c)
@@ -209,47 +227,13 @@
 
             )
         )
-        (print (melody-source rock-csp))
-        ; If melody given in input of the block (mandatory for r d c to have s)
-        (if (melody-source rock-csp)
-            (let (melody-temp melody-push melody-pull melody-playing)
-                (setq melody-temp (create-push-pull (melody-source rock-csp) quant))
-                (setq melody-push (gil::add-set-var-array sp (length (first melody-temp)) 0 max-pitch 0 max-pitch))
-                (setq melody-pull (gil::add-set-var-array sp (length (second melody-temp)) 0 max-pitch 0 max-pitch))
-                (setq melody-playing (gil::add-set-var-array sp (length (third melody-temp)) 0 max-pitch 0 max-pitch))
-                (loop :for i :from 0 :below (length (first melody-temp)) :by 1 :do
-                    (if (or (typep (nth i (first melody-temp)) 'list) (/= (nth i (first melody-temp)) -1))
-                        (gil::g-rel sp (nth i melody-push) gil::SRT_EQ (nth i (first melody-temp)))
-                        (gil::g-empty sp (nth i push))
-                    )
-                )
-                (loop :for i :from 0 :below (length (second melody-temp)) :by 1 :do
-                    (if (or (typep (nth i (second melody-temp)) 'list) (/= (nth i (second melody-temp)) -1))
-                        (gil::g-rel sp (nth i melody-pull) gil::SRT_EQ (nth i (second melody-temp)))
-                        (gil::g-empty sp (nth i pull))
-                    )
-                )
-                (loop :for i :from 0 :below (length (third melody-temp)) :by 1 :do
-                    (if (or (typep (nth i (third melody-temp)) 'list) (/= (nth i (third melody-temp)) -1))
-                        (gil::g-rel sp (nth i melody-playing) gil::SRT_EQ (nth i (third melody-temp)))
-                        (gil::g-empty sp (nth i melody-playing))
-                    )
-                )
-                (loop :for j :from 0 :below (length melody-push) :by 1 :do
-                        (gil::g-rel sp (nth j melody-push) gil::SRT_SUB (nth j push))
-                        (gil::g-rel sp (nth j melody-pull) gil::SRT_SUB (nth j pull))
-                )
-            )
-        )
-
-
+        
         ;------------------------------------------
         ; Part to change: adapt to A A B A
         ;------------------------------------------
         (if (not (endp block-list))
             ; make the push and pull array supersets of the corresponding array of the child blocks
             (let ((sub-push-list (list)) (sub-pull-list (list)))
-
                 (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
                     (setq temp1 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
                     (setq temp2 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
@@ -259,6 +243,9 @@
                     (setq sub-pull-list (nconc sub-pull-list (list temp2)))
                     (gil::g-op sp (nth i push) gil::SOT_MINUS (nth i sub-push) (nth i added-push))
                 )
+                (print "Before bug")
+                (print block-list)
+                (print positions)
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
                       (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
                         ;-------------------------------------------------
@@ -291,6 +278,7 @@
                            )
                       )
                 )
+                
             )
             ; if no block-list
             (progn
@@ -301,7 +289,7 @@
 
 
         )
-
+        (print "At the end of get-sub-rock-values (sp rock-csp)")
         ;constraints
         (post-optional-constraints sp rock-csp push pull playing pushMap pushMap-card notes added-notes push-card sub-push sub-pull q-push q-push-card)
         (pitch-range sp push (min-pitch rock-csp) (max-pitch rock-csp))
@@ -414,104 +402,6 @@
         )
     )
 
-    (if (chord-key rock)
-        (if (chord-quality rock)
-            (if (all-chord-notes rock)
-                (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-                      (bool2 (gil::add-bool-var sp 0 1))
-                      (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
-                      (offset (- (name-to-note-value (chord-key rock)) 60))
-                      (all-notes (gil::add-set-var sp 0 127 0 127))
-                      chordset notesets bool-array)
-                     (setq chordset (build-scaleset chord offset))
-                     (scale-follow-reify sp push chordset bool)
-                     (setq notesets (build-notesets chord offset))
-                     (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
-                     (loop :for i :from 0 :below (length notesets) :do
-                          (let ((push-bool-array (gil::add-bool-var-array sp (length push) 0 1)))
-                              (loop :for j :from 0 :below (length push) :do
-                                  (gil::g-rel-reify sp (nth j push) gil::SRT_DISJ (nth i notesets) (nth j push-bool-array))
-                              )
-                              (gil::g-rel sp gil::BOT_AND push-bool-array (nth i bool-array))
-                          )
-                     )
-                     (setq debug (nconc debug (list bool-array)))
-                     (setq debug2 (nconc debug2 (list bool2)))
-
-                     (gil::g-rel sp gil::BOT_OR bool-array bool2)
-                     (gil::g-rel sp bool gil::SRT_EQ 1)
-                     )
-
-                (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-                      (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
-                      (offset (- (name-to-note-value (chord-key rock)) 60))
-                      (all-notes (gil::add-set-var sp 0 127 0 127))
-                      chordset)
-                     (gil::g-setunion sp all-notes push)
-                     (setq chordset (build-scaleset chord offset))
-                     (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
-                     (scale-follow-reify sp push chordset bool))
-            )
-        )
-        (if (chord-quality rock)
-            (if (all-chord-notes rock)
-                (let (chord chordset notesets
-                      (bool-array (gil::add-bool-var-array sp 12 0 1)); créer le booleen pour la reify
-                      (all-notes (gil::add-set-var sp 0 127 01 127)))
-                    (gil::g-setunion sp all-notes push)
-                    (loop :for key :from 0 :below 12 :by 1 :do
-                        (let ((bool1 (gil::add-bool-var sp 0 1))
-                              (bool2 (gil::add-bool-var sp 0 1))
-                              (bool-array-note (gil::add-bool-var-array sp (length notesets) 0 1))
-                              chordset notesets)
-                            (setq chord (get-chord (chord-quality rock)))
-                            (setq chordset (build-scaleset chord key))
-                            (setq notesets (build-notesets chord key))
-
-                            (loop :for i :from 0 :below (length notesets) :do
-                                 (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array-note))
-                            )
-                            (gil::g-rel sp gil::BOT_AND bool-array-note bool1)
-                            (scale-follow-reify sp push chordset bool2)
-                            (gil::g-op sp (nth key bool-array) gil::BOT_AND bool 0))
-                    )
-                    (gil::g-rel sp gil::BOT_OR bool-array 1)
-                )
-                (let (chord chordset
-                      (bool-array (gil::add-bool-var-array sp 12 0 1)))
-                    (loop :for key :from 0 :below 12 :by 1 :do
-                        (setq chord (get-chord (chord-quality rock)))
-                        (setq chordset (build-scaleset chord key))
-                        (scale-follow-reify sp push chordset (nth key bool-array))
-                    )
-                    (gil::g-rel sp gil::BOT_OR bool-array 1)
-                )
-            )
-
-        )
-    )
-
-
-    (if (pitch-direction rock)
-        (let ((allPlayed (gil::add-set-var sp 0 (+ (length push) 1) 0 (+ (length push) 1)))
-              (isPlayed (gil::add-bool-var-array sp (+ (length push) 1) 0 1)))
-             (gil::g-arr-op sp gil::SOT_UNION pushMap allPlayed)
-             (gil::g-channel sp isPlayed allPlayed)
-
-            (cond
-                ((string= (pitch-direction rock) "Increasing")           (increasing-pitch sp push isPlayed))
-                ((string= (pitch-direction rock) "Strictly increasing")  (strictly-increasing-pitch sp push isPlayed))
-                ((string= (pitch-direction rock) "Decreasing")           (decreasing-pitch sp push isPlayed))
-                ((string= (pitch-direction rock) "Strictly decreasing")  (strictly-decreasing-pitch sp push isPlayed))
-            )
-        )
-    )
-
-    (if (/= (golomb-ruler-size rock) 0)
-         (golomb-rule sp (golomb-ruler-size rock) push (/ 192 (get-quant (quantification rock))))
-    )
-
-
 
     (if (note-repetition-flag rock)
         (cond
@@ -559,57 +449,10 @@
             )
         )
 
-        ;SOME CODE PIECES FOR DEBUGGING
-         
-        ;(print "PUSH")
-        ;(loop :for p :in push-list :do
-        ;    (let (l (list))
-        ;        (print (gil::vid p))
-        ;        (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
-        ;        (print l)
-        ;    )
-        ;)
-
-        ;(print "PULL")
-        ;(loop :for p :in pull-list :do
-        ;    (let (l (list))
-        ;        (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
-        ;        (print l)
-        ;    )
-        ;)
-
-        ;(print "PLAYING")
-        ;(loop :for p :in playing-list :do
-        ;    (let (l (list))
-        ;        (setq l (nconc l (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) p)))
-        ;        (print l)
-        ;    )
-        ;)
-
-        ;(print "DEBUG")
-        ;(print debug)
-        ;(loop :for p :in debug :do
-        ;  (let (l (list))
-        ;      (setq l (nconc l (mapcar (lambda (n) (gil::g-values sol n)) p)))
-        ;      (print l)
-        ;  )
-        ;)
-
-        ;(print "DEBUG")
-        ;(loop :for p :in debug2 :do
-        ;  (print (gil::g-values sol p))
-        ;)
-
-
          ;créer score qui retourne la liste de pitch et la rhythm tree
-        ;; (setq score-chord-seq (build-chord-seq sol push pull bars quant 80))
         (setq score-voice (build-voice sol push pull bars quant 80))
 
-        ;; (setq chords-sequence (make-instance 'chord-seq
-        ;;     :LMidic (first score-chord-seq)
-        ;;     :LOnset (second score-chord-seq)
-        ;;     :Ldur (third score-chord-seq)
-        ;; ))
+
         (make-instance 'om::voice
             :chords (first score-voice)
             :tree (second score-voice)
