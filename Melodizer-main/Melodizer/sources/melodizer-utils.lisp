@@ -809,6 +809,82 @@
     )
 )
 
+
+(defun change-sublocks-min-note-length (rock-block min-note-length-flag min-note-length)
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setf (min-note-length-flag x) min-note-length-flag (min-note-length x) min-note-length)
+                (change-sublocks-min-note-length x min-note-length-flag min-note-length)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setf (min-note-length-flag (s-block rock-block)) min-note-length-flag (min-note-length (s-block rock-block)) min-note-length)
+            (setf (min-note-length-flag (r-block rock-block)) min-note-length-flag (min-note-length (r-block rock-block)) min-note-length)
+            (setf (min-note-length-flag (d-block rock-block)) min-note-length-flag (min-note-length (d-block rock-block)) min-note-length)
+            (setf (min-note-length-flag (c-block rock-block)) min-note-length-flag (min-note-length (c-block rock-block)) min-note-length)
+        )
+    )
+)
+
+(defun change-sublocks-max-note-length (rock-block max-note-length-flag max-note-length)
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setf (max-note-length-flag x) max-note-length-flag (max-note-length x) max-note-length)
+                (change-sublocks-max-note-length x max-note-length-flag max-note-length)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setf (max-note-length-flag (s-block rock-block)) max-note-length-flag (max-note-length (s-block rock-block)) max-note-length)
+            (setf (max-note-length-flag (r-block rock-block)) max-note-length-flag (max-note-length (r-block rock-block)) max-note-length)
+            (setf (max-note-length-flag (d-block rock-block)) max-note-length-flag (max-note-length (d-block rock-block)) max-note-length)
+            (setf (max-note-length-flag (c-block rock-block)) max-note-length-flag (max-note-length (c-block rock-block)) max-note-length)
+        )
+    )
+)
+
+(defun change-sublocks-max-pushed-notes (rock-block max-pushed-notes)
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setf (max-pushed-notes x) max-pushed-notes)
+                (change-sublocks-chord-key x max-pushed-notes)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setf (max-pushed-notes (s-block rock-block)) max-pushed-notes)
+            (setf (max-pushed-notes (r-block rock-block)) max-pushed-notes)
+            (setf (max-pushed-notes (d-block rock-block)) max-pushed-notes)
+            (setf (max-pushed-notes (c-block rock-block)) max-pushed-notes)
+        )
+    )
+)
+
+(defun change-sublocks-min-pushed-notes (rock-block min-pushed-notes)
+    (if (typep rock-block 'mldz::rock)
+        (progn
+            (loop :for x in (block-list rock-block) do 
+                (setf (min-pushed-notes x) min-pushed-notes)
+                (change-sublocks-chord-key x min-pushed-notes)
+            )
+        )
+    )
+    (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
+        (progn
+            (setf (min-pushed-notes (s-block rock-block)) min-pushed-notes)
+            (setf (min-pushed-notes (r-block rock-block)) min-pushed-notes)
+            (setf (min-pushed-notes (d-block rock-block)) min-pushed-notes)
+            (setf (min-pushed-notes (c-block rock-block)) min-pushed-notes)
+        )
+    )
+)
 (defun bar-length-range (rock-block)
     (let (result (list)) 
         (if (typep rock-block 'mldz::rock)

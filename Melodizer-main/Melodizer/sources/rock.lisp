@@ -16,24 +16,16 @@
     (bar-length :accessor bar-length :initform 0 :type integer)
     (beat-length :accessor beat-length :initform 0 :type integer)
     (voices :accessor voices :initform nil :type integer)
-    (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-    (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+    (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+    (max-pushed-notes :accessor max-pushed-notes :initform 32 :type integer)
     (min-notes :accessor min-notes :initform nil :type integer)
     (max-notes :accessor max-notes :initform nil :type integer)
-    (min-added-notes :accessor min-added-notes :initform nil :type integer)
-    (max-added-notes :accessor max-added-notes :initform nil :type integer)
     (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
     (min-note-length :accessor min-note-length :initform 0 :type integer)
     (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
     (max-note-length :accessor max-note-length :initform 192 :type integer)
     (quantification :accessor quantification :initform nil :type string)
-    (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
-    (note-repartition :accessor note-repartition :initform nil :type integer)
     (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
-    (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
-    (pause-quantity :accessor pause-quantity :initform 0 :type integer)
-    (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
-    (pause-repartition :accessor pause-repartition :initform 0 :type integer)
     (key-selection :accessor key-selection :initform nil :type string)
     (mode-selection :accessor mode-selection :initform nil :type string)
     (chord-key :accessor chord-key :initform nil :type string)
@@ -43,11 +35,6 @@
     (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
     (max-pitch :accessor max-pitch :initform 127 :type integer)
     (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-    (pitch-direction :accessor pitch-direction :initform nil :type string)
-    (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-    (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
-    (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
-    (note-repetition :accessor note-repetition :initform 0 :type integer)
     (solution :accessor solution :initarg :solution :initform nil :documentation "The current solution of the CSP in the form of a voice object.")
     (result :accessor result
       :result :initform (list) :documentation
@@ -155,24 +142,16 @@
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (voices :accessor voices :initform nil :type integer)
-      (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-      (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+      (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+      (max-pushed-notes :accessor max-pushed-notes :initform 32 :type integer)
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
-      (min-added-notes :accessor min-added-notes :initform nil :type integer)
-      (max-added-notes :accessor max-added-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 0 :type integer)
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 192 :type integer)
       (quantification :accessor quantification :initform nil :type string)
-      (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
-      (note-repartition :accessor note-repartition :initform nil :type integer)
       (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
-      (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
-      (pause-quantity :accessor pause-quantity :initform 0 :type integer)
-      (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
-      (pause-repartition :accessor pause-repartition :initform 0 :type integer)
       (key-selection :accessor key-selection :initform nil :type string)
       (mode-selection :accessor mode-selection :initform nil :type string)
       (chord-key :accessor chord-key :initform nil :type string)
@@ -182,11 +161,6 @@
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (pitch-direction :accessor pitch-direction :initform nil :type string)
-      (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-      (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
-      (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
-      (note-repetition :accessor note-repetition :initform 0 :type integer)
     )
 )
 
@@ -268,24 +242,16 @@
       (position-list :accessor position-list :initarg :position-list :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (voices :accessor voices :initform nil :type integer)
-      (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-      (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+      (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+      (max-pushed-notes :accessor max-pushed-notes :initform 32 :type integer)
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
-      (min-added-notes :accessor min-added-notes :initform nil :type integer)
-      (max-added-notes :accessor max-added-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 0 :type integer)
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 192 :type integer)
       (quantification :accessor quantification :initform nil :type string)
-      (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
-      (note-repartition :accessor note-repartition :initform nil :type integer)
       (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
-      (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
-      (pause-quantity :accessor pause-quantity :initform 0 :type integer)
-      (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
-      (pause-repartition :accessor pause-repartition :initform 0 :type integer)
       (key-selection :accessor key-selection :initform nil :type string)
       (mode-selection :accessor mode-selection :initform nil :type string)
       (chord-key :accessor chord-key :initform nil :type string)
@@ -295,11 +261,6 @@
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (pitch-direction :accessor pitch-direction :initform nil :type string)
-      (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-      (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
-      (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
-      (note-repetition :accessor note-repetition :initform 0 :type integer)
     )
 )
 
@@ -377,24 +338,16 @@
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (voices :accessor voices :initform nil :type integer)
-      (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-      (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+      (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+      (max-pushed-notes :accessor max-pushed-notes :initform 32 :type integer)
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
-      (min-added-notes :accessor min-added-notes :initform nil :type integer)
-      (max-added-notes :accessor max-added-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 0 :type integer)
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 192 :type integer)
       (quantification :accessor quantification :initform nil :type string)
-      (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
-      (note-repartition :accessor note-repartition :initform nil :type integer)
       (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
-      (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
-      (pause-quantity :accessor pause-quantity :initform 0 :type integer)
-      (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
-      (pause-repartition :accessor pause-repartition :initform 0 :type integer)
       (key-selection :accessor key-selection :initform nil :type string)
       (mode-selection :accessor mode-selection :initform nil :type string)
       (chord-key :accessor chord-key :initform nil :type string)
@@ -404,11 +357,6 @@
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (pitch-direction :accessor pitch-direction :initform nil :type string)
-      (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-      (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
-      (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
-      (note-repetition :accessor note-repetition :initform 0 :type integer)
     )
 )
 
@@ -477,24 +425,16 @@
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (voices :accessor voices :initform nil :type integer)
-      (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-      (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+      (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+      (max-pushed-notes :accessor max-pushed-notes :initform 32 :type integer)
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
-      (min-added-notes :accessor min-added-notes :initform nil :type integer)
-      (max-added-notes :accessor max-added-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 0 :type integer)
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 192 :type integer)
       (quantification :accessor quantification :initform nil :type string)
-      (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
-      (note-repartition :accessor note-repartition :initform nil :type integer)
       (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
-      (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
-      (pause-quantity :accessor pause-quantity :initform 0 :type integer)
-      (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
-      (pause-repartition :accessor pause-repartition :initform 0 :type integer)
       (key-selection :accessor key-selection :initform nil :type string)
       (mode-selection :accessor mode-selection :initform nil :type string)
       (chord-key :accessor chord-key :initform nil :type string)
@@ -504,11 +444,6 @@
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (pitch-direction :accessor pitch-direction :initform nil :type string)
-      (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-      (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
-      (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
-      (note-repetition :accessor note-repetition :initform 0 :type integer)
     )
 )
 
@@ -576,24 +511,16 @@
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (voices :accessor voices :initform nil :type integer)
-      (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-      (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+      (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+      (max-pushed-notes :accessor max-pushed-notes :initform 32 :type integer)
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
-      (min-added-notes :accessor min-added-notes :initform nil :type integer)
-      (max-added-notes :accessor max-added-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 0 :type integer)
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 192 :type integer)
       (quantification :accessor quantification :initform nil :type string)
-      (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
-      (note-repartition :accessor note-repartition :initform nil :type integer)
       (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
-      (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
-      (pause-quantity :accessor pause-quantity :initform 0 :type integer)
-      (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
-      (pause-repartition :accessor pause-repartition :initform 0 :type integer)
       (key-selection :accessor key-selection :initform nil :type string)
       (mode-selection :accessor mode-selection :initform nil :type string)
       (chord-key :accessor chord-key :initform nil :type string)
@@ -603,11 +530,6 @@
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (pitch-direction :accessor pitch-direction :initform nil :type string)
-      (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-      (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
-      (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
-      (note-repetition :accessor note-repetition :initform 0 :type integer)
     )
 )
 
@@ -674,24 +596,16 @@
       (bar-length :accessor bar-length :initform 0 :type integer)
       (beat-length :accessor beat-length :initform 0 :type integer)
       (voices :accessor voices :initform nil :type integer)
-      (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-      (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+      (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+      (max-pushed-notes :accessor max-pushed-notes :initform 32 :type integer)
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
-      (min-added-notes :accessor min-added-notes :initform nil :type integer)
-      (max-added-notes :accessor max-added-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 0 :type integer)
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 192 :type integer)
       (quantification :accessor quantification :initform nil :type string)
-      (note-repartition-flag :accessor note-repartition-flag :initform nil :type integer)
-      (note-repartition :accessor note-repartition :initform nil :type integer)
       (rhythm-repetition :accessor rhythm-repetition :initform nil :type string)
-      (pause-quantity-flag :accessor pause-quantity-flag :initform nil :type integer)
-      (pause-quantity :accessor pause-quantity :initform 0 :type integer)
-      (pause-repartition-flag :accessor pause-repartition-flag :initform nil :type integer)
-      (pause-repartition :accessor pause-repartition :initform 0 :type integer)
       (key-selection :accessor key-selection :initform nil :type string)
       (mode-selection :accessor mode-selection :initform nil :type string)
       (chord-key :accessor chord-key :initform nil :type string)
@@ -701,11 +615,6 @@
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (pitch-direction :accessor pitch-direction :initform nil :type string)
-      (golomb-ruler-size :accessor golomb-ruler-size :initform 0 :type integer)
-      (note-repetition-flag :accessor note-repetition-flag :initform nil :type integer)
-      (note-repetition-type :accessor note-repetition-type :initform "Random" :type string)
-      (note-repetition :accessor note-repetition :initform 0 :type integer)
     )
 )
 
@@ -800,6 +709,10 @@
           (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
           (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
           (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+          (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
+          (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
+          (change-sublocks-min-pushed-notes (om::object editor) (min-pushed-notes (om::object editor)))
+          (change-sublocks-max-pushed-notes (om::object editor) (max-pushed-notes (om::object editor)))
         )
     )
 
@@ -817,6 +730,10 @@
           (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
           (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
           (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+          (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
+          (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
+          (change-sublocks-min-pushed-notes (om::object editor) (min-pushed-notes (om::object editor)))
+          (change-sublocks-max-pushed-notes (om::object editor) (max-pushed-notes (om::object editor)))
         )
     )
     
@@ -1171,12 +1088,14 @@
       (om::om-make-point 170 150)
       (om::om-make-point 80 20)
       "Minimum pushed notes"
-      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
+      :range (append '("None") (loop :for n :from 0 :upto 10 collect (number-to-string n)))
+      :value (number-to-string (min-pushed-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (typep check 'string)
-          (setf (min-pushed-notes (om::object editor)) nil)
-          (setf (min-pushed-notes (om::object editor)) check))
+        (if (string= check "None")
+          (setf (min-pushed-notes (om::object editor)) 0)
+          (setf (min-pushed-notes (om::object editor)) (string-to-number check)))
+        (change-sublocks-min-pushed-notes (om::object editor) (min-pushed-notes (om::object editor)))
       )
     )
 
@@ -1193,12 +1112,14 @@
       (om::om-make-point 170 200)
       (om::om-make-point 80 20)
       "Maximum pushed notes"
-      :range (append '("None") (loop :for n :from 0 :upto 10 collect n))
+      :range (append '("None") (loop :for n :from 0 :upto 10 collect (number-to-string n)))
+      :value (number-to-string (max-pushed-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (typep check 'string)
-          (setf (max-pushed-notes (om::object editor)) nil)
-          (setf (max-pushed-notes (om::object editor)) check))
+        (if (string= check "None")
+          (setf (max-pushed-notes (om::object editor)) 0)
+          (setf (max-pushed-notes (om::object editor)) (string-to-number check)))
+        (change-sublocks-max-pushed-notes (om::object editor) (max-pushed-notes (om::object editor)))
       )
     )
 
@@ -1224,11 +1145,14 @@
       (om::om-make-point 430 50)
       (om::om-make-point 20 20)
       ""
+      :checked-p (min-note-length-flag (om::object editor))
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
                       (setf (min-note-length-flag (om::object editor)) 1)
                       (setf (min-note-length-flag (om::object editor)) nil)
                     )
+                    (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
+                    
       )
     )
 
@@ -1239,9 +1163,11 @@
       (om::om-make-point 80 20); size
       "Minimum note length"
       :range '(0 192)
+      :value (min-note-length (om::object editor))
       :increment 1
       :di-action #'(lambda (s)
         (setf (min-note-length (om::object editor)) (om::om-slider-value s))
+        (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
       )
     )
 
@@ -1258,11 +1184,13 @@
       (om::om-make-point 430 100)
       (om::om-make-point 20 20)
       ""
+      :checked-p (max-note-length-flag (om::object editor))
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
                       (setf (max-note-length-flag (om::object editor)) 1)
                       (setf (max-note-length-flag (om::object editor)) nil)
                     )
+                    (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
       )
     )
 
@@ -1273,8 +1201,10 @@
       "Maximum note length"
       :range '(0 192)
       :increment 1
+      :value (max-note-length (om::object editor))
       :di-action #'(lambda (s)
         (setf (max-note-length (om::object editor)) (om::om-slider-value s))
+        (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
       )
     )
 
@@ -1408,154 +1338,6 @@
         (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
       )
     )
-
-
-
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 15 100)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Voices"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::pop-up-menu
-    ;;   (om::om-make-point 170 100)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Voices"
-    ;;   :range (append '("None") (loop :for n :from 0 :upto 15 collect n))
-    ;;   :di-action #'(lambda (m)
-    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-    ;;     (if (typep check 'string)
-    ;;       (setf (voices (om::object editor)) nil)
-    ;;       (setf (voices (om::object editor)) check))
-    ;;   )
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 15 150)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Chord key"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::pop-up-menu
-    ;;   (om::om-make-point 170 150)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Chord key"
-    ;;   :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
-    ;;   :value (chord-key (om::object editor))
-    ;;   :di-action #'(lambda (m)
-    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-    ;;     (if (string= check "None")
-    ;;       (setf (chord-key (om::object editor)) nil)
-    ;;       (setf (chord-key (om::object editor)) check))
-    ;;       (change-sublocks-chord-key (om::object editor) check)
-    ;;   )
-    ;; )
-    ;;  (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 15 250)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Minimum pitch"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-check-box
-    ;;   (om::om-make-point 170 250)
-    ;;   (om::om-make-point 20 20)
-    ;;   ""
-    ;;   :checked-p (min-pitch-flag (om::object editor))
-    ;;   :di-action #'(lambda (c)
-    ;;                 (if (om::om-checked-p c)
-    ;;                   (setf (min-pitch-flag (om::object editor)) 1)
-    ;;                   (setf (min-pitch-flag (om::object editor)) nil)
-    ;;                 )
-    ;;                 (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
-    ;;   )
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::slider
-    ;;   (om::om-make-point 190 250)
-    ;;   (om::om-make-point 180 20)
-    ;;   "Minimum pitch"
-    ;;   :range '(1 127)
-    ;;   :increment 1
-    ;;   :value (min-pitch (om::object editor))
-    ;;   :di-action #'(lambda (s)
-    ;;     (setf (min-pitch (om::object editor)) (om::om-slider-value s))
-    ;;     (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
-    ;;   )
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 15 300)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Maximum pitch"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-check-box
-    ;;   (om::om-make-point 170 300)
-    ;;   (om::om-make-point 20 20)
-    ;;   ""
-    ;;   :checked-p (max-pitch-flag (om::object editor))
-    ;;   :di-action #'(lambda (c)
-    ;;                 (if (om::om-checked-p c)
-    ;;                   (setf (max-pitch-flag (om::object editor)) 1)
-    ;;                   (setf (max-pitch-flag (om::object editor)) nil)
-    ;;                 )
-    ;;                 (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-    ;;   )
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::slider
-    ;;   (om::om-make-point 190 300)
-    ;;   (om::om-make-point 180 20)
-    ;;   "Maximum pitch"
-    ;;   :range '(1 127)
-    ;;   :increment 1
-    ;;   :value (max-pitch (om::object editor))
-    ;;   :di-action #'(lambda (s)
-    ;;     (setf (max-pitch (om::object editor)) (om::om-slider-value s))
-    ;;     (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-    ;;   )
-    ;; )
-
-
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 15 400)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Maximum notes"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::pop-up-menu
-    ;;   (om::om-make-point 170 400)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Maximum notes"
-    ;;   :range (append '("None") (loop :for n :from 0 :upto 100 collect n))
-    ;;   ;; :value (max-notes (om::object editor))
-    ;;   :di-action #'(lambda (m)
-    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-    ;;     (if (typep check 'string)
-    ;;       (setf (max-notes (om::object editor)) nil)
-    ;;       (setf (max-notes (om::object editor)) check))
-    ;;   )
-    ;; )
-
   )
 
 )

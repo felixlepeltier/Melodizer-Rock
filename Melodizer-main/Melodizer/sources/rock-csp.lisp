@@ -243,7 +243,7 @@
                     (setq sub-pull-list (nconc sub-pull-list (list temp2)))
                     (gil::g-op sp (nth i push) gil::SOT_MINUS (nth i sub-push) (nth i added-push))
                 )
-                (print "Before bug")
+                ;; (print "Before bug")
                 (print block-list)
                 (print positions)
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
@@ -330,21 +330,6 @@
         (gil::g-rel sp notes gil::IRT_LQ (max-notes rock))
     )
 
-    (if (min-added-notes rock)
-        (gil::g-rel sp added-notes gil::IRT_GQ (min-added-notes rock))
-    )
-
-    (if (max-added-notes rock)
-        (if (= 0 (max-added-notes rock))
-            (progn
-                (loop :for i :from 0 :below (length push) :by 1 :do
-                    (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i sub-push))
-                )
-            )
-            (gil::g-rel sp added-notes gil::IRT_LQ (max-added-notes rock))
-        )
-
-    )
 
     ;; ; Time constraints
     (if (min-note-length-flag rock)
@@ -357,18 +342,6 @@
 
     (if (quantification rock)
         (set-quantification sp push pull (quantification rock))
-    )
-
-    (if (rhythm-repetition rock)
-        (set-rhythm-repetition sp push-card (get-length (rhythm-repetition rock)))
-    )
-
-    (if (pause-quantity-flag rock)
-        (set-pause-quantity sp q-push-card (pause-quantity rock) (bar-length rock) (get-quant (quantification rock)))
-    )
-
-    (if (pause-repartition-flag rock)
-        (set-pause-repartition sp q-push-card (pause-repartition rock))
     )
 
     ; Pitch constraints
@@ -403,16 +376,6 @@
     )
 
 
-    (if (note-repetition-flag rock)
-        (cond
-          ((string-equal (note-repetition-type rock) "Random")
-            (random-repeat-note sp push (note-repetition rock) (get-length (quantification rock))))
-          ((string-equal (note-repetition-type rock) "Soft")
-            (soft-repeat-note sp (note-repetition rock) pushMap-card))
-          ((string-equal (note-repetition-type rock) "Hard")
-            (hard-repeat-note sp (note-repetition rock) pushMap-card (length q-push)))
-        )
-    )
 )
 
 ;;;;;;;;;;;;;;;
