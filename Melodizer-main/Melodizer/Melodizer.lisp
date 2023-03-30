@@ -10,6 +10,7 @@
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "melodizer-csp" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "melodizer-csts" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "block" :type "lisp")
+                     (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-utils" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-AB" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-srdc" :type "lisp")

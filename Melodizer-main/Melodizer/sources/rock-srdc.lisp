@@ -173,6 +173,7 @@
 
 (om::defclass! d ()
     (
+        (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
@@ -253,6 +254,7 @@
 
 (om::defclass! c ()
     (
+        (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)

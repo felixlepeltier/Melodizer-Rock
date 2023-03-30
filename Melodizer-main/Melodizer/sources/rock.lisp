@@ -157,7 +157,7 @@
         :di-action #'(lambda (b)
         
           (print "Added A to structure")
-          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'A :parent (om::object editor) (om::object editor)))))
+          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'A :parent editor (om::object editor)))))
           (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
           (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
           (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
@@ -178,7 +178,7 @@
         "Add B to structure"
         :di-action #'(lambda (b)
           (print "Added B to structure")
-          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
+          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent editor (om::object editor)))))
           (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
           (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
           (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
@@ -197,7 +197,7 @@
         'om::om-button
         (om::om-make-point 5 95) ; position (horizontal, vertical)
         (om::om-make-point 150 40) ; size (horizontal, vertical)
-        "Done"
+        "Update Structure"
         :di-action #'(lambda (b)
           (print "Finished structure")
           (mp:process-run-function ; start a new thread for the execution of the next method
@@ -222,8 +222,9 @@
             "clear struct" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-              (om::om-remove-subviews rock-panel)
+              (setf (bar-length (om::object editor)) 0)
               (setf (block-list (om::object editor)) nil)
+              (om::om-remove-subviews rock-panel)
               (make-my-interface editor)
             )
           )
@@ -343,10 +344,15 @@
       :value (number-to-string (bar-length (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
+        (if (string= check "0")
           (setf (bar-length (om::object editor)) 0)
           (setf (bar-length (om::object editor)) (string-to-number check)))
         (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
+        (if (not (typep (om::object editor) 'mldz::rock))
+          ;; (setf (bar-length (om::object (parent (om::object editor)))))
+          ;; (make-my-interface (parent (om::object editor)))
+          (set-bar-length-up (om::object editor))
+        )
       )
     )
 

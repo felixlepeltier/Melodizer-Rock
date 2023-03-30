@@ -39,8 +39,6 @@
         (setq push-card (nth 5 temp))
         (setq q-push (nth 6 temp))
 
-        (print "Percent diff : ")
-        (print percent-diff)
         (gil::g-specify-sol-variables sp q-push)
         (gil::g-specify-percent-diff sp percent-diff)
 
@@ -236,16 +234,20 @@
         (if (not (endp block-list))
             ; make the push and pull array supersets of the corresponding array of the child blocks
             (let ((sub-push-list (list)) (sub-pull-list (list)))
+                ;; For every time in the music
                 (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
+                    ;; Each block can add push/pull notes
                     (setq temp1 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
                     (setq temp2 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
+                    ;; So the ieme case in push/pull is the union of what was already present and the 
+                    ;; what the subblocks add
                     (gil::g-setunion sp (nth i sub-push) temp1)
                     (setq sub-push-list (nconc sub-push-list (list temp1)))
                     (gil::g-setunion sp (nth i sub-pull) temp2)
                     (setq sub-pull-list (nconc sub-pull-list (list temp2)))
                     (gil::g-op sp (nth i push) gil::SOT_MINUS (nth i sub-push) (nth i added-push))
                 )
-                ;; (print "Before bug")
+                (print "Before bug")
                 (print block-list)
                 (print positions)
                 (loop :for i :from 0 :below (length block-list) :by 1 :do
@@ -303,6 +305,11 @@
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-constraints (sp rock push pull playing pushMap pushMap-card notes added-notes push-card sub-push sub-pull q-push q-push-card)
 
+    ; rock constraints
+    (if (voices rock)
+        (gil::g-card sp playing 0 (voices rock))
+    )
+
     (if (min-pushed-notes rock)
         (loop :for i :from 0 :below (length push-card) :by 1 :do
             (setq b1 (gil::add-bool-var sp 0 1))
@@ -327,6 +334,21 @@
         (gil::g-rel sp notes gil::IRT_LQ (max-notes rock))
     )
 
+    (if (min-added-notes rock)
+        (gil::g-rel sp added-notes gil::IRT_GQ (min-added-notes rock))
+    )
+
+    (if (max-added-notes rock)
+        (if (= 0 (max-added-notes rock))
+            (progn
+                (loop :for i :from 0 :below (length push) :by 1 :do
+                    (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i sub-push))
+                )
+            )
+            (gil::g-rel sp added-notes gil::IRT_LQ (max-added-notes rock))
+        )
+
+    )
 
     ;; ; Time constraints
     (if (min-note-length-flag rock)
@@ -339,6 +361,18 @@
 
     (if (quantification rock)
         (set-quantification sp push pull (quantification rock))
+    )
+
+    (if (rhythm-repetition rock)
+        (set-rhythm-repetition sp push-card (get-length (rhythm-repetition rock)))
+    )
+
+    (if (pause-quantity-flag rock)
+        (set-pause-quantity sp q-push-card (pause-quantity rock) (bar-length rock) (get-quant (quantification rock)))
+    )
+
+    (if (pause-repartition-flag rock)
+        (set-pause-repartition sp q-push-card (pause-repartition rock))
     )
 
     ; Pitch constraints
@@ -373,6 +407,16 @@
     )
 
 
+    (if (note-repetition-flag rock)
+        (cond
+          ((string-equal (note-repetition-type rock) "Random")
+            (random-repeat-note sp push (note-repetition rock) (get-length (quantification rock))))
+          ((string-equal (note-repetition-type rock) "Soft")
+            (soft-repeat-note sp (note-repetition rock) pushMap-card))
+          ((string-equal (note-repetition-type rock) "Hard")
+            (hard-repeat-note sp (note-repetition rock) pushMap-card (length q-push)))
+        )
+    )
 )
 
 ;;;;;;;;;;;;;;;

@@ -213,6 +213,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
+                (setf (parent (s-block (om::object editor))) editor)
               ;; (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (s-block (om::object editor)) "Window s")
@@ -232,6 +233,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
+            (setf (parent (r-block (om::object editor))) editor)
               ;; (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (r-block (om::object editor)) "Window r")
@@ -251,6 +253,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
+                (setf (parent (d-block (om::object editor))) editor)
               ;; (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (d-block (om::object editor)) "Window d")
@@ -270,6 +273,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
+                (setf (parent (c-block (om::object editor))) editor)
               ;; (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (c-block (om::object editor)) "Window c")
