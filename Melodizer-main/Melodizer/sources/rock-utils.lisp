@@ -231,3 +231,16 @@
         (set-bar-length-up (om::object (parent rock-block)))
     )
 )
+
+(defun propagate-bar-length-srdc (rock-block)
+    (let ((parent (om::object (parent rock-block))) (nbars (bar-length rock-block)))
+        (if (or (typep parent 'mldz::a) (typep parent 'mldz::b))
+            (progn
+                (setf (bar-length (s-block parent)) nbars)
+                (setf (bar-length (r-block parent)) nbars)
+                (setf (bar-length (d-block parent)) nbars)
+                (setf (bar-length (c-block parent)) nbars)
+            )
+        )
+    )
+)

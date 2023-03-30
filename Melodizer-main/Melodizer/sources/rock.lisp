@@ -351,7 +351,10 @@
         (if (not (typep (om::object editor) 'mldz::rock))
           ;; (setf (bar-length (om::object (parent (om::object editor)))))
           ;; (make-my-interface (parent (om::object editor)))
-          (set-bar-length-up (om::object editor))
+          (progn
+            (propagate-bar-length-srdc (om::object editor))
+            (set-bar-length-up (om::object editor))
+          )
         )
       )
     )
