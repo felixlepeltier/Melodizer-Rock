@@ -244,3 +244,21 @@
         )
     )
 )
+
+(defun propagate-constraints-A (A-block)
+    
+)
+
+; Getting a list of chords and a rhythm tree from the playing list of intvar
+(defun build-score (sol playing)
+    (let ((pitch (list))
+          (tree (list '? (list (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)) (list (list 4 4) (list 1 1 1 1 1 1 1 1)))))
+          )
+    (print (gil::g-value-size sol (first playing)))
+    (print "avant g-value")
+    (setq pitch (nconc pitch (mapcar (lambda (n) (to-midicent (gil::g-values sol n))) playing)))
+    (print "apres g-value")
+    (print pitch)
+    (list pitch tree)
+    )
+)

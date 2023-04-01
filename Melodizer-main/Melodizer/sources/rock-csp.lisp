@@ -8,9 +8,11 @@
 ; <percent-diff> percentage of difference wanted for the solutions
 ; This function creates the CSP by creating the space and the variables, posting the constraints and the branching, specifying
 ; the search options and creating the search engine.
-(defmethod rock-solver (rock-csp percent-diff branching)
+(defmethod rock-solver-2 (rock-csp percent-diff branching)
     (let ((sp (gil::new-space)); create the space;
-        push pull playing pushMap pullMap dfs tstop sopts scaleset pitch temp push-card q-push
+        push pull playing 
+        ;pushMap pullMap 
+        dfs tstop sopts scaleset pitch temp push-card q-push
         pos
 
         (max-pitch 127)
@@ -35,12 +37,13 @@
         (setq pull (nth 1 temp))
         (setq playing (nth 2 temp))
         (setq notes (nth 3 temp))
-        (setq added-notes (nth 4 temp))
+        ;(setq added-notes (nth 4 temp))
         (setq push-card (nth 5 temp))
         (setq q-push (nth 6 temp))
 
         (gil::g-specify-sol-variables sp q-push)
         (gil::g-specify-percent-diff sp percent-diff)
+        (print percent-diff)
 
         (cond
             ((string-equal branching "Top down")
@@ -79,7 +82,7 @@
         (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
+        (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
 
         (print "new-melodizer CSP constructed")
         ; return
@@ -89,15 +92,19 @@
 
 ;recursive function to set the constraint on all the blocks in the tree structure
 ; TODO : adapt function for A A B A and launch functions for s r d c
-(defun get-sub-rock-values (sp rock-csp)
+(defun get-sub-rock-values-2 (sp rock-csp)
     (print "At the start of get-sub-rock-values (sp rock-csp)")
 
     ; for block child of rock-csp
     ; (pull supersets de get-sub-block-values(block) )
     ; constraints
     ; return pull push playing
-    (let (pull push notes playing pushMap pushMap-card pullMap block-list positions max-notes sub-push sub-pull
-          push-card added-push added-notes added-push-card q-push q-push-card
+    (let (pull push notes playing 
+        ;pushMap pushMap-card pullMap 
+        block-list positions max-notes sub-push sub-pull
+          push-card added-push 
+          ;added-notes added-push-card 
+          q-push q-push-card
 
          (bars (bar-length rock-csp))
         ;;  (quant 192)
@@ -108,7 +115,6 @@
         (print bars)
         (print "get subblocks")
         (setq max-notes (* 127 (+ (* bars quant) 1)))
-        ;; (setq max-notes 1)
 
         ;initialize the variables
 
@@ -123,58 +129,58 @@
 
         ;channeling array with time as index to array with pitch as index
         
-        (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
-        (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
-        (gil::g-channel sp push pushMap)
-        (gil::g-channel sp pull pullMap)
+        ;; (setq pushMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
+        ;; (setq pullMap (gil::add-set-var-array sp (+ max-pitch 1) 0 (+ (* bars quant) 1) 0 (+ (* bars quant) 1)))
+        ;; (gil::g-channel sp push pushMap)
+        ;; (gil::g-channel sp pull pullMap)
 
-        (setq pushMap-card (gil::add-int-var-array sp 128 0 (+ (* bars quant) 1)))
+        ;; (setq pushMap-card (gil::add-int-var-array sp 128 0 (+ (* bars quant) 1)))
         
-        (loop :for i :from 0 :below (length pushMap) :by 1 :do
-            (gil::g-card-var sp (nth i pushMap) (nth i pushMap-card))
-        )
+        ;; (loop :for i :from 0 :below (length pushMap) :by 1 :do
+        ;;     (gil::g-card-var sp (nth i pushMap) (nth i pushMap-card))
+        ;; )
 
         ;--------------------------------------
         ;Not all rocks block have no block-list
         ;--------------------------------------
-        (print rock-csp)
-        (if (typep rock-csp 'mldz::rock)
-            (progn 
-            (setq block-list (block-list rock-csp))
-            (if (not (typep block-list 'list))
-                (setq block-list (list block-list))
-            )
-            (setq positions (range (list-length block-list)))
-            (print "rock")
-            (print positions)
-            )
-        )
-        (if (or (typep rock-csp 'mldz::a) (typep rock-csp 'mldz::b))
-            (progn 
-            (setq block-list 
-                (list (s-block rock-csp)(r-block rock-csp)(d-block rock-csp)(c-block rock-csp)))
-            (setq positions '(0 1 2 3))
-            )
-        )
-        (if (or (typep rock-csp 'mldz::s) 
-            (typep rock-csp 'mldz::r) 
-            (typep rock-csp 'mldz::d) 
-            (typep rock-csp 'mldz::c))
-            (progn 
-            (if (melody-source rock-csp)
-                (progn
-                    (setq block-list (list (melody-source rock-csp)))
-                    (setq positions '(0))
-                )
-            )
-            )
-        )
+        ;; (print rock-csp)
+        ;; (if (typep rock-csp 'mldz::rock)
+        ;;     (progn 
+        ;;     (setq block-list (block-list rock-csp))
+        ;;     (if (not (typep block-list 'list))
+        ;;         (setq block-list (list block-list))
+        ;;     )
+        ;;     (setq positions (range (list-length block-list)))
+        ;;     (print "rock")
+        ;;     (print positions)
+        ;;     )
+        ;; )
+        ;; (if (or (typep rock-csp 'mldz::a) (typep rock-csp 'mldz::b))
+        ;;     (progn 
+        ;;     (setq block-list 
+        ;;         (list (s-block rock-csp)(r-block rock-csp)(d-block rock-csp)(c-block rock-csp)))
+        ;;     (setq positions '(0 1 2 3))
+        ;;     )
+        ;; )
+        ;; (if (or (typep rock-csp 'mldz::s) 
+        ;;     (typep rock-csp 'mldz::r) 
+        ;;     (typep rock-csp 'mldz::d) 
+        ;;     (typep rock-csp 'mldz::c))
+        ;;     (progn 
+        ;;     (if (melody-source rock-csp)
+        ;;         (progn
+        ;;             (setq block-list (list (melody-source rock-csp)))
+        ;;             (setq positions '(0))
+        ;;         )
+        ;;     )
+        ;;     )
+        ;; )
 
 
-        ;; DEBUG BY USING WHAT WAS DONE IN melodizer-csp.lisp
-        ;; (setq positions (position-list rock-csp))
-        ;; (print "before positions")
-        ;; (print positions)
+        ;; ;; DEBUG BY USING WHAT WAS DONE IN melodizer-csp.lisp
+        ;; ;; (setq positions (position-list rock-csp))
+        ;; ;; (print "before positions")
+        ;; ;; (print positions)
 
         ;initial constraint on pull, push, playing and durations
         (gil::g-empty sp (first pull)) ; pull[0] == empty
@@ -192,18 +198,18 @@
         (gil::g-sum sp notes push-card)
 
         
-        ;compute added notes
-        (setq added-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
-        (setq sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
-        (setq sub-pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
-        (setq added-notes (gil::add-int-var sp 0 127))
-        (setq added-push-card (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
+        ;; ;compute added notes
+        ;; (setq added-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+        ;; (setq sub-push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+        ;; (setq sub-pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-pitch))
+        ;; (setq added-notes (gil::add-int-var sp 0 127))
+        ;; (setq added-push-card (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
 
 
-        (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
-            (gil::g-card-var sp (nth i added-push) (nth i added-push-card))
-        )
-        (gil::g-sum sp added-notes added-push-card)
+        ;; (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
+        ;;     (gil::g-card-var sp (nth i added-push) (nth i added-push-card))
+        ;; )
+        ;; (gil::g-sum sp added-notes added-push-card)
 
 
         ;compute q-push
@@ -228,87 +234,92 @@
             )
         )
         
-        ;------------------------------------------
-        ; Part to change: adapt to A A B A
-        ;------------------------------------------
-        (if (not (endp block-list))
-            ; make the push and pull array supersets of the corresponding array of the child blocks
-            (let ((sub-push-list (list)) (sub-pull-list (list)))
-                ;; For every time in the music
-                (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
-                    ;; Each block can add push/pull notes
-                    (setq temp1 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
-                    (setq temp2 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
-                    ;; So the ieme case in push/pull is the union of what was already present and the 
-                    ;; what the subblocks add
-                    (gil::g-setunion sp (nth i sub-push) temp1)
-                    (setq sub-push-list (nconc sub-push-list (list temp1)))
-                    (gil::g-setunion sp (nth i sub-pull) temp2)
-                    (setq sub-pull-list (nconc sub-pull-list (list temp2)))
-                    (gil::g-op sp (nth i push) gil::SOT_MINUS (nth i sub-push) (nth i added-push))
-                )
-                (print "Before bug")
-                (print block-list)
-                (print positions)
-                (loop :for i :from 0 :below (length block-list) :by 1 :do
-                      (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
-                        ;-------------------------------------------------
-                        ; Part to change: the recursive not good for rock
-                        ;-------------------------------------------------
-                           (setq tempList (get-sub-rock-values sp (nth i block-list)))
-                           (setq tempPush (first tempList))
-                           (setq tempPull (second tempList))
-                           (setq tempPlaying (third tempList))
-                           (setq prevNotes (nth 7 tempList))
+        ;; ;------------------------------------------
+        ;; ; Part to change: adapt to A A B A
+        ;; ;------------------------------------------
+        ;; (if (not (endp block-list))
+        ;;     ; make the push and pull array supersets of the corresponding array of the child blocks
+        ;;     (let ((sub-push-list (list)) (sub-pull-list (list)))
+        ;;         ;; For every time in the music
+        ;;         (loop :for i :from 0 :below (+ (* bars quant) 1) :by 1 :do
+        ;;             ;; Each block can add push/pull notes
+        ;;             (setq temp1 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
+        ;;             (setq temp2 (gil::add-set-var-array sp (length block-list) 0 max-pitch 0 max-pitch))
+        ;;             ;; So the ieme case in push/pull is the union of what was already present and the 
+        ;;             ;; what the subblocks add
+        ;;             (gil::g-setunion sp (nth i sub-push) temp1)
+        ;;             (setq sub-push-list (nconc sub-push-list (list temp1)))
+        ;;             (gil::g-setunion sp (nth i sub-pull) temp2)
+        ;;             (setq sub-pull-list (nconc sub-pull-list (list temp2)))
+        ;;             (gil::g-op sp (nth i push) gil::SOT_MINUS (nth i sub-push) (nth i added-push))
+        ;;         )
+        ;;         (print "Before bug")
+        ;;         (print block-list)
+        ;;         (print positions)
+        ;;         (loop :for i :from 0 :below (length block-list) :by 1 :do
+        ;;               (let (tempPush tempPull tempPlaying tempList (start (* (nth i positions) quant)))
+        ;;                 ;-------------------------------------------------
+        ;;                 ; Part to change: the recursive not good for rock
+        ;;                 ;-------------------------------------------------
+        ;;                    (setq tempList (get-sub-rock-values sp (nth i block-list)))
+        ;;                    (setq tempPush (first tempList))
+        ;;                    (setq tempPull (second tempList))
+        ;;                    (setq tempPlaying (third tempList))
+        ;;                    (setq prevNotes (nth 7 tempList))
 
-                           (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
-                                (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_EQ (nth j push))
-                                (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_EQ (nth j pull))
-                                (gil::g-rel sp (nth (- j start) tempPlaying) gil::SRT_EQ (nth j playing))
-                           )
+        ;;                    (loop :for j :from start :below (+ start (length tempPlaying)) :by 1 :do
+        ;;                         (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_EQ (nth j push))
+        ;;                         (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_EQ (nth j pull))
+        ;;                         (gil::g-rel sp (nth (- j start) tempPlaying) gil::SRT_EQ (nth j playing))
+        ;;                    )
 
-                           (loop :for j :from 0 :below (length push) :by 1 :do
-                                (if (and (>= j start) (< j (+ start (length tempPlaying))))
-                                    (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_EQ (nth i (nth j sub-push-list)))
-                                    (gil::g-empty sp (nth i (nth j sub-push-list)))
-                                )
-                           )
+        ;;                    (loop :for j :from 0 :below (length push) :by 1 :do
+        ;;                         (if (and (>= j start) (< j (+ start (length tempPlaying))))
+        ;;                             (gil::g-rel sp (nth (- j start) tempPush) gil::SRT_EQ (nth i (nth j sub-push-list)))
+        ;;                             (gil::g-empty sp (nth i (nth j sub-push-list)))
+        ;;                         )
+        ;;                    )
 
-                           (loop :for j :from 0 :below (length pull) :by 1 :do
-                                (if (and (>= j start) (< j (+ start (length tempPlaying))))
-                                    (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_EQ (nth i (nth j sub-pull-list)))
-                                    (gil::g-empty sp (nth i (nth j sub-pull-list)))
-                                )
-                           )
-                      )
-                )
+        ;;                    (loop :for j :from 0 :below (length pull) :by 1 :do
+        ;;                         (if (and (>= j start) (< j (+ start (length tempPlaying))))
+        ;;                             (gil::g-rel sp (nth (- j start) tempPull) gil::SRT_EQ (nth i (nth j sub-pull-list)))
+        ;;                             (gil::g-empty sp (nth i (nth j sub-pull-list)))
+        ;;                         )
+        ;;                    )
+        ;;               )
+        ;;         )
                 
-            )
-            ; if no block-list
-            (progn
-                (gil::g-rel sp added-notes gil::SRT_EQ notes)
-                (loop :for p :in sub-push :do (gil::g-empty sp p))
-                (loop :for p :in sub-pull :do (gil::g-empty sp p))
-            )
+        ;;     )
+        ;;     ; if no block-list
+        ;;     (progn
+        ;;         (gil::g-rel sp added-notes gil::SRT_EQ notes)
+        ;;         (loop :for p :in sub-push :do (gil::g-empty sp p))
+        ;;         (loop :for p :in sub-pull :do (gil::g-empty sp p))
+        ;;     )
 
 
-        )
+        ;; )
         (print "At the end of get-sub-rock-values (sp rock-csp)")
         ;constraints
-        (post-optional-constraints sp rock-csp push pull playing pushMap pushMap-card notes added-notes push-card sub-push sub-pull q-push q-push-card)
+        (post-optional-constraints2 sp rock-csp push pull playing 
+        ;pushMap pushMap-card 
+        notes 
+        ;added-notes 
+        push-card sub-push sub-pull q-push q-push-card)
         (pitch-range sp push (min-pitch rock-csp) (max-pitch rock-csp))
-        (list push pull playing notes added-notes push-card q-push)
+        (list push pull playing notes 
+        ;added-notes 
+        push-card q-push)
     )
 )
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-constraints (sp rock push pull playing pushMap pushMap-card notes added-notes push-card sub-push sub-pull q-push q-push-card)
-
-    ; rock constraints
-    (if (voices rock)
-        (gil::g-card sp playing 0 (voices rock))
-    )
+(defun post-optional-constraints-2 (sp rock push pull playing 
+;pushMap pushMap-card 
+notes 
+;added-notes 
+push-card sub-push sub-pull q-push q-push-card)
 
     (if (min-pushed-notes rock)
         (loop :for i :from 0 :below (length push-card) :by 1 :do
@@ -334,21 +345,6 @@
         (gil::g-rel sp notes gil::IRT_LQ (max-notes rock))
     )
 
-    (if (min-added-notes rock)
-        (gil::g-rel sp added-notes gil::IRT_GQ (min-added-notes rock))
-    )
-
-    (if (max-added-notes rock)
-        (if (= 0 (max-added-notes rock))
-            (progn
-                (loop :for i :from 0 :below (length push) :by 1 :do
-                    (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i sub-push))
-                )
-            )
-            (gil::g-rel sp added-notes gil::IRT_LQ (max-added-notes rock))
-        )
-
-    )
 
     ;; ; Time constraints
     (if (min-note-length-flag rock)
@@ -361,18 +357,6 @@
 
     (if (quantification rock)
         (set-quantification sp push pull (quantification rock))
-    )
-
-    (if (rhythm-repetition rock)
-        (set-rhythm-repetition sp push-card (get-length (rhythm-repetition rock)))
-    )
-
-    (if (pause-quantity-flag rock)
-        (set-pause-quantity sp q-push-card (pause-quantity rock) (bar-length rock) (get-quant (quantification rock)))
-    )
-
-    (if (pause-repartition-flag rock)
-        (set-pause-repartition sp q-push-card (pause-repartition rock))
     )
 
     ; Pitch constraints
@@ -405,18 +389,6 @@
             )
         )
     )
-
-
-    (if (note-repetition-flag rock)
-        (cond
-          ((string-equal (note-repetition-type rock) "Random")
-            (random-repeat-note sp push (note-repetition rock) (get-length (quantification rock))))
-          ((string-equal (note-repetition-type rock) "Soft")
-            (soft-repeat-note sp (note-repetition rock) pushMap-card))
-          ((string-equal (note-repetition-type rock) "Hard")
-            (hard-repeat-note sp (note-repetition rock) pushMap-card (length q-push)))
-        )
-    )
 )
 
 ;;;;;;;;;;;;;;;
@@ -424,9 +396,9 @@
 ;;;;;;;;;;;;;;;
 
 ; <l> is a list containing the search engine for the problem and the variables
-; <melodizer-object> is a melodizer object
+; <rock-object> is a rock object
 ; this function finds the next solution of the CSP using the search engine given as an argument
-(defmethod new-rock-next (l melodizer-object)
+(defmethod new-rock-next-2 (l rock-object)
     (let ((se (first l))
          (push (second l))
          (pull (third l))
@@ -448,14 +420,14 @@
             (gil::time-stop-reset tstop);reset the tstop timer before launching the search
             (setq sol (gil::search-next se)); search the next solution
             (if (null sol)
-                (stopped-or-ended (gil::stopped se) (stop-search melodizer-object) tstop); check if there are solutions left and if the user wishes to continue searching
+                (stopped-or-ended (gil::stopped se) (stop-search rock-object) tstop); check if there are solutions left and if the user wishes to continue searching
                 (setf check nil); we have found a solution so break the loop
             )
         )
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
         (setq score-voice (build-voice sol push pull bars quant 80))
-
+        (print score-voice)
 
         (make-instance 'om::voice
             :chords (first score-voice)

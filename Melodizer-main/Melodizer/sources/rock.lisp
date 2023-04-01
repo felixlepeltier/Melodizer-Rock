@@ -38,7 +38,7 @@
       "A boolean variable to tell if the user wishes to stop the search or not.")
     (input-rhythm :accessor input-rhythm :input-rhythm :initform (make-instance 'voice) :documentation
       "The rhythm of the melody or a melody in the form of a voice object. ")
-    (tempo :accessor tempo :initform 120 :type integer :documentation
+    (tempo :accessor tempo :initform 80 :type integer :documentation
       "The tempo (BPM) of the project")
     (branching :accessor branching :initform "Top down" :type string :documentation
       "The tempo (BPM) of the project")
@@ -643,10 +643,11 @@
       (om::om-make-point 130 20) ; size (horizontal, vertical)
       "Start"
       :di-action #'(lambda (b)
-        (let ((init (rock-solver (om::object editor) (percent-diff (om::object editor)) (branching (om::object editor)))))
           ;; (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor)) (branching (om::object editor))))
-          (setf (result (om::object editor)) init)
-        )
+          (setf (result (om::object editor)) 
+                (rock-solver (om::object editor) 
+                            (percent-diff (om::object editor)) 
+                            (branching (om::object editor))))
       )
     )
 
