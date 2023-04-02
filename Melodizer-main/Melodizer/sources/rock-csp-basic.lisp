@@ -16,7 +16,7 @@
 
         (max-pitch 127)
         (bars (bar-length rock-csp))
-        (quant 8)
+        (quant 16)
         (min-length 1) ;minimum length of a note with associated constraint
         (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
         (chord-min-length 2)) ; minimum length of a chord with associated constraint
@@ -30,7 +30,7 @@
         (setq playing (nth 2 temp))
         ;(setq push-card (nth 5 temp))
         (print (length push))
-        (gil::g-specify-sol-variables sp push)
+        (gil::g-specify-sol-variables sp playing)
         (gil::g-specify-percent-diff sp percent-diff)
         (print percent-diff)
 
@@ -70,8 +70,9 @@
         sub-push sub-pull push-card 
 
          (bars (bar-length rock-csp))
-         (quant 8)
-         (max-pitch 2))
+         (quant 16)
+         (max-pitch 127)
+         )
         (print "get subblocks")
 
         ;initialize the variables
@@ -82,8 +83,13 @@
 
         ;initial constraint on pull, push, playing and durations
         (gil::g-empty sp (first pull)) ; pull[0] == empty
-        (gil::g-empty sp (nth (- (length push) 1) push))  ; push[bars*quant] == empty
-        (gil::g-empty sp (nth (- (length playing) 1) playing))  ; playing[bars*quant] == empty
+        ;;-------------------------------------------
+        ;; les 3 arrays on une variable de plus pour eviter d'imposer un silence en derniere note
+        ;; mais les deux contraintes interdisent un push et playing en dernier lieu rendent 100%
+        ;; de diff impossible pour trouver une seconde solution
+        ;;-------------------------------------------
+        ;; (gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
+        ;; (gil::g-empty sp (car (last playing)))  ; playing[bars*quant] == empty
         (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
 
         ;compute quardinality of pushed notes
