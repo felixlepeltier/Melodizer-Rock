@@ -634,7 +634,6 @@
 
         (setq tree (nconc tree (list rhythm)))
     )
-    (print tree)
     (setq tree (list '? tree))
 
     (list chords tree)
@@ -730,4 +729,24 @@
 		 (nth (random (length input-list)) input-list))
 	(list-shuffler (cdr input-list)
 				 (append accumulator (list (car input-list)))))))
+
+(defun set-percent-diff (sp percent-diff sol push pull playing)
+    (let ((p-push (list))
+          (p-pull (list))
+          (p-playing (list)))
+          (print "set-percent-diff")
+        (setq p-push (nconc p-push (mapcar (lambda (n) (gil::g-values sol n)) push)))
+        (setq p-pull (nconc p-pull (mapcar (lambda (n) (gil::g-values sol n)) pull)))
+        (setq p-playing (nconc p-playing (mapcar (lambda (n) (gil::g-values sol n)) playing)))
+
+        (loop :for i :from 0 :below (length playing) :by 1
+        do 
+            (if (< (random 101) percent-diff)
+                (gil::g-rel sp (nth i playing) gil::SRT_NQ (nth i p-playing))
+            )
+        )
+    )
+)
+
+
 

@@ -668,9 +668,11 @@
           "next thread" ; name of the thread, not necessary but useful for debugging
           nil ; process initialization keywords, not needed here
           (lambda () ; function to call
-            (setf (solution (om::object editor)) (new-rock-next (result (om::object editor)) (om::object editor)))
-            (om::openeditorframe ; open a voice window displaying the solution
-              (om::omNG-make-new-instance (solution (om::object editor)) "current solution")
+            (let ((res (new-rock-next (result (om::object editor)) (om::object editor))))
+              (setf (solution (om::object editor)) (first res) (result (om::object editor)) (cdr res))
+              (om::openeditorframe ; open a voice window displaying the solution
+                (om::omNG-make-new-instance (solution (om::object editor)) "current solution")
+              )
             )
           )
         )
