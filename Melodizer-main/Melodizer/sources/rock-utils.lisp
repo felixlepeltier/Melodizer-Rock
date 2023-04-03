@@ -245,6 +245,18 @@
     )
 )
 
-(defun propagate-constraints-A (A-block)
-    
+;; http://www.lee-mac.com/sublist.html
+;; Sublst  -  Lee Mac
+;; The list analog of the substr function
+;; lst - [lst] List from which sublist is to be returned
+;; idx - [int] Zero-based index at which to start the sublist
+;; len - [int] Length of the sublist or nil to return all items following idx
+
+(defun sublst (lst idx len)
+    (cond
+        (   (null lst) nil)
+        (   (< 0  idx) (sublst (cdr lst) (1- idx) len))
+        (   (null len) lst)
+        (   (< 0  len) (cons (car lst) (sublst (cdr lst) idx (1- len))))
+    )
 )
