@@ -22,6 +22,8 @@
         (chord-min-length 2)) ; minimum length of a chord with associated constraint
         (print "csp")
         (print rock-csp)
+        (print "block-list of the csp")
+        (print (block-list rock-csp))
 
         ;Setting constraint for this block and child blocks
         (setq temp (get-sub-rock-values sp rock-csp))
@@ -45,7 +47,7 @@
         (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
+        (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
 
         (print "new-melodizer basic CSP constructed")
         ; return
@@ -71,28 +73,57 @@
          )
         (print "get subblocks")
 
-        ;initialize the variables
+        ;; initialize the variables
         (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 1))
         (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 1))
         (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 1))
         (setq push-card (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
 
-
+        ;; connects push pull and playing with constraints
         (link-push-pull-playing sp push pull playing max-pitch)
         (link-push-push-card sp push push-card)
         
+        
+
+        ;; set constraints on push pull and playing from all blocks in the structure
+        (setq block-list (block-list rock-csp))
+        
+        ;; iterate over all blocks A and B in block-list
+        (loop :for i :from 0 :below (length block-list) :by 1 :do
+            ;; for every A/B block, post constraints from s,r,d,c
+            ;; cut the push pull playing array into (length block-list) parts and feed the adequate part
+            ;; to (constrain-ppp-from-srdc)
+            (let (temp-push temp-pull temp-playing temp-push-card srdc-parent startidx notes-per-block)
+                (setq notes-per-block (/(* bars quant) (length block-list)))
+                (setq startidx (* i notes-per-block))
+                (setq srdc-parent (nth i block-list))
+                (setq temp-push (sublst push startidx notes-per-block))
+                (setq temp-pull (sublst pull startidx notes-per-block))
+                (setq temp-playing (sublst playing startidx notes-per-block))
+                (setq temp-push-card (sublst push-card startidx notes-per-block))
+                (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing temp-push-card quant sp)
+            )
+        )
+
+
+
+        ;; post optional constraints
+        ;; (post-optional-rock-constraints sp rock-csp push pull playing push-card sub-push sub-pull)
+
+
+
+        ;; limit the pitch range to min-pitch -> max-pitch slots in the rock-csp object
+        ;; (pitch-range sp push (min-pitch rock-csp) (max-pitch rock-csp))
 
         (print "At the end of get-sub-rock-values (sp rock-csp)")
-        ;constraints
-        (post-optional-rock-constraints sp rock-csp push pull playing push-card sub-push sub-pull)
-        (pitch-range sp push (min-pitch rock-csp) (max-pitch rock-csp))
+        ;; return
         (list push pull playing)
     )
 )
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-rock-constraints (sp rock push pull playing push-card sub-push sub-pull)
+(defun post-optional-rock-constraints (sp rock push pull playing push-card); sub-push sub-pull)
 
     (if (min-pushed-notes rock)
         (min-pushed-notes-cst sp push-card (min-pushed-notes rock))
@@ -121,6 +152,8 @@
     (if (key-selection rock)
         (key-selection-cst sp push (key-selection rock) (mode-selection rock))
     )
+
+    (pitch-range sp push (min-pitch rock) (max-pitch rock))
 )
 
 ;;;;;;;;;;;;;;;
@@ -153,10 +186,10 @@
                 (setf check nil); we have found a solution so break the loop
             )
         )
-        (print (percent-diff rock-object))
-        (set-percent-diff sp (percent-diff rock-object) sol push pull playing)
+        ;; (print (percent-diff rock-object))
+        ;; (set-percent-diff sp (percent-diff rock-object) sol push pull playing)
 
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
+        ;; (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
         (setq score-voice (build-voice sol push pull bars quant (tempo rock-object)))
