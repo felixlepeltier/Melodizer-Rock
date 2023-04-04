@@ -626,6 +626,36 @@
 
 )
 
+;; r-constraints-panel interface building
+
+(defun make-r-constraints-panel (editor panel)
+  (om::om-add-subviews
+    panel
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 10 10)
+      (om::om-make-point 200 20)
+      "Similarity with s block"
+      :font om::*om-default-font1b*
+    )
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 10 40)
+      (om::om-make-point 80 20)
+      "Similarity with s block"
+      :range '(1 100)
+      :increment 1
+      :value (similarity-percent-s (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (similarity-percent-s (om::object editor)) (om::om-slider-value s))
+        (print "similarity-percent-s: ")
+        (print (similarity-percent-s (om::object editor)))
+      )
+    )
+  )
+)
+
+
 (defun make-rock-search-panel (editor search-panel)
   (om::om-add-subviews
     search-panel

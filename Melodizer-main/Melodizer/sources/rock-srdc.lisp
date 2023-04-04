@@ -151,14 +151,21 @@
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
+      (r-constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 300 500)
+        :position (om::om-make-point 820 5)
+        :bg-color om::*azulito*)
+      )
     )
 
     (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
+    (setf elements-r-constraints-panel (make-r-constraints-panel self r-constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       constraints-panel
+      r-constraints-panel
     )
   )
   ; return the editor
