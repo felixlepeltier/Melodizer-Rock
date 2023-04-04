@@ -111,6 +111,7 @@
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (similarity-percent-s :accessor similarity-percent-s :initform 1 :type integer)
     )
 )
 
