@@ -13,8 +13,8 @@
       (block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
     (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
     (bar-length :accessor bar-length :initform 0 :type integer)
-    (min-pushed-notes :accessor min-pushed-notes :initform nil :type integer)
-    (max-pushed-notes :accessor max-pushed-notes :initform nil :type integer)
+    (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
+    (max-pushed-notes :accessor max-pushed-notes :initform 0 :type integer)
     (min-notes :accessor min-notes :initform nil :type integer)
     (max-notes :accessor max-notes :initform nil :type integer)
     (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
@@ -155,17 +155,27 @@
         (om::om-make-point 150 40) ; size (horizontal, vertical)
         "Add A to structure"
         :di-action #'(lambda (b)
-        
           (print "Added A to structure")
           (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'A :parent editor (om::object editor)))))
-          (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
-          (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
-          (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
-          (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-          (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
-          (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
-          (change-sublocks-min-pushed-notes (om::object editor) (min-pushed-notes (om::object editor)))
-          (change-sublocks-max-pushed-notes (om::object editor) (max-pushed-notes (om::object editor)))
+          (change-subblocks-values (om::object editor) 
+                                    :bar-length (bar-length (om::object editor))
+                                    :chord-key (chord-key (om::object editor))
+                                    :min-pitch-flag (min-pitch-flag (om::object editor))
+                                    :min-pitch (min-pitch (om::object editor))
+                                    :max-pitch-flag (max-pitch-flag (om::object editor))
+                                    :max-pitch (max-pitch (om::object editor))
+                                    :min-note-length-flag (min-note-length-flag (om::object editor))
+                                    :min-note-length (min-note-length (om::object editor))
+                                    :max-note-length-flag (max-note-length-flag (om::object editor))
+                                    :max-note-length (max-note-length (om::object editor))
+                                    :min-pushed-notes (min-pushed-notes (om::object editor))
+                                    :max-pushed-notes (max-pushed-notes (om::object editor))
+                                    :key-selection (key-selection (om::object editor))
+                                    :mode-selection (mode-selection (om::object editor))
+                                    :chord-quality (chord-quality (om::object editor))
+          )
+          (om::om-remove-subviews rock-panel)
+          (make-my-interface editor)
         )
     )
 
@@ -179,37 +189,38 @@
         :di-action #'(lambda (b)
           (print "Added B to structure")
           (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent editor (om::object editor)))))
-          (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
-          (change-sublocks-chord-key (om::object editor) (chord-key (om::object editor)))
-          (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
-          (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
-          (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
-          (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
-          (change-sublocks-min-pushed-notes (om::object editor) (min-pushed-notes (om::object editor)))
-          (change-sublocks-max-pushed-notes (om::object editor) (max-pushed-notes (om::object editor)))
+          (change-subblocks-values (om::object editor) 
+                                    :bar-length (bar-length (om::object editor))
+                                    :chord-key (chord-key (om::object editor))
+                                    :min-pitch-flag (min-pitch-flag (om::object editor))
+                                    :min-pitch (min-pitch (om::object editor))
+                                    :max-pitch-flag (max-pitch-flag (om::object editor))
+                                    :max-pitch (max-pitch (om::object editor))
+                                    :min-note-length-flag (min-note-length-flag (om::object editor))
+                                    :min-note-length (min-note-length (om::object editor))
+                                    :max-note-length-flag (max-note-length-flag (om::object editor))
+                                    :max-note-length (max-note-length (om::object editor))
+                                    :min-pushed-notes (min-pushed-notes (om::object editor))
+                                    :max-pushed-notes (max-pushed-notes (om::object editor))
+                                    :key-selection (key-selection (om::object editor))
+          )
+          (om::om-remove-subviews rock-panel)
+          (make-my-interface editor)
         )
     )
     
-        ;;     :size (om::om-make-point 450 140)
-        ;; :position (om::om-make-point 5 5)
 
-    (om::om-make-dialog-item
-        'om::om-button
-        (om::om-make-point 5 95) ; position (horizontal, vertical)
-        (om::om-make-point 150 40) ; size (horizontal, vertical)
-        "Update Structure"
-        :di-action #'(lambda (b)
-          (print "Finished structure")
-          (mp:process-run-function ; start a new thread for the execution of the next method
-            "next thread" ; name of the thread, not necessary but useful for debugging
-            nil ; process initialization keywords, not needed here
-            (lambda () ; function to call
-              (om::om-remove-subviews rock-panel)
-              (make-my-interface editor)
-            )
-          )
-        )
-    )
+    ;; (om::om-make-dialog-item
+    ;;     'om::om-button
+    ;;     (om::om-make-point 5 95) ; position (horizontal, vertical)
+    ;;     (om::om-make-point 150 40) ; size (horizontal, vertical)
+    ;;     "Update Structure"
+    ;;     :di-action #'(lambda (b)
+    ;;       (print "Finished structure")
+    ;;           (om::om-remove-subviews rock-panel)
+    ;;           (make-my-interface editor)
+    ;;     )
+    ;; )
 
     (om::om-make-dialog-item
         'om::om-button
@@ -224,7 +235,7 @@
             (lambda () ; function to call
               (setf (bar-length (om::object editor)) 0)
               (setf (block-list (om::object editor)) nil)
-              (om::om-remove-subviews rock-panel)
+              ;; (om::om-remove-subviews rock-panel)
               (make-my-interface editor)
             )
           )
@@ -347,7 +358,7 @@
         (if (string= check "0")
           (setf (bar-length (om::object editor)) 0)
           (setf (bar-length (om::object editor)) (string-to-number check)))
-        (change-sublocks-bar-length (om::object editor) (bar-length (om::object editor)))
+        (change-subblocks-values (om::object editor) :bar-length (bar-length (om::object editor)))
         (if (not (typep (om::object editor) 'mldz::rock))
           ;; (setf (bar-length (om::object (parent (om::object editor)))))
           ;; (make-my-interface (parent (om::object editor)))
@@ -372,14 +383,13 @@
       (om::om-make-point 170 150)
       (om::om-make-point 80 20)
       "Minimum pushed notes"
-      :range (append '("None") (loop :for n :from 0 :upto 10 collect (number-to-string n)))
+      :range (append (loop :for n :from 0 :upto 10 collect (number-to-string n)))
       :value (number-to-string (min-pushed-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (min-pushed-notes (om::object editor)) 0)
-          (setf (min-pushed-notes (om::object editor)) (string-to-number check)))
-        (change-sublocks-min-pushed-notes (om::object editor) (min-pushed-notes (om::object editor)))
+        (setf (min-pushed-notes (om::object editor)) (string-to-number check))
+        (change-subblocks-values (om::object editor) 
+                                :min-pushed-notes (min-pushed-notes (om::object editor)))
       )
     )
 
@@ -396,14 +406,14 @@
       (om::om-make-point 170 200)
       (om::om-make-point 80 20)
       "Maximum pushed notes"
-      :range (append '("None") (loop :for n :from 0 :upto 10 collect (number-to-string n)))
+      :range  (loop :for n :from 0 :upto 10 :collect (number-to-string n))
       :value (number-to-string (max-pushed-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (max-pushed-notes (om::object editor)) 0)
-          (setf (max-pushed-notes (om::object editor)) (string-to-number check)))
-        (change-sublocks-max-pushed-notes (om::object editor) (max-pushed-notes (om::object editor)))
+        (print check)
+        (setf (max-pushed-notes (om::object editor)) (string-to-number check))
+        (change-subblocks-values (om::object editor) 
+                                :max-pushed-notes (max-pushed-notes (om::object editor)))
       )
     )
 
@@ -435,7 +445,9 @@
                       (setf (min-note-length-flag (om::object editor)) 1)
                       (setf (min-note-length-flag (om::object editor)) nil)
                     )
-                    (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
+                    (change-subblocks-values (om::object editor) 
+                                :min-note-length-flag (min-note-length-flag (om::object editor)) 
+                                :min-note-length (min-note-length (om::object editor)))
                     
       )
     )
@@ -451,7 +463,9 @@
       :increment 1
       :di-action #'(lambda (s)
         (setf (min-note-length (om::object editor)) (om::om-slider-value s))
-        (change-sublocks-min-note-length (om::object editor) (min-note-length-flag (om::object editor)) (min-note-length (om::object editor)))
+        (change-subblocks-values (om::object editor) 
+                                :min-note-length-flag (min-note-length-flag (om::object editor)) 
+                                :min-note-length (min-note-length (om::object editor)))
       )
     )
 
@@ -474,7 +488,9 @@
                       (setf (max-note-length-flag (om::object editor)) 1)
                       (setf (max-note-length-flag (om::object editor)) nil)
                     )
-                    (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
+                    (change-subblocks-values (om::object editor) 
+                                :max-note-length-flag (max-note-length-flag (om::object editor)) 
+                                :max-note-length (max-note-length (om::object editor)))
       )
     )
 
@@ -488,7 +504,9 @@
       :value (max-note-length (om::object editor))
       :di-action #'(lambda (s)
         (setf (max-note-length (om::object editor)) (om::om-slider-value s))
-        (change-sublocks-max-note-length (om::object editor) (max-note-length-flag (om::object editor)) (max-note-length (om::object editor)))
+        (change-subblocks-values (om::object editor) 
+                                :max-note-length-flag (max-note-length-flag (om::object editor)) 
+                                :max-note-length (max-note-length (om::object editor)))
       )
     )
 
@@ -516,19 +534,44 @@
       (om::om-make-point 80 20)
       "Key selection"
       :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :value (key-selection (om::object editor))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
         (if (string= check "None")
           (setf (key-selection (om::object editor)) nil)
           (setf (key-selection (om::object editor)) check))
+        (change-subblocks-values (om::object editor) :key-selection (key-selection (om::object editor)))
       )
     )
 
-
-
+    ; Mode
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 550 100)
+      (om::om-make-point 200 20)
+      "Mode selection"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 100)
+      (om::om-make-point 80 20)
+      "Mode selection"
+      :value (mode-selection (om::object editor))
+      :range '("None" "ionian (major)" "dorian" "phrygian" "lydian" "mixolydian" "aeolian (natural minor)" "locrian" "pentatonic" "harmonic minor" "chromatic")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (mode-selection (om::object editor)) nil)
+          (setf (mode-selection (om::object editor)) check))
+        (change-subblocks-values (om::object editor) :mode-selection check)
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 150)
       (om::om-make-point 200 20)
       "Chord key"
       :font om::*om-default-font1b*
@@ -536,7 +579,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 670 100)
+      (om::om-make-point 670 150)
       (om::om-make-point 80 20)
       "Chord key"
       :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
@@ -546,12 +589,38 @@
         (if (string= check "None")
           (setf (chord-key (om::object editor)) nil)
           (setf (chord-key (om::object editor)) check))
-          (change-sublocks-chord-key (om::object editor) check)
+          (change-subblocks-values (om::object editor) :chord-key check)
       )
     )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 200)
+      (om::om-make-point 200 20)
+      "Chord quality"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 200)
+      (om::om-make-point 80 20)
+      "Chord quality"
+      :value (chord-quality (om::object editor))
+      :range '("None" "Major" "Minor" "Augmented" "Diminished" "Major 7" "Minor 7" "Dominant 7" "Minor 7 flat 5" "Diminished 7" "Minor-major 7"
+        "Major 9" "Minor 9" "9 Augmented 5" "9 flatted 5" "7 flat 9" "Augmented 9" "Minor 11" "Major 11" "Dominant 11" "Dominant # 11" "Major # 11")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-quality (om::object editor)) nil)
+          (setf (chord-quality (om::object editor)) check))
+        (change-subblocks-values (om::object editor) :chord-quality check)
+      )
+    )
+
      (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 150)
+      (om::om-make-point 550 250)
       (om::om-make-point 200 20)
       "Minimum pitch"
       :font om::*om-default-font1b*
@@ -559,7 +628,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 670 150)
+      (om::om-make-point 670 250)
       (om::om-make-point 20 20)
       ""
       :checked-p (min-pitch-flag (om::object editor))
@@ -568,13 +637,15 @@
                       (setf (min-pitch-flag (om::object editor)) 1)
                       (setf (min-pitch-flag (om::object editor)) nil)
                     )
-                    (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
+                    (change-subblocks-values (om::object editor) 
+                                :min-pitch-flag (min-pitch-flag (om::object editor)) 
+                                :min-pitch (min-pitch (om::object editor)))
       )
     )
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 690 150)
+      (om::om-make-point 690 250)
       (om::om-make-point 80 20)
       "Minimum pitch"
       :range '(1 127)
@@ -582,13 +653,15 @@
       :value (min-pitch (om::object editor))
       :di-action #'(lambda (s)
         (setf (min-pitch (om::object editor)) (om::om-slider-value s))
-        (change-sublocks-min-pitch (om::object editor) (min-pitch-flag (om::object editor)) (min-pitch (om::object editor)))
+        (change-subblocks-values (om::object editor) 
+                                :min-pitch-flag (min-pitch-flag (om::object editor)) 
+                                :min-pitch (min-pitch (om::object editor)))
       )
     )
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 200)
+      (om::om-make-point 550 300)
       (om::om-make-point 200 20)
       "Maximum pitch"
       :font om::*om-default-font1b*
@@ -596,7 +669,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 670 200)
+      (om::om-make-point 670 300)
       (om::om-make-point 20 20)
       ""
       :checked-p (max-pitch-flag (om::object editor))
@@ -605,13 +678,15 @@
                       (setf (max-pitch-flag (om::object editor)) 1)
                       (setf (max-pitch-flag (om::object editor)) nil)
                     )
-                    (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+                    (change-subblocks-values (om::object editor) 
+                                            :max-pitch-flag (max-pitch-flag (om::object editor)) 
+                                            :max-pitch (max-pitch (om::object editor)))
       )
     )
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 690 200)
+      (om::om-make-point 690 300)
       (om::om-make-point 80 20)
       "Maximum pitch"
       :range '(1 127)
@@ -619,7 +694,9 @@
       :value (max-pitch (om::object editor))
       :di-action #'(lambda (s)
         (setf (max-pitch (om::object editor)) (om::om-slider-value s))
-        (change-sublocks-max-pitch (om::object editor) (max-pitch-flag (om::object editor)) (max-pitch (om::object editor)))
+        (change-subblocks-values (om::object editor) 
+                                :max-pitch-flag (max-pitch-flag (om::object editor)) 
+                                :max-pitch (max-pitch (om::object editor)))
       )
     )
   )
@@ -732,30 +809,32 @@
       (om::om-make-point 170 100)
       (om::om-make-point 200 20)
       "Tempo"
-      :range (loop :for n :from 30 :upto 200 collect n)
+      :range (loop :for n :from 30 :upto 200 :collect (number-to-string n))
+      :value (number-to-string (tempo (om::object editor)))
       :di-action #'(lambda (m)
-        (setf (tempo (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (tempo (om::object editor)) (string-to-number (nth (om::om-get-selected-item-index m) (om::om-get-item-list m))))
       )
     )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 150)
-      (om::om-make-point 200 20)
-      "Branching"
-      :font om::*om-default-font1b*
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 15 150)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Branching"
+    ;;   :font om::*om-default-font1b*
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 150)
-      (om::om-make-point 200 20)
-      "Branching"
-      :range '("Top down" "Full" "Top down random")
-      :di-action #'(lambda (m)
-        (setf (branching (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::pop-up-menu
+    ;;   (om::om-make-point 170 150)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Branching"
+    ;;   :range '("Top down" "Full" "Top down random")
+    ;;   :value
+    ;;   :di-action #'(lambda (m)
+    ;;     (setf (branching (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;;   )
+    ;; )
 
 
     (om::om-make-dialog-item
@@ -773,10 +852,9 @@
       "Difference Percentage"
       :range '(0 100)
       :increment 1
+      :value (percent-diff (om::object editor))
       :di-action #'(lambda (s)
         (setf (percent-diff (om::object editor)) (om::om-slider-value s))
-        ;; (print "Percent diff : ")
-        ;; (print (percent-diff (om::object editor)))
       )
     )
   )
