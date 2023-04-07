@@ -179,6 +179,7 @@
         (setq min-sim-note-number (floor (* notes-in-subblock (/ sim 100.0))))
         ;; TODO: add gil constraint that posts a constraint on playing such that
         ;;       at least min-sim-note-number notes are equal in playing[i] and playing-s[i]
+        ;; (gil::g-count-array sp playing playing-s gil::IRT_GQ min-sim-note-number)
     )
 
 
