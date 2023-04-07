@@ -213,7 +213,6 @@
                     )
                     (setq result (list (number-to-string sum)))
                 )
-                ;;(setq result (list (number-to-string (bar-length rock-block))))
             )
             (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
                 (if (= sum 0)
@@ -225,7 +224,6 @@
                     
                     (setq result (list (number-to-string sum)))
                 )
-                ;;(setq result (list (number-to-string (bar-length rock-block))))
             )
             (print "bar-length-range")
             (print result)

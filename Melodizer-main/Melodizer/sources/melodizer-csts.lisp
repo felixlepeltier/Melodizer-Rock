@@ -51,6 +51,8 @@
 
 (defun note-min-length (sp push pull min-length)
     (setq l (floor (* (- (length push) 1) min-length) 192))
+    (print "note-min-length")
+    (print l)
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below l  :while (< (+ j k) (length pull)) :do
              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))

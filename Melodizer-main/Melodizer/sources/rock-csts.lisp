@@ -42,11 +42,6 @@
     )
 )
 
-;; ;; rock-csp : 
-;; (defun constrain-ppp-from-srdc (srdc-parent push pull playing)
-;;     ;; call some variant of the post-optional-constraints function to constrain the push pull playing arrays
-;;     ;; from srdc values
-;; )
 
 
 (defun constrain-srdc-from-parent (srdc-parent push pull playing push-card quant sp)
@@ -60,91 +55,6 @@
     )
 )
 
-;; (defun constrain-srdc-from-A (A-block push pull playing push-card quant sp)
-;;     (print "constrain-srdc-from-A")
-
-;;     ;; bars*quant elements and starts at startidx
-;;     ;; for the sub arrays of push pull playing
-
-;;     ;; s
-;;     (let ((bars (bar-length (s-block A-block)))
-;;          (s-block (s-block A-block))
-;;          notes-in-subblock startidx
-;;          temp-push temp-pull temp-playing temp-push-card)
-
-;;         (print "constraining s")
-
-;;         (setq notes-in-subblock (* bars quant))
-;;         ;; access push pull playing push-card arrays for the section related to s
-;;         ;; (sublst x y z) creates a list based on list x from index y and of z sequential elements
-;;         (setq startidx 0)
-;;         (setq temp-push (sublst push startidx notes-in-subblock))
-;;         (setq temp-pull (sublst pull startidx notes-in-subblock))
-;;         (setq temp-playing (sublst playing startidx notes-in-subblock))
-;;         (setq temp-push-card (sublst push-card startidx notes-in-subblock))
-
-;;         ;; set constraints on these arrays from the values saved in the slots of s-block 
-;;         (post-optional-rock-constraints sp s-block temp-push temp-pull temp-playing temp-push-card)
-
-;;     )
-;;     ;; r
-;;     (let ((bars (bar-length (r-block A-block)))
-;;          (r-block (r-block A-block))
-;;          notes-in-subblock startidx
-;;          temp-push temp-pull temp-playing temp-push-card)
-         
-;;         (print "constraining r")
-
-;;         (setq notes-in-subblock (* bars quant))
-
-;;         (setq startidx (* bars quant))
-;;         (setq temp-push (sublst push startidx notes-in-subblock))
-;;         (setq temp-pull (sublst pull startidx notes-in-subblock))
-;;         (setq temp-playing (sublst playing startidx notes-in-subblock))
-;;         (setq temp-push-card (sublst push-card startidx notes-in-subblock))
-        
-;;         (post-optional-rock-constraints sp r-block temp-push temp-pull temp-playing temp-push-card)
-
-;;     )
-;;     ;; d
-;;     (let ((bars (bar-length (d-block A-block)))
-;;          (d-block (d-block A-block))
-;;          notes-in-subblock startidx
-;;          temp-push temp-pull temp-playing temp-push-card)
-         
-;;         (print "constraining d")
-
-;;         (setq notes-in-subblock (* bars quant))
-
-;;         (setq startidx (* 2 (* bars quant)))
-;;         (setq temp-push (sublst push startidx notes-in-subblock))
-;;         (setq temp-pull (sublst pull startidx notes-in-subblock))
-;;         (setq temp-playing (sublst playing startidx notes-in-subblock))
-;;         (setq temp-push-card (sublst push-card startidx notes-in-subblock))
-
-;;         (post-optional-rock-constraints sp d-block temp-push temp-pull temp-playing temp-push-card)
-
-;;     )
-;;     ;; c
-;;     (let ((bars (bar-length (c-block A-block)))
-;;          (c-block (c-block A-block))
-;;          notes-in-subblock startidx
-;;          temp-push temp-pull temp-playing temp-push-card)
-         
-;;         (print "constraining c")
-        
-;;         (setq notes-in-subblock (* bars quant))
-
-;;         (setq startidx (* 3 (* bars quant)))
-;;         (setq temp-push (sublst push startidx notes-in-subblock))
-;;         (setq temp-pull (sublst pull startidx notes-in-subblock))
-;;         (setq temp-playing (sublst playing startidx notes-in-subblock))
-;;         (setq temp-push-card (sublst push-card startidx notes-in-subblock))
-
-;;         (post-optional-rock-constraints sp c-block temp-push temp-pull temp-playing temp-push-card)
-
-;;     )
-;; )
 
 
 (defun constrain-srdc-from-A (A-block push pull playing push-card quant sp)
@@ -236,6 +146,7 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-card)
+    (print (min-note-length s-block))
     (post-optional-rock-constraints sp s-block push pull playing push-card)
 )
 
@@ -311,4 +222,38 @@
         )
     )
 
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; LIMITING MINIMUM NOTE LENGTH ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun note-min-length-rock (sp push pull min-length)
+    (setq l (floor (*  (length push) min-length) 16))
+    (print "note-min-length")
+    (print l)
+    (print (length push))
+    (loop :for j :from 0 :below (length push) :by 1 :do
+        (loop :for k :from 1 :below l  :while (< (+ j k) (length pull)) :do
+             (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
+        )
+    )
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; LIMITING MAXIMUM NOTE LENGTH ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun note-max-length-rock (sp push pull max-length)
+    (setq l (floor (* (length push) max-length) 16))
+    (loop :for j :from 0 :below (+ (- (length push) l) 1) :by 1 :do
+        (let ((l-pull (gil::add-set-var-array sp l 0 127 0 127))
+              (l-pull-union (gil::add-set-var sp 0 127 0 127)))
+            (loop :for k :from 0 :below l :by 1 :do
+                (gil::g-rel sp (nth k l-pull) gil::SRT_EQ (nth (+ 1 (+ j k)) pull))
+            )
+            (gil::g-setunion sp l-pull-union l-pull)
+            (gil::g-rel sp (nth j push) gil::SRT_SUB l-pull-union)
+        )
+    )
 )

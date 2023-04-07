@@ -32,9 +32,10 @@
         (setq playing (nth 2 temp))
         ;(setq push-card (nth 5 temp))
 
-        (gil::g-specify-sol-variables sp playing)
+        (gil::g-specify-sol-variables sp push)
 
-        (gil::g-branch sp playing gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        ;; (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -106,15 +107,6 @@
         )
 
 
-
-        ;; post optional constraints
-        ;; (post-optional-rock-constraints sp rock-csp push pull playing push-card sub-push sub-pull)
-
-
-
-        ;; limit the pitch range to min-pitch -> max-pitch slots in the rock-csp object
-        ;; (pitch-range sp push (min-pitch rock-csp) (max-pitch rock-csp))
-
         (print "At the end of get-sub-rock-values (sp rock-csp)")
         ;; return
         (list push pull playing)
@@ -133,14 +125,13 @@
         (gil::g-card sp push 0 (max-pushed-notes rock))
     )
 
-
-    ;; ; Time constraints
+    ; Time constraints
     (if (min-note-length-flag rock)
-        (note-min-length sp push pull (min-note-length rock))
+        (note-min-length-rock sp push pull (min-note-length rock))
     )
 
     (if (max-note-length-flag rock)
-        (note-max-length sp push pull (max-note-length rock))
+        (note-max-length-rock sp push pull (max-note-length rock))
     )
 
     (if (quantification rock)

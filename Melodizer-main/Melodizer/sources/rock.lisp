@@ -14,13 +14,13 @@
     (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
     (bar-length :accessor bar-length :initform 0 :type integer)
     (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
-    (max-pushed-notes :accessor max-pushed-notes :initform 0 :type integer)
+    (max-pushed-notes :accessor max-pushed-notes :initform 10 :type integer)
     (min-notes :accessor min-notes :initform nil :type integer)
     (max-notes :accessor max-notes :initform nil :type integer)
     (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
     (min-note-length :accessor min-note-length :initform 0 :type integer)
     (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
-    (max-note-length :accessor max-note-length :initform 192 :type integer)
+    (max-note-length :accessor max-note-length :initform 16 :type integer)
     (quantification :accessor quantification :initform nil :type string)
     (key-selection :accessor key-selection :initform nil :type string)
     (mode-selection :accessor mode-selection :initform nil :type string)
@@ -355,13 +355,9 @@
       :value (number-to-string (bar-length (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "0")
-          (setf (bar-length (om::object editor)) 0)
-          (setf (bar-length (om::object editor)) (string-to-number check)))
+        (setf (bar-length (om::object editor)) (string-to-number check))
         (change-subblocks-values (om::object editor) :bar-length (bar-length (om::object editor)))
         (if (not (typep (om::object editor) 'mldz::rock))
-          ;; (setf (bar-length (om::object (parent (om::object editor)))))
-          ;; (make-my-interface (parent (om::object editor)))
           (progn
             (propagate-bar-length-srdc (om::object editor))
             (set-bar-length-up (om::object editor))
@@ -383,7 +379,7 @@
       (om::om-make-point 170 150)
       (om::om-make-point 80 20)
       "Minimum pushed notes"
-      :range (append (loop :for n :from 0 :upto 10 collect (number-to-string n)))
+      :range (loop :for n :from 0 :upto 10 collect (number-to-string n))
       :value (number-to-string (min-pushed-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
@@ -410,7 +406,6 @@
       :value (number-to-string (max-pushed-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (print check)
         (setf (max-pushed-notes (om::object editor)) (string-to-number check))
         (change-subblocks-values (om::object editor) 
                                 :max-pushed-notes (max-pushed-notes (om::object editor)))
@@ -452,19 +447,18 @@
       )
     )
 
-    ; slider to express how different the solutions should be (100 = completely different, 1 = almost no difference)
     (om::om-make-dialog-item
-      'om::om-slider
+      'om::pop-up-menu
       (om::om-make-point 450 50)
       (om::om-make-point 80 20); size
       "Minimum note length"
-      :range '(0 192)
-      :value (min-note-length (om::object editor))
-      :increment 1
-      :di-action #'(lambda (s)
-        (setf (min-note-length (om::object editor)) (om::om-slider-value s))
+      :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
+      :value (number-to-string (min-note-length (om::object editor)))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (min-note-length (om::object editor)) (string-to-number check))
         (change-subblocks-values (om::object editor) 
-                                :min-note-length-flag (min-note-length-flag (om::object editor)) 
+                                :min-note-length-flag (min-note-length-flag (om::object editor))
                                 :min-note-length (min-note-length (om::object editor)))
       )
     )
@@ -495,17 +489,17 @@
     )
 
     (om::om-make-dialog-item
-      'om::om-slider
+      'om::pop-up-menu
       (om::om-make-point 450 100)
       (om::om-make-point 80 20); size
       "Maximum note length"
-      :range '(0 192)
-      :increment 1
-      :value (max-note-length (om::object editor))
-      :di-action #'(lambda (s)
-        (setf (max-note-length (om::object editor)) (om::om-slider-value s))
+      :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
+      :value (number-to-string (max-note-length (om::object editor)))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (max-note-length (om::object editor)) (string-to-number check))
         (change-subblocks-values (om::object editor) 
-                                :max-note-length-flag (max-note-length-flag (om::object editor)) 
+                                :max-note-length-flag (max-note-length-flag (om::object editor))
                                 :max-note-length (max-note-length (om::object editor)))
       )
     )
