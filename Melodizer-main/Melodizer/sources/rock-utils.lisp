@@ -22,6 +22,7 @@
                 (if bar-length 
                     (progn
                         (setq n-bars (/ bar-length (list-length (block-list rock-block))))
+                        (print n-bars)
                         (setf (bar-length x) n-bars)
                     )
                 )
@@ -55,21 +56,22 @@
                 (if chord-quality
                     (setf (chord-quality x) chord-quality)
                 )
-                (change-subblocks-values x  :bar-length bar-length 
-                                            :chord-key chord-key
-                                            :min-pitch-flag min-pitch-flag
-                                            :min-pitch min-pitch
-                                            :max-pitch-flag max-pitch-flag
-                                            :max-pitch max-pitch
-                                            :min-note-length-flag min-note-length-flag
-                                            :min-note-length min-note-length
-                                            :max-note-length-flag max-note-length-flag
-                                            :max-note-length max-note-length
-                                            :min-pushed-notes min-pushed-notes
-                                            :max-pushed-notes max-pushed-notes
-                                            :key-selection key-selection
-                                            :mode-selection mode-selection
-                                            :chord-quality chord-quality)
+                (change-subblocks-values x  :bar-length (bar-length x)
+                                            :chord-key (chord-key x)
+                                            :min-pitch-flag (min-pitch-flag x)
+                                            :min-pitch (min-pitch x)
+                                            :max-pitch-flag (max-pitch-flag x)
+                                            :max-pitch (max-pitch x)
+                                            :min-note-length-flag (min-note-length-flag x)
+                                            :min-note-length (min-note-length x)
+                                            :max-note-length-flag (max-note-length-flag x)
+                                            :max-note-length  (max-note-length x)
+                                            :min-pushed-notes (min-pushed-notes x)
+                                            :max-pushed-notes (max-pushed-notes x)
+                                            :key-selection (key-selection x)
+                                            :mode-selection (mode-selection x)
+                                            :chord-quality (chord-quality x)
+                )
             )
             
         )
