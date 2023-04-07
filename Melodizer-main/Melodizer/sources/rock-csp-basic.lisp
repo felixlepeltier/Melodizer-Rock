@@ -71,13 +71,15 @@
          (bars (bar-length rock-csp))
          (quant 16)
          (max-pitch 127)
+         (max-pushed-notes (max-pushed-notes rock-csp))
+         (min-pushed-notes (min-pushed-notes rock-csp))
          )
         (print "get subblocks")
 
         ;; initialize the variables
-        (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 1))
-        (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 1))
-        (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 1))
+        (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-pushed-notes max-pushed-notes))
+        (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-pushed-notes max-pushed-notes))
+        (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-pushed-notes max-pushed-notes))
         (setq push-card (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
 
         ;; connects push pull and playing with constraints
