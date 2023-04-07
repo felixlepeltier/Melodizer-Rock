@@ -1,6 +1,6 @@
 (in-package :mldz)
 
-(defun link-push-pull-playing (sp push pull playing max-pitch)
+(defun link-push-pull-playing (sp push pull playing max-pitch max-pushed-notes)
 
     ;initial constraint on pull, push, playing and durations
     ;; (gil::g-empty sp (first pull)) ; pull[0] == empty
@@ -16,7 +16,9 @@
     ;connect push, pull and playing
     (loop :for j :from 1 :below (length push) :do ;for each interval
         (let (temp z c)
-            (setq temp (gil::add-set-var sp 0 max-pitch 0 1)); temporary variables
+            ;; I think the cardinality should be (gil::add-set-var sp 0 max-pitch 0 max-pushed-notes) 
+            ;; but doesn't change much right now
+            (setq temp (gil::add-set-var sp 0 max-pitch 0 max-pushed-notes)); temporary variables
             (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
             (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
             (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
@@ -27,7 +29,7 @@
 
 (defun link-push-push-card (sp push push-card)
     ;compute quardinality of pushed notes
-    (loop :for i :from 0 :below (length push-card) :by 1 :do
+    (loop :for i :from 0 :below (length push) :by 1 :do
         (gil::g-card-var sp (nth i push) (nth i push-card))
     )
 )
@@ -146,7 +148,7 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-card)
-    (print (min-note-length s-block))
+    ;; (print (min-note-length s-block))
     (post-optional-rock-constraints sp s-block push pull playing push-card)
 )
 
@@ -230,10 +232,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-min-length-rock (sp push pull min-length)
+    ;; (floor number divisor) => quotient remainder
+    ;; because (length push) == 16, we always have l == min-length
     (setq l (floor (*  (length push) min-length) 16))
-    (print "note-min-length")
+
+    (print "min-note-length")
     (print l)
-    (print (length push))
+
+
+    ;; (setq templen (- (length pull) 1))
+    ;; (loop :for j :from 0 :below templen :by 1 :do
+    ;;     (loop :for k :from 0 :below l  :while (< (+ j k) templen) :do
+    ;;          (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
+    ;;     )
+    ;; )
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below l  :while (< (+ j k) (length pull)) :do
              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))

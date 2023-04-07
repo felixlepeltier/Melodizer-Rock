@@ -83,7 +83,7 @@
         (setq push-card (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
 
         ;; connects push pull and playing with constraints
-        (link-push-pull-playing sp push pull playing max-pitch)
+        (link-push-pull-playing sp push pull playing max-pitch max-pushed-notes)
         (link-push-push-card sp push push-card)
         
         
@@ -119,6 +119,11 @@
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-rock-constraints (sp rock push pull playing push-card); sub-push sub-pull)
 
+
+    (print "In post-optional constraints")
+    (print "the block is ")
+    (print rock)
+
     (if (min-pushed-notes rock)
         (min-pushed-notes-cst sp push-card (min-pushed-notes rock))
     )
@@ -126,6 +131,8 @@
     (if (max-pushed-notes rock)
         (gil::g-card sp push 0 (max-pushed-notes rock))
     )
+
+    ;; if min-note-length > 1 then there's a bug, no solution is found
 
     ; Time constraints
     (if (min-note-length-flag rock)
