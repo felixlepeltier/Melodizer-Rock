@@ -1,6 +1,6 @@
 (in-package :mldz)
 
-(defun link-push-pull-playing (sp push pull playing max-pitch max-pushed-notes)
+(defun link-push-pull-playing (sp push pull playing max-pitch max-simultaneous-notes)
 
     ;initial constraint on pull, push, playing and durations
     ;; (gil::g-empty sp (first pull)) ; pull[0] == empty
@@ -16,9 +16,9 @@
     ;connect push, pull and playing
     (loop :for j :from 1 :below (length push) :do ;for each interval
         (let (temp z c)
-            ;; I think the cardinality should be (gil::add-set-var sp 0 max-pitch 0 max-pushed-notes) 
+            ;; I think the cardinality should be (gil::add-set-var sp 0 max-pitch 0 max-simultaneous-notes) 
             ;; but doesn't change much right now
-            (setq temp (gil::add-set-var sp 0 max-pitch 0 max-pushed-notes)); temporary variables
+            (setq temp (gil::add-set-var sp 0 max-pitch 0 max-simultaneous-notes)); temporary variables
             (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
             (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
             (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
@@ -28,18 +28,18 @@
 )
 
 (defun link-push-push-card (sp push push-card)
-    ;compute quardinality of pushed notes
+    ;compute quardinality of simultaneous notes
     (loop :for i :from 0 :below (length push) :by 1 :do
         (gil::g-card-var sp (nth i push) (nth i push-card))
     )
 )
 
-(defun min-pushed-notes-cst (sp push-card min-pushed-notes)
+(defun min-simultaneous-notes-cst (sp push-card min-simultaneous-notes)
     (loop :for i :from 0 :below (length push-card) :by 1 :do
         (setq b1 (gil::add-bool-var sp 0 1))
         (gil::g-rel-reify sp (nth i push-card) gil::IRT_EQ 0 b1)
         (setq b2 (gil::add-bool-var sp 0 1))
-        (gil::g-rel-reify sp (nth i push-card) gil::IRT_GQ min-pushed-notes b2)
+        (gil::g-rel-reify sp (nth i push-card) gil::IRT_GQ min-simultaneous-notes b2)
         (gil::g-rel sp b1 gil::BOT_OR b2)
     )
 )
@@ -162,18 +162,6 @@
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     ;; count-var-set-val ? in 'gecode-wrapper.lisp'
 
-    ;; SetVar relation flags
-    ;; (defparameter gil::SRT_EQ 0)    ; equality relation
-    ;; (defparameter gil::SRT_NQ 1)    ; inequality
-    ;; (defparameter gil::SRT_SUB 2)   ; Subset
-    ;; (defparameter gil::SRT_SUP 3)   ; Superset
-    ;; (defparameter gil::SRT_DISJ 4)  ; Disjoint
-    ;; (defparameter gil::SRT_CMPL 5)  ; Complement
-    ;; (defparameter gil::SRT_LQ 6)    ; Less or equal
-    ;; (defparameter gil::SRT_LE 7)    ; Strictly lower
-    ;; (defparameter gil::SRT_GQ 8)    ; Greater or equal
-    ;; (defparameter gil::SRT_GR 9)    ; Strictly greater
-
     (let ((sim (similarity-percent-s r-block))
           notes-in-subblock
           min-sim-note-number)
@@ -234,20 +222,12 @@
 (defun note-min-length-rock (sp push pull min-length)
     ;; (floor number divisor) => quotient remainder
     ;; because (length push) == 16, we always have l == min-length
-    (setq l (floor (*  (length push) min-length) 16))
+    ;; (setq l (floor (*  (- (length push) 1) min-length) 16))
 
-    (print "min-note-length")
-    (print l)
-
-
-    ;; (setq templen (- (length pull) 1))
-    ;; (loop :for j :from 0 :below templen :by 1 :do
-    ;;     (loop :for k :from 0 :below l  :while (< (+ j k) templen) :do
-    ;;          (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
-    ;;     )
-    ;; )
+    ;; (print "min-note-length")
+    ;; (print l)
     (loop :for j :from 0 :below (length push) :by 1 :do
-        (loop :for k :from 1 :below l  :while (< (+ j k) (length pull)) :do
+        (loop :for k :from 1 :below min-length :while (< (+ j k) (length pull)) :do
              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
         )
     )

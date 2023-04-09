@@ -321,18 +321,18 @@ notes
 ;added-notes 
 push-card sub-push sub-pull q-push q-push-card)
 
-    (if (min-pushed-notes rock)
+    (if (min-simultaneous-notes rock)
         (loop :for i :from 0 :below (length push-card) :by 1 :do
             (setq b1 (gil::add-bool-var sp 0 1))
             (gil::g-rel-reify sp (nth i push-card) gil::IRT_EQ 0 b1)
             (setq b2 (gil::add-bool-var sp 0 1))
-            (gil::g-rel-reify sp (nth i push-card) gil::IRT_GQ (min-pushed-notes rock) b2)
+            (gil::g-rel-reify sp (nth i push-card) gil::IRT_GQ (min-simultaneous-notes rock) b2)
             (gil::g-rel sp b1 gil::BOT_OR b2)
         )
     )
 
-    (if (max-pushed-notes rock)
-        (gil::g-card sp push 0 (max-pushed-notes rock))
+    (if (max-simultaneous-notes rock)
+        (gil::g-card sp push 0 (max-simultaneous-notes rock))
     )
 
     (if (min-notes rock)

@@ -10,8 +10,8 @@
                                                 min-note-length
                                                 max-note-length-flag 
                                                 max-note-length
-                                                min-pushed-notes
-                                                max-pushed-notes
+                                                min-simultaneous-notes
+                                                max-simultaneous-notes
                                                 key-selection
                                                 mode-selection
                                                 chord-quality)
@@ -41,11 +41,11 @@
                 (if (or max-note-length-flag max-note-length)
                     (setf (max-note-length-flag x) max-note-length-flag (max-note-length x) max-note-length)
                 )
-                (if min-pushed-notes
-                    (setf (min-pushed-notes x) min-pushed-notes)
+                (if min-simultaneous-notes
+                    (setf (min-simultaneous-notes x) min-simultaneous-notes)
                 )
-                (if max-pushed-notes
-                    (setf (max-pushed-notes x) max-pushed-notes)
+                (if max-simultaneous-notes
+                    (setf (max-simultaneous-notes x) max-simultaneous-notes)
                 )
                 (if key-selection
                     (setf (key-selection x) key-selection)
@@ -66,8 +66,8 @@
                                             :min-note-length (min-note-length x)
                                             :max-note-length-flag (max-note-length-flag x)
                                             :max-note-length  (max-note-length x)
-                                            :min-pushed-notes (min-pushed-notes x)
-                                            :max-pushed-notes (max-pushed-notes x)
+                                            :min-simultaneous-notes (min-simultaneous-notes x)
+                                            :max-simultaneous-notes (max-simultaneous-notes x)
                                             :key-selection (key-selection x)
                                             :mode-selection (mode-selection x)
                                             :chord-quality (chord-quality x)
@@ -143,20 +143,20 @@
                             (max-note-length (c-block rock-block)) max-note-length)
                 )
             )
-            (if min-pushed-notes
+            (if min-simultaneous-notes
                 (progn
-                    (setf (min-pushed-notes (s-block rock-block)) min-pushed-notes)
-                    (setf (min-pushed-notes (r-block rock-block)) min-pushed-notes)
-                    (setf (min-pushed-notes (d-block rock-block)) min-pushed-notes)
-                    (setf (min-pushed-notes (c-block rock-block)) min-pushed-notes)
+                    (setf (min-simultaneous-notes (s-block rock-block)) min-simultaneous-notes)
+                    (setf (min-simultaneous-notes (r-block rock-block)) min-simultaneous-notes)
+                    (setf (min-simultaneous-notes (d-block rock-block)) min-simultaneous-notes)
+                    (setf (min-simultaneous-notes (c-block rock-block)) min-simultaneous-notes)
                 )
             )
-            (if max-pushed-notes
+            (if max-simultaneous-notes
                 (progn
-                    (setf (max-pushed-notes (s-block rock-block)) max-pushed-notes)
-                    (setf (max-pushed-notes (r-block rock-block)) max-pushed-notes)
-                    (setf (max-pushed-notes (d-block rock-block)) max-pushed-notes)
-                    (setf (max-pushed-notes (c-block rock-block)) max-pushed-notes)
+                    (setf (max-simultaneous-notes (s-block rock-block)) max-simultaneous-notes)
+                    (setf (max-simultaneous-notes (r-block rock-block)) max-simultaneous-notes)
+                    (setf (max-simultaneous-notes (d-block rock-block)) max-simultaneous-notes)
+                    (setf (max-simultaneous-notes (c-block rock-block)) max-simultaneous-notes)
                 )
             )
             (if key-selection

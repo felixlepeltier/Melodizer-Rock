@@ -71,20 +71,18 @@
          (bars (bar-length rock-csp))
          (quant 16)
          (max-pitch 127)
-         (max-pushed-notes (max-pushed-notes rock-csp))
-         (min-pushed-notes (min-pushed-notes rock-csp))
+         (max-simultaneous-notes (max-simultaneous-notes rock-csp))
+         (min-simultaneous-notes (min-simultaneous-notes rock-csp))
          )
         (print "get subblocks")
 
         ;; initialize the variables
-        (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-pushed-notes max-pushed-notes))
-        (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-pushed-notes max-pushed-notes))
-        (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-pushed-notes max-pushed-notes))
-        (setq push-card (gil::add-int-var-array sp (+ (* bars quant) 1) 0 127))
+        (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
+        (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
+        (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-simultaneous-notes max-simultaneous-notes))
 
         ;; connects push pull and playing with constraints
-        (link-push-pull-playing sp push pull playing max-pitch max-pushed-notes)
-        (link-push-push-card sp push push-card)
+        (link-push-pull-playing sp push pull playing max-pitch max-simultaneous-notes)
         
         
 
@@ -108,10 +106,10 @@
             )
         )
 
-
+        ;; (post-optional-rock-constraints sp rock-csp push pull playing push-card)
         (print "At the end of get-sub-rock-values (sp rock-csp)")
         ;; return
-        (list push pull playing)
+        (list push pull playing push-card)
     )
 )
 
@@ -123,16 +121,6 @@
     (print "In post-optional constraints")
     (print "the block is ")
     (print rock)
-
-    (if (min-pushed-notes rock)
-        (min-pushed-notes-cst sp push-card (min-pushed-notes rock))
-    )
-
-    (if (max-pushed-notes rock)
-        (gil::g-card sp push 0 (max-pushed-notes rock))
-    )
-
-    ;; if min-note-length > 1 then there's a bug, no solution is found
 
     ; Time constraints
     (if (min-note-length-flag rock)

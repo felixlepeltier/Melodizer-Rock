@@ -13,8 +13,8 @@
       (block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
     (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
     (bar-length :accessor bar-length :initform 0 :type integer)
-    (min-pushed-notes :accessor min-pushed-notes :initform 0 :type integer)
-    (max-pushed-notes :accessor max-pushed-notes :initform 10 :type integer)
+    (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
+    (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
     (min-notes :accessor min-notes :initform nil :type integer)
     (max-notes :accessor max-notes :initform nil :type integer)
     (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
@@ -168,8 +168,8 @@
                                     :min-note-length (min-note-length (om::object editor))
                                     :max-note-length-flag (max-note-length-flag (om::object editor))
                                     :max-note-length (max-note-length (om::object editor))
-                                    :min-pushed-notes (min-pushed-notes (om::object editor))
-                                    :max-pushed-notes (max-pushed-notes (om::object editor))
+                                    :min-simultaneous-notes (min-simultaneous-notes (om::object editor))
+                                    :max-simultaneous-notes (max-simultaneous-notes (om::object editor))
                                     :key-selection (key-selection (om::object editor))
                                     :mode-selection (mode-selection (om::object editor))
                                     :chord-quality (chord-quality (om::object editor))
@@ -200,8 +200,8 @@
                                     :min-note-length (min-note-length (om::object editor))
                                     :max-note-length-flag (max-note-length-flag (om::object editor))
                                     :max-note-length (max-note-length (om::object editor))
-                                    :min-pushed-notes (min-pushed-notes (om::object editor))
-                                    :max-pushed-notes (max-pushed-notes (om::object editor))
+                                    :min-simultaneous-notes (min-simultaneous-notes (om::object editor))
+                                    :max-simultaneous-notes (max-simultaneous-notes (om::object editor))
                                     :key-selection (key-selection (om::object editor))
           )
           (om::om-remove-subviews rock-panel)
@@ -370,7 +370,7 @@
       'om::om-static-text
       (om::om-make-point 15 150)
       (om::om-make-point 200 20)
-      "Minimum pushed notes"
+      "Minimum simultaneous notes"
       :font om::*om-default-font1b*
     )
 
@@ -378,14 +378,14 @@
       'om::pop-up-menu
       (om::om-make-point 170 150)
       (om::om-make-point 80 20)
-      "Minimum pushed notes"
+      "Minimum simultaneous notes"
       :range (loop :for n :from 0 :upto 10 collect (number-to-string n))
-      :value (number-to-string (min-pushed-notes (om::object editor)))
+      :value (number-to-string (min-simultaneous-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (setf (min-pushed-notes (om::object editor)) (string-to-number check))
+        (setf (min-simultaneous-notes (om::object editor)) (string-to-number check))
         (change-subblocks-values (om::object editor) 
-                                :min-pushed-notes (min-pushed-notes (om::object editor)))
+                                :min-simultaneous-notes (min-simultaneous-notes (om::object editor)))
       )
     )
 
@@ -393,7 +393,7 @@
       'om::om-static-text
       (om::om-make-point 15 200)
       (om::om-make-point 200 20)
-      "Maximum pushed notes"
+      "Maximum simultaneous notes"
       :font om::*om-default-font1b*
     )
 
@@ -401,14 +401,14 @@
       'om::pop-up-menu
       (om::om-make-point 170 200)
       (om::om-make-point 80 20)
-      "Maximum pushed notes"
+      "Maximum simultaneous notes"
       :range  (loop :for n :from 0 :upto 10 :collect (number-to-string n))
-      :value (number-to-string (max-pushed-notes (om::object editor)))
+      :value (number-to-string (max-simultaneous-notes (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (setf (max-pushed-notes (om::object editor)) (string-to-number check))
+        (setf (max-simultaneous-notes (om::object editor)) (string-to-number check))
         (change-subblocks-values (om::object editor) 
-                                :max-pushed-notes (max-pushed-notes (om::object editor)))
+                                :max-simultaneous-notes (max-simultaneous-notes (om::object editor)))
       )
     )
 
