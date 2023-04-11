@@ -238,7 +238,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-max-length-rock (sp push pull max-length)
-    (setq l (floor (* (length push) max-length) 16))
+    (setq l max-length)
     (loop :for j :from 0 :below (+ (- (length push) l) 1) :by 1 :do
         (let ((l-pull (gil::add-set-var-array sp l 0 127 0 127))
               (l-pull-union (gil::add-set-var sp 0 127 0 127)))

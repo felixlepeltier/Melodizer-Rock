@@ -14,24 +14,36 @@
       (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
+      (changes :accessor changes :initarg :changes :initform "Local" 
+              :documentation "Type of changes to define the relation when parent or other A changes")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
+      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
       (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
+      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 1 :type integer)
+      (min-note-length :accessor min-note-length :initform 0 :type integer)
+      (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
+      (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
       (quantification :accessor quantification :initform nil :type string)
       (key-selection :accessor key-selection :initform nil :type string)
+      (diff-key-selection :accessor diff-key-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (mode-selection :accessor mode-selection :initform nil :type string)
+      (diff-mode-selection :accessor diff-mode-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-key :accessor chord-key :initform nil :type string)
+      (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-quality :accessor chord-quality :initform nil :type string)
+      (diff-chord-quality :accessor diff-chord-quality :initform 0 :type integer :documentation "Difference for relative changes")
       (min-pitch :accessor min-pitch :initform 1 :type integer)
+      (diff-min-pitch :accessor diff-min-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
+      (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
     )
 )
@@ -70,24 +82,32 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (A-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 150)
+        :size (om::om-make-point 810 50)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
-       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 500)
-        :position (om::om-make-point 5 160)
+      (changes-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 810 100)
+        :position (om::om-make-point 5 60)
         :bg-color om::*azulito*)
       )
+      (constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 810 500)
+        :position (om::om-make-point 5 165)
+        :bg-color om::*azulito*)
+      )
+      
     )
 
     (setf elements-A-panel (make-A-panel self A-panel))
     (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
+    (setf elements-changes-panel (make-changes-panel self changes-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       A-panel
+      changes-panel
       constraints-panel
     )
   )
@@ -110,24 +130,36 @@
       (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
+      (changes :accessor changes :initarg :changes :initform "Local" 
+              :documentation "Type of changes to define the relation when parent or other A changes")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
+      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
       (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
+      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 1 :type integer)
+      (min-note-length :accessor min-note-length :initform 0 :type integer)
+      (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
+      (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
       (quantification :accessor quantification :initform nil :type string)
       (key-selection :accessor key-selection :initform nil :type string)
+      (diff-key-selection :accessor diff-key-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (mode-selection :accessor mode-selection :initform nil :type string)
+      (diff-mode-selection :accessor diff-mode-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-key :accessor chord-key :initform nil :type string)
+      (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-quality :accessor chord-quality :initform nil :type string)
+      (diff-chord-quality :accessor diff-chord-quality :initform 0 :type integer :documentation "Difference for relative changes")
       (min-pitch :accessor min-pitch :initform 1 :type integer)
+      (diff-min-pitch :accessor diff-min-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
       (max-pitch :accessor max-pitch :initform 127 :type integer)
+      (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
     )
 )
@@ -165,13 +197,18 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (B-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 150)
+        :size (om::om-make-point 810 50)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
-       (constraints-panel (om::om-make-view 'om::om-view
+      (changes-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 810 100)
+        :position (om::om-make-point 5 60)
+        :bg-color om::*azulito*)
+      )
+      (constraints-panel (om::om-make-view 'om::om-view
         :size (om::om-make-point 810 500)
-        :position (om::om-make-point 5 160)
+        :position (om::om-make-point 5 170)
         :bg-color om::*azulito*)
       )
       
@@ -179,11 +216,13 @@
 
     (setf elements-B-panel (make-B-panel self B-panel))
     (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
+    (setf elements-changes-panel (make-changes-panel self changes-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       B-panel
+      changes-panel
       constraints-panel
     )
   )
@@ -372,5 +411,31 @@
           )
         )
     )
+  )
+)
+
+(defun make-changes-panel (editor panel)
+  (om::om-add-subviews
+    panel
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 10 10)
+      (om::om-make-point 200 20)
+      "Types of changes"
+      :font om::*om-default-font1b*
+    )
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 10 30)
+      (om::om-make-point 200 50)
+      "Changes"
+      :range '("Local" "Relative to Rock")
+      :value (changes (om::object editor))
+      :di-action #'(lambda (m)
+        (setf (changes (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (print (changes (om::object editor)))
+      )
+    )
+
   )
 )
