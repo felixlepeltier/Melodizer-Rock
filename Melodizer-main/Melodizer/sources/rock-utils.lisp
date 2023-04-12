@@ -22,30 +22,59 @@
                 (if bar-length 
                     (progn
                         (setq n-bars (/ bar-length (list-length (block-list rock-block))))
-                        (print n-bars)
                         (setf (bar-length x) n-bars)
                     )
                 )
                 (if chord-key
                     (setf (chord-key x) chord-key)
                 )
-                (if (or min-pitch-flag min-pitch)
-                    (setf (min-pitch-flag x) min-pitch-flag (min-pitch x) min-pitch)
+                (if min-pitch
+                    (cond 
+                        ((relative-to-rock x)
+                            (setf   (min-pitch-flag x) min-pitch-flag 
+                                    (min-pitch x) (- min-pitch (diff-min-pitch x)))
+                        )
+                    )
+                    
                 )
-                (if (or max-pitch-flag max-pitch)
-                    (setf (max-pitch-flag x) max-pitch-flag (max-pitch x) max-pitch)
+                (if max-pitch
+                    (cond 
+                        ((relative-to-rock x)
+                            (setf   (max-pitch-flag x) max-pitch-flag 
+                                    (max-pitch x) (- max-pitch (diff-max-pitch x)))
+                        )
+                    )
                 )
-                (if (or min-note-length-flag min-note-length)
-                    (setf (min-note-length-flag x) min-note-length-flag (min-note-length x) min-note-length)
+                (if min-note-length
+                    (cond 
+                        ((relative-to-rock x)
+                        (progn
+                            (setf   (min-note-length-flag x) min-note-length-flag 
+                                    (min-note-length x) (floor (expt 2 (- (log min-note-length 2) (diff-min-length x)))))
+                            (print (min-note-length x)))
+                        )
+                    )
                 )
-                (if (or max-note-length-flag max-note-length)
-                    (setf (max-note-length-flag x) max-note-length-flag (max-note-length x) max-note-length)
+                (if max-note-length
+                    (cond 
+                        ((relative-to-rock x)
+                            (setf   (max-note-length-flag x) max-note-length-flag 
+                                    (max-note-length x) (floor (expt 2 (- (log max-note-length 2) (diff-max-length x))))))
+                    )
                 )
                 (if min-simultaneous-notes
-                    (setf (min-simultaneous-notes x) min-simultaneous-notes)
+                    (cond 
+                        ((relative-to-rock x)
+                            (setf (min-simultaneous-notes x) (- min-simultaneous-notes (diff-min-sim x)))
+                        )
+                    )
                 )
                 (if max-simultaneous-notes
-                    (setf (max-simultaneous-notes x) max-simultaneous-notes)
+                    (cond 
+                        ((relative-to-rock x)
+                            (setf (max-simultaneous-notes x) (- max-simultaneous-notes (diff-max-sim x)))
+                        )
+                    )
                 )
                 (if key-selection
                     (setf (key-selection x) key-selection)
@@ -105,6 +134,7 @@
                             (min-pitch (d-block rock-block)) min-pitch)
                     (setf   (min-pitch-flag (c-block rock-block)) min-pitch-flag 
                             (min-pitch (c-block rock-block)) min-pitch)
+                    (setf (diff-min-pitch rock-block) (- (min-pitch (om::object (parent rock-block))) min-pitch))
                 )
             )
             (if (or max-pitch-flag max-pitch)
@@ -117,6 +147,7 @@
                             (max-pitch (d-block rock-block)) max-pitch)
                     (setf   (max-pitch-flag (c-block rock-block)) max-pitch-flag 
                             (max-pitch (c-block rock-block)) max-pitch)
+                    (setf (diff-max-pitch rock-block) (- (max-pitch (om::object (parent rock-block))) max-pitch))
                 )
             )
             (if (or min-note-length-flag min-note-length)
@@ -128,7 +159,8 @@
                     (setf   (min-note-length-flag (d-block rock-block)) min-note-length-flag 
                             (min-note-length (d-block rock-block)) min-note-length)
                     (setf   (min-note-length-flag (c-block rock-block)) min-note-length-flag 
-                            (min-note-length (c-block rock-block)) min-note-length)
+                            (min-note-length (c-block rock-block)) min-note-length)    
+                    (setf (diff-min-length rock-block) (- (log (min-note-length (om::object (parent rock-block))) 2) (log min-note-length 2)))
                 )
             )
             (if (or max-note-length-flag max-note-length)
@@ -141,6 +173,7 @@
                             (max-note-length (d-block rock-block)) max-note-length)
                     (setf   (max-note-length-flag (c-block rock-block)) max-note-length-flag 
                             (max-note-length (c-block rock-block)) max-note-length)
+                    (setf (diff-max-length rock-block) (- (log (max-note-length (om::object (parent rock-block))) 2) (log max-note-length 2)))
                 )
             )
             (if min-simultaneous-notes
@@ -149,6 +182,8 @@
                     (setf (min-simultaneous-notes (r-block rock-block)) min-simultaneous-notes)
                     (setf (min-simultaneous-notes (d-block rock-block)) min-simultaneous-notes)
                     (setf (min-simultaneous-notes (c-block rock-block)) min-simultaneous-notes)
+                    (setf (diff-min-sim rock-block) (- (min-simultaneous-notes (om::object (parent rock-block))) min-simultaneous-notes))
+
                 )
             )
             (if max-simultaneous-notes
@@ -157,6 +192,7 @@
                     (setf (max-simultaneous-notes (r-block rock-block)) max-simultaneous-notes)
                     (setf (max-simultaneous-notes (d-block rock-block)) max-simultaneous-notes)
                     (setf (max-simultaneous-notes (c-block rock-block)) max-simultaneous-notes)
+                    (setf (diff-max-sim rock-block) (- (max-simultaneous-notes (om::object (parent rock-block))) max-simultaneous-notes))
                 )
             )
             (if key-selection
@@ -227,15 +263,12 @@
                     (setq result (list (number-to-string sum)))
                 )
             )
-            (print "bar-length-range")
-            (print result)
             result
         )
     )
 )
 
 (defun bar-length-sum-rock (rock)
-    (print "set-bar-length-sum rock")
     (let ((sum 0))
         (loop :for n :from 0 :below (list-length (block-list rock)) :by 1
         do
@@ -245,15 +278,12 @@
     )
 )
 (defun bar-length-sum-AB (A)
-    (print "set-bar-length-sum A")
     (+  (bar-length (s-block A)) 
         (bar-length (r-block A)) 
         (bar-length (d-block A)) 
         (bar-length (c-block A)))
 )
 (defun set-bar-length-up (rock-block)
-    (print "set-bar-length-up")
-    (print (om::object (parent rock-block)))
     (if (or (typep (om::object (parent rock-block)) 'mldz::a) (typep (om::object (parent rock-block)) 'mldz::b))
         (setf (bar-length (om::object (parent rock-block))) (bar-length-sum-AB (om::object (parent rock-block))))
         (setf (bar-length (om::object (parent rock-block))) (bar-length-sum-rock (om::object (parent rock-block))))
@@ -290,5 +320,117 @@
         (   (< 0  idx) (sublst (cdr lst) (1- idx) len))
         (   (null len) lst)
         (   (< 0  len) (cons (car lst) (sublst (cdr lst) idx (1- len))))
+    )
+)
+
+;; each diff argument is the difference between the old diff and new diff of the changed block A or B
+;; For example, if a block A goes from diff-max-pitch 5 to diff-max-pitch 3, the argument diff-max-pitch is 2
+(defun propagate-AB (AB-block &key  diff-min-sim 
+                                    diff-max-sim
+                                    diff-min-length
+                                    diff-max-length
+                                    diff-key-selection
+                                    diff-mode-selection
+                                    diff-chord-key
+                                    diff-chord-quality
+                                    diff-min-pitch
+                                    diff-max-pitch)
+    (let (
+        (parent (om::object (parent AB-block)))
+        (type-block (type-of AB-block))
+        block-list
+        )
+        (setf block-list (block-list parent))
+        (loop :for x in block-list do
+            (if (and (not (eq x AB-block)) (relative-to-same x) (typep x type-block))
+                (progn
+                    (if diff-min-sim
+                        (progn
+                            (setf   (diff-min-sim x) (- (diff-min-sim x) diff-min-sim))
+                            (setf   (min-simultaneous-notes x) (- (min-simultaneous-notes parent) (diff-min-sim x)))
+                            (change-subblocks-values x 
+                                  :min-simultaneous-notes (min-simultaneous-notes x))
+                        )
+                    )
+                    (if diff-max-sim
+                        (progn
+                            (setf   (diff-max-sim x) (- (diff-max-sim x) diff-max-sim))
+                            (setf   (max-simultaneous-notes x) (- (max-simultaneous-notes parent) (diff-max-sim x)))
+                            (change-subblocks-values x 
+                                  :max-simultaneous-notes (max-simultaneous-notes x))
+                        )
+                    )
+                    (if diff-min-length
+                        (progn
+                            (print diff-min-length)
+                            (setf   (diff-min-length x) (- (diff-min-length x) diff-min-length))
+                            (setf   (min-note-length x) (floor (expt 2 (- (log (min-note-length parent) 2) (diff-min-length x)))))
+                            (change-subblocks-values x 
+                                    :min-note-length-flag (min-note-length-flag x)
+                                    :min-note-length (min-note-length x))
+                        )
+                    )
+                    (if diff-max-length
+                        (progn
+                            (setf   (diff-max-length x) (- (diff-max-length x) diff-max-length))
+                            (setf   (max-note-length x) (floor (expt 2 (- (log (max-note-length parent) 2) (diff-max-length x)))))
+                            (change-subblocks-values x 
+                                    :max-note-length-flag (max-note-length-flag x)
+                                    :max-note-length (max-note-length x))
+                        )
+                    )
+                    (if diff-key-selection
+                        (progn
+                            (setf   (diff-key-selection x) (- (diff-key-selection x) diff-key-selection))
+                            (setf   (key-selection x) (- (key-selection parent) (diff-key-selection x)))
+                            (change-subblocks-values x 
+                                  :key-selection (key-selection x))
+                        )
+                    )
+                    (if diff-mode-selection
+                        (progn
+                            (setf   (diff-mode-selection x) (- (diff-mode-selection x) diff-mode-selection))
+                            (setf   (mode-selection x) (- (mode-selection parent) (diff-mode-selection x)))
+                            (change-subblocks-values x 
+                                  :mode-selection (mode-selection x))
+                        )
+                    )
+                    (if diff-chord-key
+                        (progn
+                            (setf   (diff-chord-key x) (- (diff-chord-key x) diff-chord-key))
+                            (setf   (chord-key x) (- (chord-key parent) (diff-chord-key x)))
+                            (change-subblocks-values x 
+                                  :chord-key (chord-key x))
+                        )
+                    )
+                    (if diff-chord-quality
+                        (progn
+                            (setf   (diff-chord-quality x) (- (diff-chord-quality x) diff-chord-quality))
+                            (setf   (chord-quality x) (- (chord-quality parent) (diff-chord-quality x)))
+                            (change-subblocks-values x 
+                                  :chord-quality (chord-quality x))
+                        )
+                    )
+                    (if diff-min-pitch
+                        (progn
+                            (setf   (diff-min-pitch x) (- (diff-min-pitch x) diff-min-pitch))
+                            (setf   (min-pitch x) (- (min-pitch parent) (diff-min-pitch x)))
+                            (change-subblocks-values x 
+                                    :min-pitch-flag (min-pitch-flag x)
+                                    :min-pitch (min-pitch x))
+                        )
+                    )
+                    (if diff-max-pitch
+                        (progn
+                            (setf   (diff-max-pitch x) (- (diff-max-pitch x) diff-max-pitch))
+                            (setf   (max-pitch x) (- (max-pitch parent) (diff-max-pitch x)))
+                            (change-subblocks-values x 
+                                    :max-pitch-flag (max-pitch-flag x)
+                                    :max-pitch (max-pitch x))
+                        )
+                    )
+                )
+            )
+        )
     )
 )

@@ -14,8 +14,8 @@
       (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (changes :accessor changes :initarg :changes :initform "Local" 
-              :documentation "Type of changes to define the relation when parent or other A changes")
+      (relative-to-rock :accessor relative-to-rock :initarg :relative-to-rock :initform 1 :type integer)
+      (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 1 :type integer)
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
@@ -25,7 +25,7 @@
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 0 :type integer)
+      (min-note-length :accessor min-note-length :initform 1 :type integer)
       (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
@@ -130,8 +130,10 @@
       (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (changes :accessor changes :initarg :changes :initform "Local" 
-              :documentation "Type of changes to define the relation when parent or other A changes")
+      (relative-to-rock :accessor relative-to-rock :initarg :relative-to-rock :initform 1 :type integer)
+      (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 1 :type integer)
+      ;; (changes :accessor changes :initarg :changes :initform "Relative to Rock" 
+      ;;         :documentation "Type of changes to define the relation when parent or other A changes")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
@@ -141,7 +143,7 @@
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 0 :type integer)
+      (min-note-length :accessor min-note-length :initform 1 :type integer)
       (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
@@ -424,16 +426,32 @@
       "Types of changes"
       :font om::*om-default-font1b*
     )
+    
     (om::om-make-dialog-item
-      'om::pop-up-menu
+      'om::om-check-box
       (om::om-make-point 10 30)
-      (om::om-make-point 200 50)
-      "Changes"
-      :range '("Local" "Relative to Rock")
-      :value (changes (om::object editor))
-      :di-action #'(lambda (m)
-        (setf (changes (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (print (changes (om::object editor)))
+      (om::om-make-point 200 20)
+      "Relative to rock"
+      :checked-p (relative-to-rock (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (relative-to-rock (om::object editor)) 1)
+                      (setf (relative-to-rock (om::object editor)) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 10 50)
+      (om::om-make-point 200 20)
+      "Relative to same type blocks"
+      :checked-p (relative-to-same (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (relative-to-same (om::object editor)) 1)
+                      (setf (relative-to-same (om::object editor)) nil)
+                    )
       )
     )
 
