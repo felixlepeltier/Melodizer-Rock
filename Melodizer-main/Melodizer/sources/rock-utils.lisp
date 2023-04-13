@@ -26,7 +26,11 @@
                     )
                 )
                 (if chord-key
-                    (setf (chord-key x) chord-key)
+                    (cond 
+                        ((relative-to-rock x)
+                            (setf (chord-key x) (note-value-to-name (- (name-to-note-value chord-key) (diff-chord-key x))))
+                        )
+                    )
                 )
                 (if min-pitch
                     (cond 
@@ -77,7 +81,11 @@
                     )
                 )
                 (if key-selection
-                    (setf (key-selection x) key-selection)
+                    (cond 
+                        ((relative-to-rock x)
+                            (setf (key-selection x) (note-value-to-name (- (name-to-note-value key-selection) (diff-key-selection x))))
+                        )
+                    )
                 )
                 (if mode-selection
                     (setf (mode-selection x) mode-selection)
@@ -122,6 +130,7 @@
                     (setf (chord-key (r-block rock-block)) chord-key)
                     (setf (chord-key (d-block rock-block)) chord-key)
                     (setf (chord-key (c-block rock-block)) chord-key)
+                    (setf (diff-chord-key rock-block) (- (name-to-note-value (chord-key (om::object (parent rock-block)))) (name-to-note-value chord-key)))
                 )
             )
             (if (or min-pitch-flag min-pitch)
@@ -201,6 +210,7 @@
                     (setf (key-selection (r-block rock-block)) key-selection)
                     (setf (key-selection (d-block rock-block)) key-selection)
                     (setf (key-selection (c-block rock-block)) key-selection)
+                    (setf (diff-key-selection rock-block) (- (name-to-note-value (key-selection (om::object (parent rock-block)))) (name-to-note-value key-selection)))
                 )
             )
             (if mode-selection
@@ -382,7 +392,7 @@
                     (if diff-key-selection
                         (progn
                             (setf   (diff-key-selection x) (- (diff-key-selection x) diff-key-selection))
-                            (setf   (key-selection x) (- (key-selection parent) (diff-key-selection x)))
+                            (setf   (key-selection x) (note-value-to-name (- (name-to-note-value (key-selection parent)) (diff-key-selection x))))
                             (change-subblocks-values x 
                                   :key-selection (key-selection x))
                         )
@@ -398,7 +408,7 @@
                     (if diff-chord-key
                         (progn
                             (setf   (diff-chord-key x) (- (diff-chord-key x) diff-chord-key))
-                            (setf   (chord-key x) (- (chord-key parent) (diff-chord-key x)))
+                            (setf   (chord-key x) (note-value-to-name (- (name-to-note-value (chord-key parent)) (diff-chord-key x))))
                             (change-subblocks-values x 
                                   :chord-key (chord-key x))
                         )
