@@ -14,7 +14,7 @@
       (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (relative-to-rock :accessor relative-to-rock :initarg :relative-to-rock :initform 1 :type integer)
+      (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
       (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 1 :type integer)
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
@@ -100,7 +100,7 @@
     )
 
     (setf elements-A-panel (make-A-panel self A-panel))
-    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
+    (setf elements-constraints-panel (make-constraints-AB-panel self constraints-panel))
     (setf elements-changes-panel (make-changes-panel self changes-panel))
 
     ; add the subviews for the different parts into the main view
@@ -130,10 +130,8 @@
       (d-block :accessor d-block :initarg :d-block :initform (make-instance 'd) :documentation "")
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (relative-to-rock :accessor relative-to-rock :initarg :relative-to-rock :initform 1 :type integer)
+      (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
       (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 1 :type integer)
-      ;; (changes :accessor changes :initarg :changes :initform "Relative to Rock" 
-      ;;         :documentation "Type of changes to define the relation when parent or other A changes")
       (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
@@ -217,7 +215,7 @@
     )
 
     (setf elements-B-panel (make-B-panel self B-panel))
-    (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
+    (setf elements-constraints-panel (make-constraints-AB-panel self constraints-panel))
     (setf elements-changes-panel (make-changes-panel self changes-panel))
 
     ; add the subviews for the different parts into the main view
@@ -254,7 +252,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-                (setf (parent (s-block (om::object editor))) editor)
+                (setf (parent (s-block (om::object editor))) (om::object editor))
               ;; (setf (s-block (om::object editor)) (make-instance 's :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (s-block (om::object editor)) "Window s")
@@ -274,7 +272,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-            (setf (parent (r-block (om::object editor))) editor)
+            (setf (parent (r-block (om::object editor))) (om::object editor))
               ;; (setf (r-block (om::object editor)) (make-instance 'r :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (r-block (om::object editor)) "Window r")
@@ -294,7 +292,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-                (setf (parent (d-block (om::object editor))) editor)
+                (setf (parent (d-block (om::object editor))) (om::object editor))
               ;; (setf (d-block (om::object editor)) (make-instance 'd :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (d-block (om::object editor)) "Window d")
@@ -314,7 +312,7 @@
             "next thread" ; name of the thread, not necessary but useful for debugging
             nil ; process initialization keywords, not needed here
             (lambda () ; function to call
-                (setf (parent (c-block (om::object editor))) editor)
+                (setf (parent (c-block (om::object editor))) (om::object editor))
               ;; (setf (c-block (om::object editor)) (make-instance 'c :parent (om::object editor) (om::object editor)))
               (om::openeditorframe ; open a window displaying the editor of the first A block
                 (om::omNG-make-new-instance (c-block (om::object editor)) "Window c")
@@ -432,11 +430,11 @@
       (om::om-make-point 10 30)
       (om::om-make-point 200 20)
       "Relative to rock"
-      :checked-p (relative-to-rock (om::object editor))
+      :checked-p (relative-to-parent (om::object editor))
       :di-action #'(lambda (c)
                     (if (om::om-checked-p c)
-                      (setf (relative-to-rock (om::object editor)) 1)
-                      (setf (relative-to-rock (om::object editor)) nil)
+                      (setf (relative-to-parent (om::object editor)) 1)
+                      (setf (relative-to-parent (om::object editor)) nil)
                     )
       )
     )
@@ -456,4 +454,436 @@
     )
 
   )
+)
+
+(defun make-constraints-AB-panel (editor panel)
+  (om::om-add-subviews
+    panel
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 2)
+      (om::om-make-point 120 20)
+      "Block constraints"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 50)
+      (om::om-make-point 200 20)
+      "Number of bars"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 50)
+      (om::om-make-point 80 20)
+      "Bar length"
+      :range (bar-length-range (om::object editor))
+      :value (number-to-string (bar-length (om::object editor)))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (bar-length (om::object editor)) (string-to-number check))
+        (change-subblocks-values (om::object editor) :bar-length (bar-length (om::object editor)))
+        (propagate-bar-length-srdc (om::object editor))
+        (set-bar-length-up (om::object editor))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 150)
+      (om::om-make-point 200 20)
+      "Minimum simultaneous notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 150)
+      (om::om-make-point 80 20)
+      "Minimum simultaneous notes"
+      :range (loop :for n :from 0 :upto 10 collect (number-to-string n))
+      :value (number-to-string (min-simultaneous-notes (om::object editor)))
+      :di-action #'(lambda (m)
+        (let ((old-diff 0))
+          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-min-sim (om::object editor)))
+          )
+          (setf (min-simultaneous-notes (om::object editor)) (string-to-number check))
+          (change-subblocks-values (om::object editor) 
+                                  :min-simultaneous-notes (min-simultaneous-notes (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-min-sim (- old-diff (diff-min-sim (om::object editor))))
+          )
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 200)
+      (om::om-make-point 200 20)
+      "Maximum simultaneous notes"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 170 200)
+      (om::om-make-point 80 20)
+      "Maximum simultaneous notes"
+      :range  (loop :for n :from 0 :upto 10 :collect (number-to-string n))
+      :value (number-to-string (max-simultaneous-notes (om::object editor)))
+      :di-action #'(lambda (m)
+        (let ((old-diff 0))
+          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-max-sim (om::object editor)))
+          )
+          (setf (max-simultaneous-notes (om::object editor)) (string-to-number check))
+          (change-subblocks-values (om::object editor) 
+                                  :max-simultaneous-notes (max-simultaneous-notes (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-max-sim (- old-diff (diff-max-sim (om::object editor))))
+          )
+        )
+      )
+    )
+
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 300 2)
+      (om::om-make-point 120 20)
+      "Time constraints"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 300 50)
+      (om::om-make-point 200 20)
+      "Minimum note length"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 430 50)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (min-note-length-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-note-length-flag (om::object editor)) 1)
+                      (setf (min-note-length-flag (om::object editor)) nil)
+                    )
+                    (change-subblocks-values (om::object editor) 
+                                :min-note-length-flag (min-note-length-flag (om::object editor)) 
+                                :min-note-length (min-note-length (om::object editor)))     
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 450 50)
+      (om::om-make-point 80 20); size
+      "Minimum note length"
+      :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
+      :value (number-to-string (min-note-length (om::object editor)))
+      :di-action #'(lambda (m)
+        (let ((old-diff 0))
+          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-min-length (om::object editor)))
+          )
+          (setf (min-note-length (om::object editor)) (string-to-number check))
+          (change-subblocks-values (om::object editor) 
+                                  :min-note-length-flag (min-note-length-flag (om::object editor))
+                                  :min-note-length (min-note-length (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-min-length (- old-diff (diff-min-length (om::object editor))))
+          )
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 300 100)
+      (om::om-make-point 200 20)
+      "Maximum note length"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 430 100)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (max-note-length-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-note-length-flag (om::object editor)) 1)
+                      (setf (max-note-length-flag (om::object editor)) nil)
+                    )
+                    (change-subblocks-values (om::object editor) 
+                                :max-note-length-flag (max-note-length-flag (om::object editor)) 
+                                :max-note-length (max-note-length (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 450 100)
+      (om::om-make-point 80 20); size
+      "Maximum note length"
+      :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
+      :value (number-to-string (max-note-length (om::object editor)))
+      :di-action #'(lambda (m)
+        (let ((old-diff 0))
+          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-max-length (om::object editor)))
+          )
+          (setf (max-note-length (om::object editor)) (string-to-number check))
+          (change-subblocks-values (om::object editor) 
+                                  :max-note-length-flag (max-note-length-flag (om::object editor))
+                                  :max-note-length (max-note-length (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-max-length (- old-diff (diff-max-length (om::object editor))))
+          )
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 2)
+      (om::om-make-point 200 20)
+      "Pitch constraints"
+      :font om::*om-default-font1b*
+    )
+
+    ; Key
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 50)
+      (om::om-make-point 200 20)
+      "Key selection"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 50)
+      (om::om-make-point 80 20)
+      "Key selection"
+      :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :value (key-selection (om::object editor))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (key-selection (om::object editor)) nil)
+          (setf (key-selection (om::object editor)) check)
+        )
+        (let ((old-diff 0))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-key-selection (om::object editor)))
+          )
+          (change-subblocks-values (om::object editor) :key-selection check)
+          (if (relative-to-same (om::object editor))
+            (propagate-AB (om::object editor) :diff-key-selection (- old-diff (diff-key-selection (om::object editor))))
+          )
+        )
+      )
+    )
+
+    ; Mode
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 100)
+      (om::om-make-point 200 20)
+      "Mode selection"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 100)
+      (om::om-make-point 80 20)
+      "Mode selection"
+      :value (mode-selection (om::object editor))
+      :range '("None" "ionian (major)" "dorian" "phrygian" "lydian" "mixolydian" "aeolian (natural minor)" "locrian" "pentatonic" "harmonic minor" "chromatic")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (mode-selection (om::object editor)) nil)
+          (setf (mode-selection (om::object editor)) check))
+        (change-subblocks-values (om::object editor) :mode-selection check)
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 150)
+      (om::om-make-point 200 20)
+      "Chord key"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 150)
+      (om::om-make-point 80 20)
+      "Chord key"
+      :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :value (chord-key (om::object editor))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-key (om::object editor)) nil)
+          (setf (chord-key (om::object editor)) check)
+        )
+        (let ((old-diff 0))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-chord-key (om::object editor)))
+          )
+          (change-subblocks-values (om::object editor) :chord-key check)
+          (if (relative-to-same (om::object editor))
+            (propagate-AB (om::object editor) :diff-chord-key (- old-diff (diff-chord-key (om::object editor))))
+          )
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 200)
+      (om::om-make-point 200 20)
+      "Chord quality"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 670 200)
+      (om::om-make-point 80 20)
+      "Chord quality"
+      :value (chord-quality (om::object editor))
+      :range '("None" "Major" "Minor" "Augmented" "Diminished" "Major 7" "Minor 7" "Dominant 7" "Minor 7 flat 5" "Diminished 7" "Minor-major 7"
+        "Major 9" "Minor 9" "9 Augmented 5" "9 flatted 5" "7 flat 9" "Augmented 9" "Minor 11" "Major 11" "Dominant 11" "Dominant # 11" "Major # 11")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-quality (om::object editor)) nil)
+          (setf (chord-quality (om::object editor)) check))
+        (change-subblocks-values (om::object editor) :chord-quality check)
+        
+      )
+    )
+
+     (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 250)
+      (om::om-make-point 200 20)
+      "Minimum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 670 250)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (min-pitch-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-pitch-flag (om::object editor)) 1)
+                      (setf (min-pitch-flag (om::object editor)) nil)
+                    )
+                    (change-subblocks-values (om::object editor) 
+                                :min-pitch-flag (min-pitch-flag (om::object editor)) 
+                                :min-pitch (min-pitch (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 690 250)
+      (om::om-make-point 80 20)
+      "Minimum pitch"
+      :range '(1 127)
+      :increment 1
+      :value (min-pitch (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (min-pitch (om::object editor)) (om::om-slider-value s))
+        (let ((old-diff 0))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-min-pitch (om::object editor)))
+          )
+          (change-subblocks-values (om::object editor) 
+                                  :min-pitch-flag (min-pitch-flag (om::object editor)) 
+                                  :min-pitch (min-pitch (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-min-pitch (- old-diff (diff-min-pitch (om::object editor))))
+          )
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 550 300)
+      (om::om-make-point 200 20)
+      "Maximum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 670 300)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (max-pitch-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-pitch-flag (om::object editor)) 1)
+                      (setf (max-pitch-flag (om::object editor)) nil)
+                    )
+                    (change-subblocks-values (om::object editor) 
+                                            :max-pitch-flag (max-pitch-flag (om::object editor)) 
+                                            :max-pitch (max-pitch (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 690 300)
+      (om::om-make-point 80 20)
+      "Maximum pitch"
+      :range '(1 127)
+      :increment 1
+      :value (max-pitch (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (max-pitch (om::object editor)) (om::om-slider-value s))
+        (let ((old-diff 0))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-max-pitch (om::object editor)))
+          )
+          (change-subblocks-values (om::object editor) 
+                                  :max-pitch-flag (max-pitch-flag (om::object editor)) 
+                                  :max-pitch (max-pitch (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-max-pitch (- old-diff (diff-max-pitch (om::object editor))))
+          )
+        )
+      )
+    )
+  )
+
 )

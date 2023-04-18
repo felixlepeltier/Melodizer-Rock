@@ -156,8 +156,9 @@
         "Add A to structure"
         :di-action #'(lambda (b)
           (print "Added A to structure")
-          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'A :parent editor (om::object editor)))))
-          (let ((bar-length 0))
+          
+          (let ((bar-length 0) (new-block (make-instance 'A :parent (om::object editor) (om::object editor))))
+            (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list new-block)))
             (if (= (length (block-list (om::object editor))) 1)
               (setq bar-length 0)
               (setq bar-length (bar-length (first (block-list (om::object editor)))))
@@ -195,7 +196,7 @@
         "Add B to structure"
         :di-action #'(lambda (b)
           (print "Added B to structure")
-          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent editor (om::object editor)))))
+          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
           (let ((bar-length 0))
             (if (= (length (block-list (om::object editor))) 1)
               (setq bar-length 0)
@@ -225,18 +226,6 @@
         )
     )
     
-
-    ;; (om::om-make-dialog-item
-    ;;     'om::om-button
-    ;;     (om::om-make-point 5 95) ; position (horizontal, vertical)
-    ;;     (om::om-make-point 150 40) ; size (horizontal, vertical)
-    ;;     "Update Structure"
-    ;;     :di-action #'(lambda (b)
-    ;;       (print "Finished structure")
-    ;;           (om::om-remove-subviews rock-panel)
-    ;;           (make-my-interface editor)
-    ;;     )
-    ;; )
 
     (om::om-make-dialog-item
         'om::om-button
@@ -331,16 +320,10 @@
           x
         )
     )
-    ;; (om::om-add-subviews
-    ;;   structure-panel
-    ;;   (multiple-value-list subview-list)
-    ;; )
+    
   )
   )
 )
-
-
-
 
 
 (defun make-constraints-panel (editor panel)
@@ -811,34 +794,7 @@
 
 )
 
-;; r-constraints-panel interface building
 
-(defun make-r-constraints-panel (editor panel)
-  (om::om-add-subviews
-    panel
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 10 10)
-      (om::om-make-point 200 20)
-      "Similarity with s block"
-      :font om::*om-default-font1b*
-    )
-    (om::om-make-dialog-item
-      'om::slider
-      (om::om-make-point 10 40)
-      (om::om-make-point 80 20)
-      "Similarity with s block"
-      :range '(1 100)
-      :increment 1
-      :value (similarity-percent-s (om::object editor))
-      :di-action #'(lambda (s)
-        (setf (similarity-percent-s (om::object editor)) (om::om-slider-value s))
-        (print "similarity-percent-s: ")
-        (print (similarity-percent-s (om::object editor)))
-      )
-    )
-  )
-)
 
 
 (defun make-rock-search-panel (editor search-panel)
@@ -923,26 +879,6 @@
         (setf (tempo (om::object editor)) (string-to-number (nth (om::om-get-selected-item-index m) (om::om-get-item-list m))))
       )
     )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 15 150)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Branching"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::pop-up-menu
-    ;;   (om::om-make-point 170 150)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Branching"
-    ;;   :range '("Top down" "Full" "Top down random")
-    ;;   :value
-    ;;   :di-action #'(lambda (m)
-    ;;     (setf (branching (om::object editor)) (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-    ;;   )
-    ;; )
 
 
     (om::om-make-dialog-item
