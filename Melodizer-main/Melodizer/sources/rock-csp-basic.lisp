@@ -54,6 +54,7 @@
         (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
 
         (print "new-melodizer basic CSP constructed")
+        (print tstop)
         ; return
         (list se push pull playing push-acc pull-acc playing-acc tstop sopts bars quant sp)
     )
@@ -172,22 +173,23 @@
 ; <rock-object> is a rock object
 ; this function finds the next solution of the CSP using the search engine given as an argument
 (defmethod new-rock-next (l rock-object)
-    (let ((se (first l))
-         (push (second l))
-         (pull (third l))
-         (playing (fourth l))
-         (push-acc (fifth l))
-         (pull-acc (sixth l))
-         (playing-acc (seventh l))
-         (tstop (eighth l))
-         (sopts (ninth l))
+    (let ((se (nth 0 l))
+         (push (nth 1 l))
+         (pull (nth 2 l))
+         (playing (nth 3 l))
+         (push-acc (nth 4 l))
+         (pull-acc (nth 5 l))
+         (playing-acc (nth 6 l))
+         (tstop (nth 7 l))
+         (sopts (nth 8 l))
          (bars (nth 9 l))
          (quant (nth 10 l))
          (sp (nth 11 l))
          (check t); for the while loop
-         sol score)
+         sol score-voice score-acc)
 
          (print "in search basic")
+         (print tstop)
 
         (om::while check :do
             (gil::time-stop-reset tstop);reset the tstop timer before launching the search
@@ -223,7 +225,7 @@
                         )
             )
 
-            se push pull playing tstop sopts bars quant sp)
+            se push pull playing push-acc pull-acc playing-acc tstop sopts bars quant sp)
 
     )
 )
