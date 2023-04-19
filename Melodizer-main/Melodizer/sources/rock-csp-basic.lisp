@@ -20,10 +20,6 @@
         (min-length 1) ;minimum length of a note with associated constraint
         (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
         (chord-min-length 2)) ; minimum length of a chord with associated constraint
-        (print "csp")
-        (print rock-csp)
-        (print "block-list of the csp")
-        (print (block-list rock-csp))
 
         ;Setting constraint for this block and child blocks
         (setq temp (get-sub-rock-values sp rock-csp))
@@ -54,7 +50,7 @@
         (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
 
         (print "new-melodizer basic CSP constructed")
-        (print tstop)
+
         ; return
         (list se push pull playing push-acc pull-acc playing-acc tstop sopts bars quant sp)
     )
@@ -130,11 +126,6 @@
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-rock-constraints (sp rock push pull playing); sub-push sub-pull)
 
-
-    (print "In post-optional constraints")
-    (print "the block is ")
-    (print rock)
-
     (if (min-simultaneous-notes rock)
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
@@ -189,7 +180,6 @@
          sol score-voice score-acc)
 
          (print "in search basic")
-         (print tstop)
 
         (om::while check :do
             (gil::time-stop-reset tstop);reset the tstop timer before launching the search
@@ -199,10 +189,6 @@
                 (setf check nil); we have found a solution so break the loop
             )
         )
-        ;; (print (percent-diff rock-object))
-        ;; (set-percent-diff sp (percent-diff rock-object) sol push pull playing)
-
-        ;; (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
 
          ;créer score qui retourne la liste de pitch et la rhythm tree
         (setq score-voice (build-voice sol push pull bars quant (tempo rock-object)))

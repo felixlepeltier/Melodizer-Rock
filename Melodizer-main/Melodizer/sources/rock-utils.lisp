@@ -31,8 +31,7 @@
             (setq block-list (list (accomp rock-block)))
         )
     )
-    (print rock-block)
-    (print block-list)
+
     ;; Update the diff parameter for this block
     (if (not (typep rock-block 'mldz::rock))
         (progn
@@ -80,7 +79,7 @@
             )
         )
     )
-    (print "After update diff")
+
     ;; Loop on sub-blocks to update their values
     (loop :for x in block-list do
         (setf (parent x) rock-block)
@@ -120,7 +119,7 @@
                 (progn
                     (setf   (min-note-length-flag x) min-note-length-flag 
                             (min-note-length x) (floor (expt 2 (- (log min-note-length 2) (diff-min-length x)))))
-                    (print (min-note-length x)))
+                )
                 )
             )
         )
@@ -322,7 +321,6 @@
                     )
                     (if diff-min-length
                         (progn
-                            (print diff-min-length)
                             (setf   (diff-min-length x) (- (diff-min-length x) diff-min-length))
                             (setf   (min-note-length x) (floor (expt 2 (- (log (min-note-length parent) 2) (diff-min-length x)))))
                             (change-subblocks-values x 

@@ -148,7 +148,6 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc)
-    ;; (print (min-note-length s-block))
     (post-optional-rock-constraints sp s-block push pull playing)
     (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc)
 )
@@ -228,8 +227,6 @@
     ;; because (length push) == 16, we always have l == min-length
     ;; (setq l (floor (*  (- (length push) 1) min-length) 16))
 
-    ;; (print "min-note-length")
-    ;; (print l)
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :while (< (+ j k) (length pull)) :do
              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
