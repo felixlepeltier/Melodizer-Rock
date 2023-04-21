@@ -35,6 +35,8 @@
     ;; Update the diff parameter for this block
     (if (not (typep rock-block 'mldz::rock))
         (progn
+
+            ;; Pitch constraints
             (if chord-key
                 (setf   (diff-chord-key rock-block) 
                         (-  (name-to-note-value (chord-key (parent rock-block))) 
@@ -51,32 +53,39 @@
                             max-pitch))
                 
             )
-            (if (or min-note-length-flag min-note-length)
-                (setf   (diff-min-length rock-block) 
-                        (-  (log (min-note-length (parent rock-block)) 2) 
-                            (log min-note-length 2)))
-                
-            )
-            (if (or max-note-length-flag max-note-length)
-                (setf   (diff-max-length rock-block) 
-                        (-  (log (max-note-length (parent rock-block)) 2) 
-                            (log max-note-length 2)))
-            )
-            (if min-simultaneous-notes
-                (setf   (diff-min-sim rock-block) 
-                        (- (min-simultaneous-notes (parent rock-block)) 
-                            min-simultaneous-notes))
-            )
-            (if max-simultaneous-notes
-                (setf   (diff-max-sim rock-block) 
-                        (- (max-simultaneous-notes (parent rock-block)) 
-                            max-simultaneous-notes))
-            )
             (if key-selection
                 (setf   (diff-key-selection rock-block) 
                         (-  (name-to-note-value (key-selection (parent rock-block))) 
                             (name-to-note-value key-selection)))
             )
+
+            ;;Other constraints
+            (if (not (typep rock-block 'mldz::accompaniment))
+                (progn 
+                    (if (or min-note-length-flag min-note-length)
+                        (setf   (diff-min-length rock-block) 
+                                (-  (log (min-note-length (parent rock-block)) 2) 
+                                    (log min-note-length 2)))
+                        
+                    )
+                    (if (or max-note-length-flag max-note-length)
+                        (setf   (diff-max-length rock-block) 
+                                (-  (log (max-note-length (parent rock-block)) 2) 
+                                    (log max-note-length 2)))
+                    )
+                    (if min-simultaneous-notes
+                        (setf   (diff-min-sim rock-block) 
+                                (- (min-simultaneous-notes (parent rock-block)) 
+                                    min-simultaneous-notes))
+                    )
+                    (if max-simultaneous-notes
+                        (setf   (diff-max-sim rock-block) 
+                                (- (max-simultaneous-notes (parent rock-block)) 
+                                    max-simultaneous-notes))
+                    )
+                )
+            )
+
         )
     )
 
@@ -89,6 +98,8 @@
                 (setf (bar-length x) n-bars)
             )
         )
+
+        ;;Pitch constraints
         (if chord-key
             (cond 
                 ((relative-to-parent x)
@@ -113,37 +124,6 @@
                 )
             )
         )
-        (if min-note-length
-            (cond 
-                ((relative-to-parent x)
-                (progn
-                    (setf   (min-note-length-flag x) min-note-length-flag 
-                            (min-note-length x) (floor (expt 2 (- (log min-note-length 2) (diff-min-length x)))))
-                )
-                )
-            )
-        )
-        (if max-note-length
-            (cond 
-                ((relative-to-parent x)
-                    (setf   (max-note-length-flag x) max-note-length-flag 
-                            (max-note-length x) (floor (expt 2 (- (log max-note-length 2) (diff-max-length x))))))
-            )
-        )
-        (if min-simultaneous-notes
-            (cond 
-                ((relative-to-parent x)
-                    (setf (min-simultaneous-notes x) (- min-simultaneous-notes (diff-min-sim x)))
-                )
-            )
-        )
-        (if max-simultaneous-notes
-            (cond 
-                ((relative-to-parent x)
-                    (setf (max-simultaneous-notes x) (- max-simultaneous-notes (diff-max-sim x)))
-                )
-            )
-        )
         (if key-selection
             (cond 
                 ((relative-to-parent x)
@@ -157,6 +137,44 @@
         (if chord-quality
             (setf (chord-quality x) chord-quality)
         )
+
+        ;; Other constraints
+        (if (not (typep x 'mldz::accompaniment))
+            (progn 
+                (if min-note-length
+                    (cond 
+                        ((relative-to-parent x)
+                        (progn
+                            (setf   (min-note-length-flag x) min-note-length-flag 
+                                    (min-note-length x) (floor (expt 2 (- (log min-note-length 2) (diff-min-length x)))))
+                        )
+                        )
+                    )
+                )
+                (if max-note-length
+                    (cond 
+                        ((relative-to-parent x)
+                            (setf   (max-note-length-flag x) max-note-length-flag 
+                                    (max-note-length x) (floor (expt 2 (- (log max-note-length 2) (diff-max-length x))))))
+                    )
+                )
+                (if min-simultaneous-notes
+                    (cond 
+                        ((relative-to-parent x)
+                            (setf (min-simultaneous-notes x) (- min-simultaneous-notes (diff-min-sim x)))
+                        )
+                    )
+                )
+                (if max-simultaneous-notes
+                    (cond 
+                        ((relative-to-parent x)
+                            (setf (max-simultaneous-notes x) (- max-simultaneous-notes (diff-max-sim x)))
+                        )
+                    )
+                )
+            )
+        )
+        
         (change-subblocks-values x  :bar-length (bar-length x)
                                     :chord-key (chord-key x)
                                     :min-pitch-flag (min-pitch-flag x)

@@ -71,8 +71,8 @@
          (bars (bar-length rock-csp))
          (quant 16)
          (max-pitch 127)
-         (max-simultaneous-notes (max-simultaneous-notes rock-csp))
-         (min-simultaneous-notes (min-simultaneous-notes rock-csp))
+         (max-simultaneous-notes 10)
+         (min-simultaneous-notes 0)
          )
         (print "get subblocks")
 
@@ -143,9 +143,9 @@
         (note-max-length-rock sp push pull (max-note-length rock))
     )
 
-    (if (quantification rock)
-        (set-quantification sp push pull (quantification rock))
-    )
+    ;; (if (quantification rock)
+    ;;     (set-quantification sp push pull (quantification rock))
+    ;; )
 
     ; Pitch constraints
     ; following a scale

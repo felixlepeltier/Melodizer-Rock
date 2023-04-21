@@ -21,7 +21,7 @@
     (min-note-length :accessor min-note-length :initform 1 :type integer)
     (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
     (max-note-length :accessor max-note-length :initform 16 :type integer)
-    (quantification :accessor quantification :initform nil :type string)
+    ;; (quantification :accessor quantification :initform nil :type string)
     (key-selection :accessor key-selection :initform nil :type string)
     (mode-selection :accessor mode-selection :initform nil :type string)
     (chord-key :accessor chord-key :initform nil :type string)
