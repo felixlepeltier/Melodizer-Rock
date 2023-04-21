@@ -143,15 +143,13 @@
         (note-max-length-rock sp push pull (max-note-length rock))
     )
 
-    ;; (if (quantification rock)
-    ;;     (set-quantification sp push pull (quantification rock))
-    ;; )
-
     ; Pitch constraints
     ; following a scale
     (if (key-selection rock)
         (key-selection-cst sp push (key-selection rock) (mode-selection rock))
     )
+
+    (chord-key-cst sp push rock)
 
     (pitch-range sp push (min-pitch rock) (max-pitch rock))
 )

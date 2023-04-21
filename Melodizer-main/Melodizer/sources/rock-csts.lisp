@@ -218,6 +218,79 @@
 
 )
 
+(defun chord-key-cst (sp push rock)
+    (if (chord-key rock)
+        (if (chord-quality rock)
+            (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+                    (bool2 (gil::add-bool-var sp 0 1))
+                    (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
+                    (offset (- (name-to-note-value (chord-key rock)) 60))
+                    (all-notes (gil::add-set-var sp 0 127 0 127))
+                    chordset notesets bool-array)
+                    (setq chordset (build-scaleset chord offset))
+                    (scale-follow-reify sp push chordset bool)
+                    (setq notesets (build-notesets chord offset))
+                    (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
+                    (loop :for i :from 0 :below (length notesets) :do
+                        (let ((push-bool-array (gil::add-bool-var-array sp (length push) 0 1)))
+                            (loop :for j :from 0 :below (length push) :do
+                                (gil::g-rel-reify sp (nth j push) gil::SRT_DISJ (nth i notesets) (nth j push-bool-array))
+                            )
+                            (gil::g-rel sp gil::BOT_AND push-bool-array (nth i bool-array))
+                        )
+                    )
+
+                    (gil::g-rel sp gil::BOT_OR bool-array bool2)
+                    (gil::g-rel sp bool gil::SRT_EQ 1)
+            )
+
+            (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+                    (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
+                    (offset (- (name-to-note-value (chord-key rock)) 60))
+                    (all-notes (gil::add-set-var sp 0 127 0 127))
+                    chordset)
+                    (gil::g-setunion sp all-notes push)
+                    (setq chordset (build-scaleset chord offset))
+                    (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
+                    (scale-follow-reify sp push chordset bool))
+        )
+        (if (chord-quality rock)
+            (let (chord chordset notesets
+                    (bool-array (gil::add-bool-var-array sp 12 0 1)); créer le booleen pour la reify
+                    (all-notes (gil::add-set-var sp 0 127 01 127)))
+                (gil::g-setunion sp all-notes push)
+                (loop :for key :from 0 :below 12 :by 1 :do
+                    (let ((bool1 (gil::add-bool-var sp 0 1))
+                            (bool2 (gil::add-bool-var sp 0 1))
+                            (bool-array-note (gil::add-bool-var-array sp (length notesets) 0 1))
+                            chordset notesets)
+                        (setq chord (get-chord (chord-quality rock)))
+                        (setq chordset (build-scaleset chord key))
+                        (setq notesets (build-notesets chord key))
+
+                        (loop :for i :from 0 :below (length notesets) :do
+                                (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array-note))
+                        )
+                        (gil::g-rel sp gil::BOT_AND bool-array-note bool1)
+                        (scale-follow-reify sp push chordset bool2)
+                        (gil::g-op sp (nth key bool-array) gil::BOT_AND bool 0))
+                )
+                (gil::g-rel sp gil::BOT_OR bool-array 1)
+            )
+            (let (chord chordset
+                    (bool-array (gil::add-bool-var-array sp 12 0 1)))
+                (loop :for key :from 0 :below 12 :by 1 :do
+                    (setq chord (get-chord (chord-quality rock)))
+                    (setq chordset (build-scaleset chord key))
+                    (scale-follow-reify sp push chordset (nth key bool-array))
+                )
+                (gil::g-rel sp gil::BOT_OR bool-array 1)
+            )
+
+        )
+    )
+)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; LIMITING MINIMUM NOTE LENGTH ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
