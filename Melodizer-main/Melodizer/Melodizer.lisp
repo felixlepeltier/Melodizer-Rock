@@ -15,7 +15,7 @@
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-AB" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-srdc" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-accompaniment" :type "lisp")
-                     (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-csp-basic" :type "lisp")
+                     (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-csp" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "rock-csts" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "dummy-problem" :type "lisp")
                      (make-pathname :directory (pathname-directory *melodizer-sources-dir*) :name "golomb-ruler" :type "lisp")

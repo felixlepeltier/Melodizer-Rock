@@ -12,8 +12,6 @@
                                                 max-note-length
                                                 min-simultaneous-notes
                                                 max-simultaneous-notes
-                                                key-selection
-                                                mode-selection
                                                 chord-quality)
     (let (block-list)
     
@@ -52,11 +50,6 @@
                         (- (max-pitch (parent rock-block)) 
                             max-pitch))
                 
-            )
-            (if key-selection
-                (setf   (diff-key-selection rock-block) 
-                        (-  (name-to-note-value (key-selection (parent rock-block))) 
-                            (name-to-note-value key-selection)))
             )
 
             ;;Other constraints
@@ -124,16 +117,6 @@
                 )
             )
         )
-        (if key-selection
-            (cond 
-                ((relative-to-parent x)
-                    (setf (key-selection x) (note-value-to-name (- (name-to-note-value key-selection) (diff-key-selection x))))
-                )
-            )
-        )
-        (if mode-selection
-            (setf (mode-selection x) mode-selection)
-        )
         (if chord-quality
             (setf (chord-quality x) chord-quality)
         )
@@ -187,8 +170,6 @@
                                     :max-note-length  (max-note-length x)
                                     :min-simultaneous-notes (min-simultaneous-notes x)
                                     :max-simultaneous-notes (max-simultaneous-notes x)
-                                    :key-selection (key-selection x)
-                                    :mode-selection (mode-selection x)
                                     :chord-quality (chord-quality x)
         )
         
@@ -306,8 +287,6 @@
                                     diff-max-sim
                                     diff-min-length
                                     diff-max-length
-                                    diff-key-selection
-                                    diff-mode-selection
                                     diff-chord-key
                                     diff-chord-quality
                                     diff-min-pitch
@@ -353,22 +332,6 @@
                             (change-subblocks-values x 
                                     :max-note-length-flag (max-note-length-flag x)
                                     :max-note-length (max-note-length x))
-                        )
-                    )
-                    (if diff-key-selection
-                        (progn
-                            (setf   (diff-key-selection x) (- (diff-key-selection x) diff-key-selection))
-                            (setf   (key-selection x) (note-value-to-name (- (name-to-note-value (key-selection parent)) (diff-key-selection x))))
-                            (change-subblocks-values x 
-                                  :key-selection (key-selection x))
-                        )
-                    )
-                    (if diff-mode-selection
-                        (progn
-                            (setf   (diff-mode-selection x) (- (diff-mode-selection x) diff-mode-selection))
-                            (setf   (mode-selection x) (- (mode-selection parent) (diff-mode-selection x)))
-                            (change-subblocks-values x 
-                                  :mode-selection (mode-selection x))
                         )
                     )
                     (if diff-chord-key

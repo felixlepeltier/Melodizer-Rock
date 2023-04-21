@@ -187,37 +187,6 @@
 )
 
 
-(defun key-selection-cst (sp push key-selection mode-selection)
-
-    (if mode-selection
-        (let (scaleset
-                (bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-                (scale (get-scale mode-selection))  ;if - mode selectionné
-                (offset (- (name-to-note-value key-selection) 60)))
-                (setq scaleset (build-scaleset scale offset))
-                (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
-                (scale-follow-reify sp push scaleset bool))
-        (let (scaleset
-                (bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-                (scale (get-scale "ionian (major)"))  ;else - pas de mode selectionné => major natural
-                (offset (- (name-to-note-value key-selection) 60)))
-                (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
-                (setq scaleset (build-scaleset scale offset))
-                (scale-follow-reify sp push scaleset bool))
-    )
-    (if mode-selection
-        (let ((bool-array (gil::add-bool-var-array sp 12 0 1))) ; créer le booleen pour la reify
-            (loop :for key :from 0 :below 12 :by 1 :do
-                (setq scale (get-scale mode-selectio))
-                (setq scaleset (build-scaleset scale key))
-                (scale-follow-reify sp push scaleset (nth key bool-array))
-            )
-            (gil::g-rel sp gil::BOT_OR bool-array 1)
-        )
-    )
-
-)
-
 (defun chord-key-cst (sp push rock)
     (if (chord-key rock)
         (if (chord-quality rock)

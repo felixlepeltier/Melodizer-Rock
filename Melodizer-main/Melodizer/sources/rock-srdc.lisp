@@ -26,10 +26,6 @@
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
       (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (key-selection :accessor key-selection :initform nil :type string)
-      (diff-key-selection :accessor diff-key-selection :initform 0 :type integer :documentation "Difference for relative changes")
-      (mode-selection :accessor mode-selection :initform nil :type string)
-      (diff-mode-selection :accessor diff-mode-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-key :accessor chord-key :initform nil :type string)
       (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-quality :accessor chord-quality :initform nil :type string)
@@ -119,10 +115,6 @@
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
       (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (key-selection :accessor key-selection :initform nil :type string)
-      (diff-key-selection :accessor diff-key-selection :initform 0 :type integer :documentation "Difference for relative changes")
-      (mode-selection :accessor mode-selection :initform nil :type string)
-      (diff-mode-selection :accessor diff-mode-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-key :accessor chord-key :initform nil :type string)
       (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-quality :accessor chord-quality :initform nil :type string)
@@ -220,10 +212,6 @@
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
       (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (key-selection :accessor key-selection :initform nil :type string)
-      (diff-key-selection :accessor diff-key-selection :initform 0 :type integer :documentation "Difference for relative changes")
-      (mode-selection :accessor mode-selection :initform nil :type string)
-      (diff-mode-selection :accessor diff-mode-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-key :accessor chord-key :initform nil :type string)
       (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-quality :accessor chord-quality :initform nil :type string)
@@ -312,10 +300,6 @@
       (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
       (max-note-length :accessor max-note-length :initform 16 :type integer)
       (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (key-selection :accessor key-selection :initform nil :type string)
-      (diff-key-selection :accessor diff-key-selection :initform 0 :type integer :documentation "Difference for relative changes")
-      (mode-selection :accessor mode-selection :initform nil :type string)
-      (diff-mode-selection :accessor diff-mode-selection :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-key :accessor chord-key :initform nil :type string)
       (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
       (chord-quality :accessor chord-quality :initform nil :type string)
@@ -592,61 +576,13 @@
       'om::om-static-text
       (om::om-make-point 550 50)
       (om::om-make-point 200 20)
-      "Key selection"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 670 50)
-      (om::om-make-point 80 20)
-      "Key selection"
-      :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
-      :value (key-selection (om::object editor))
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (key-selection (om::object editor)) nil)
-          (setf (key-selection (om::object editor)) check)
-        )
-      )
-    )
-
-    ; Mode
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 550 100)
-      (om::om-make-point 200 20)
-      "Mode selection"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 670 100)
-      (om::om-make-point 80 20)
-      "Mode selection"
-      :value (mode-selection (om::object editor))
-      :range '("None" "ionian (major)" "dorian" "phrygian" "lydian" "mixolydian" "aeolian (natural minor)" "locrian" "pentatonic" "harmonic minor" "chromatic")
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (mode-selection (om::object editor)) nil)
-          (setf (mode-selection (om::object editor)) check))
-      )
-    )
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 550 150)
-      (om::om-make-point 200 20)
       "Chord key"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 670 150)
+      (om::om-make-point 670 50)
       (om::om-make-point 80 20)
       "Chord key"
       :range '("None" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
@@ -665,7 +601,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 200)
+      (om::om-make-point 550 100)
       (om::om-make-point 200 20)
       "Chord quality"
       :font om::*om-default-font1b*
@@ -673,7 +609,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 670 200)
+      (om::om-make-point 670 100)
       (om::om-make-point 80 20)
       "Chord quality"
       :value (chord-quality (om::object editor))
@@ -690,7 +626,7 @@
 
      (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 250)
+      (om::om-make-point 550 150)
       (om::om-make-point 200 20)
       "Minimum pitch"
       :font om::*om-default-font1b*
@@ -698,7 +634,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 670 250)
+      (om::om-make-point 670 150)
       (om::om-make-point 20 20)
       ""
       :checked-p (min-pitch-flag (om::object editor))
@@ -715,7 +651,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 690 250)
+      (om::om-make-point 690 150)
       (om::om-make-point 80 20)
       "Minimum pitch"
       :range '(1 127)
@@ -739,7 +675,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 670 300)
+      (om::om-make-point 670 200)
       (om::om-make-point 20 20)
       ""
       :checked-p (max-pitch-flag (om::object editor))
@@ -756,7 +692,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 690 300)
+      (om::om-make-point 690 200)
       (om::om-make-point 80 20)
       "Maximum pitch"
       :range '(1 127)
