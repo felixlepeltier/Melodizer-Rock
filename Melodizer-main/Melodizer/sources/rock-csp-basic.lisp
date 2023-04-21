@@ -201,10 +201,12 @@
                             (make-instance 'om::voice
                                 :chords (first score-voice)
                                 :tree (second score-voice)
+                                :tempo (tempo rock-object)
                             )
                             (make-instance 'om::voice
                                 :chords (first score-acc)
                                 :tree (second score-acc)
+                                :tempo (tempo rock-object)
                             )
                         )
             )
