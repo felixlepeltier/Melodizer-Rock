@@ -159,21 +159,10 @@
     (post-optional-rock-constraints sp r-block push pull playing)
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc)
 
-
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
-    ;; count-var-set-val ? in 'gecode-wrapper.lisp'
-
-    (let ((sim (similarity-percent-s r-block))
-          notes-in-subblock
-          min-sim-note-number)
-        (setq notes-in-subblock (length push))
-        (setq min-sim-note-number (floor (* notes-in-subblock (/ sim 100.0))))
-        ;; TODO: add gil constraint that posts a constraint on playing such that
-        ;;       at least min-sim-note-number notes are equal in playing[i] and playing-s[i]
-        ;; (gil::g-count-array sp playing playing-s gil::IRT_GQ min-sim-note-number)
+    (let ((sim (similarity-percent-s r-block)))
+        (gil::g-count-setvararray sp playing playing-s sim)
     )
-
-
 )
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc)
