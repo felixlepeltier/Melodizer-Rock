@@ -180,7 +180,7 @@
     ;; have a Plagal cadence as this usually marks the end of a complete musical piece
 
     (print "Before the case on cadence-type")
-    (let ((block-list-len (len (block-list (parent (c-parent))))) ;; how many blocks are in the global structure
+    (let ((block-list-len (length (block-list (parent c-parent)))) ;; how many blocks are in the global structure
         (position (block-position c-parent)) ;; position of the current block in the global structure (start index is 0)
         (c-type (cadence-type c-parent)))
         (cond 

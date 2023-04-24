@@ -125,7 +125,7 @@
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (similarity-percent-s :accessor similarity-percent-s :initform 1 :type integer)
+      (similarity-percent-s :accessor similarity-percent-s :initform 50 :type integer)
     )
 )
 
