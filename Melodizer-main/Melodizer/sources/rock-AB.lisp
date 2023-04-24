@@ -40,6 +40,8 @@
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (cadence-type :accessor cadence-type :initform "Default" :type string :documentation "Type of cadence used in the current block")
+      (block-position :accessor block-position :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
     )
 )
 
@@ -151,6 +153,8 @@
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (cadence-type :accessor cadence-type :initform "Default" :type string :documentation "Type of cadence used in the current block")
+      (block-position :accessor block-position :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
     )
 )
 
@@ -229,12 +233,14 @@
 
 
 (defun make-A-panel (editor A-panel)
+  ;; (print "Block-position")
+  ;; (print (block-position (om::object editor)))
   (om::om-add-subviews
     A-panel
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "s"
         :di-action #'(lambda (b)
           (print "Selected s")
@@ -254,7 +260,7 @@
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 115 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "r"
         :di-action #'(lambda (b)
           (print "Selected r")
@@ -274,7 +280,7 @@
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 225 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "d"
         :di-action #'(lambda (b)
           (print "Selected d")
@@ -294,7 +300,7 @@
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 335 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "c"
         :di-action #'(lambda (b)
           (print "Selected c")
@@ -323,12 +329,14 @@
 
 
 (defun make-B-panel (editor B-panel)
+  ;; (print "Block-position")
+  ;; (print (block-position (om::object editor)))
   (om::om-add-subviews
     B-panel
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "s"
         :di-action #'(lambda (b)
           (print "Selected s")
@@ -347,7 +355,7 @@
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 115 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "r"
         :di-action #'(lambda (b)
           (print "Selected r")
@@ -366,7 +374,7 @@
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 225 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "d"
         :di-action #'(lambda (b)
           (print "Selected d")
@@ -385,7 +393,7 @@
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 335 10) ; position (horizontal, vertical)
-        (om::om-make-point 100 50) ; size (horizontal, vertical)
+        (om::om-make-point 80 25) ; size (horizontal, vertical)
         "c"
         :di-action #'(lambda (b)
           (print "Selected c")

@@ -154,6 +154,7 @@
           (print "Added A to structure")
           
           (let ((bar-length 0) (new-block (make-instance 'A :parent (om::object editor) (om::object editor))))
+            (setf (block-position new-block) (length (block-list (om::object editor))))
             (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list new-block)))
             (if (= (length (block-list (om::object editor))) 1)
               (setq bar-length 0)
@@ -190,8 +191,11 @@
         "Add B to structure"
         :di-action #'(lambda (b)
           (print "Added B to structure")
-          (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
-          (let ((bar-length 0))
+
+          ;; (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
+          (let ((bar-length 0) (new-block (make-instance 'B :parent (om::object editor) (om::object editor))))
+            (setf (block-position new-block) (length (block-list (om::object editor))))
+            (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list new-block)))
             (if (= (length (block-list (om::object editor))) 1)
               (setq bar-length 0)
               (setq bar-length (bar-length (first (block-list (om::object editor)))))
@@ -267,7 +271,7 @@
               "next thread" ; name of the thread, not necessary but useful for debugging
               nil ; process initialization keywords, not needed here
               #'(lambda () ; function to call
-                (om::openeditorframe ; open a window displaying the editor of the first A block
+                (om::openeditorframe ; open a window displaying the editor of the A block
                   (om::omNG-make-new-instance (nth (position b subview-list) (block-list (om::object editor))) (concatenate 'string "Window A" (write-to-string (position b subview-list))))
                 )
               )
@@ -284,12 +288,11 @@
           "B"
           :di-action #'(lambda (b)
             (print "Selected B")
-
             (mp:process-run-function ; start a new thread for the execution of the next method
               "next thread" ; name of the thread, not necessary but useful for debugging
               nil ; process initialization keywords, not needed here
               #'(lambda () ; function to call
-                (om::openeditorframe ; open a window displaying the editor of the first A block
+                (om::openeditorframe ; open a window displaying the editor of the B block
                   (om::omNG-make-new-instance (nth (position b subview-list) (block-list (om::object editor))) (concatenate 'string "Window B" (write-to-string (position b subview-list))))
                 )
               )

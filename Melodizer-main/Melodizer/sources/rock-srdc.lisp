@@ -349,14 +349,21 @@
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
+      (c-constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 300 500)
+        :position (om::om-make-point 820 5)
+        :bg-color om::*azulito*)
+      )
     )
 
     (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
+    (setf elements-c-constraints-panel (make-c-constraints-panel self c-constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       constraints-panel
+      c-constraints-panel
     )
   )
   ; return the editor
@@ -387,6 +394,36 @@
         (setf (similarity-percent-s (om::object editor)) (om::om-slider-value s))
         (print "similarity-percent-s: ")
         (print (similarity-percent-s (om::object editor)))
+      )
+    )
+  )
+)
+
+;; c-constraints-panel interface building
+
+(defun make-c-constraints-panel (editor panel)
+  (om::om-add-subviews
+    panel
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 10 10)
+      (om::om-make-point 200 20)
+      "Cadence choice"
+      :font om::*om-default-font1b*
+    )
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 10 40)
+      (om::om-make-point 80 20)
+      "Cadence choice"
+      :range '("Default" "Perfect" "Plagal" "Semi" "Deceptive")
+      :value (cadence-type (parent (om::object editor)))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "Default")
+          (setf (cadence-type (parent (om::object editor))) "Default")
+          (setf (cadence-type (parent (om::object editor))) check)
+        )
       )
     )
   )

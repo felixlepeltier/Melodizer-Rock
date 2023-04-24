@@ -173,6 +173,45 @@
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc)
     (post-optional-rock-constraints sp c-block push pull playing)
     (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc)
+
+    ;; constrain c such that is respects the cadence specific rules
+    ;; if cadence-type of the parent block is "Default", then pick cadence depending on the position of the block
+    ;; in the global structure for example in the AABA structure, B would be in position 2 and would therefore not
+    ;; have a Plagal cadence as this usually marks the end of a complete musical piece
+
+    (print "Before the case on cadence-type")
+    (let ((block-list-len (len (block-list (parent (c-parent))))) ;; how many blocks are in the global structure
+        (position (block-position c-parent)) ;; position of the current block in the global structure (start index is 0)
+        (c-type (cadence-type c-parent)))
+        (cond 
+            ((string= c-type "Default") 
+                (print "cadence-type")
+                (print "Default")
+            )
+            ((string= c-type "Perfect") 
+                (print "cadence-type")
+                (print "Perfect")
+                ;; Cadence parfaite : accord du cinquième degré suivi du premier degré. C’est très conclusif et c’est en général utilisé à la fin d’une phrase/section/pièce pour marquer la fin d’une partie, pas nécessairement du morceau complet.
+            )
+            ((string= c-type "Plagal") 
+                (print "cadence-type")
+                (print "Plagal")
+                ;; Cadence plagale : accord du quatrième degré suivi du premier degré. C’est moins conclusif et moins fréquemment utilisé
+            )
+            ((string= c-type "Semi") 
+                (print "cadence-type")
+                (print "Semi")
+                ;; Demi cadence : n’importe quel accord vers le cinquième degré. Ca crée de la tension parce que l’harmonie reste en suspension et ne se résoud pas. 
+            )
+            ((string= c-type "Deceptive") 
+                (print "cadence-type")
+                (print "Deceptive")
+                ;; Deceptive cadence : accord du cinquième degré vers le sixième ou troisième degré. Ca crée une surprise puisque l’oreille s’attend à entendre le premier degré, et c’est souvent utilisé pour prolonger une phrase ou entre 2 sections pour donner un sentiment de continuité.
+            )
+        )
+    )
+    (print "After the case on cadence-type")
+
 )
 
 
