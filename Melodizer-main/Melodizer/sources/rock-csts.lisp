@@ -148,7 +148,45 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc)
-    (post-optional-rock-constraints sp s-block push pull playing)
+    ;; if a source melody is given, then use it to generate push pull playing 
+    ;; then constrain the push pull and playing of s to be equal to these arrays
+
+    (if (= (block-position s-parent) 0)
+        ;; then we're in the first block of the global structure and the 
+        ;; s subblock needs to correspond to the source melody
+        ;; (   ;; then a source melody has been passed as argument and its value != nil
+        (if (melody-source (parent s-parent))
+            (
+                (print "Setting the first s block to the source melody")
+                (let (push-source pull-source playing-source ppp-source)
+                    (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 16))
+                    (setq push-source (first ppp-source))
+                    (setq pull-source (second ppp-source))
+                    (setq playing-source (third ppp-source))
+                    ;; now we have to impose that the set-var-arrays push pull playing are equal 
+                    ;; to the lists push-source, pull-source and playing-source, but how ?
+                    
+                    ;; have to do this since the r block depends on these variables due to the 
+                    ;; similarity constraints between the two blocks
+
+                    ;; idea: void 	Gecode::dom (Home home, SetVar x, SetRelType r, const IntSet &s)
+                    ;; https://www.gecode.org/doc/6.2.0/reference/group__TaskModelSetDom.html
+                    ;; allows for setting the domain of variable x to an IntSet
+                    ;; so we can add this constraint to GiL as well as adding IntSets to GiL
+                    ;; such that we can create IntSets from lists (this is the format
+                    ;; that sets are returned as from the create-push-pull function)
+
+                    ;; this way we could then create a generalized domain constraint like above
+                    ;; but for SetVarArray, and we could also create a function that transforms
+                    ;; lists of lists into lists of IntSets to feed the constraint ?
+                )
+            )
+            (post-optional-rock-constraints sp s-block push pull playing)
+        )
+        ;; )
+        (post-optional-rock-constraints sp s-block push pull playing)
+    )
+    
     (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc)
 )
 

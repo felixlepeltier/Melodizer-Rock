@@ -10,8 +10,8 @@
 
 (om::defclass! rock ()
     (
-      (block-list :accessor block-list :initarg :block-list :initform nil :documentation "")
-    (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
+      (block-list :accessor block-list :initarg :block-list :initform nil :documentation "Block list containing the global musical structure")
+    (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for the first s block")
     (bar-length :accessor bar-length :initform 0 :type integer)
     (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
     (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
