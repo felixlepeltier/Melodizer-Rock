@@ -3,7 +3,7 @@
 (defun link-push-pull-playing (sp push pull playing max-pitch max-simultaneous-notes)
 
     ;initial constraint on pull, push, playing and durations
-    ;; (gil::g-empty sp (first pull)) ; pull[0] == empty
+    (gil::g-empty sp (first pull)) ; pull[0] == empty
     ;;-------------------------------------------
     ;; les 3 arrays on une variable de plus pour eviter d'imposer un silence en derniere note
     ;; mais les deux contraintes interdisent un push et playing en dernier lieu rendent 100%
@@ -23,6 +23,7 @@
             (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
             (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
             (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] - pull[j] Cannot push a note still playing
+            ;; (gil::g-rel sp (nth j pull) gil::SRT_DISJ (nth j push))
         )
     )
 )
@@ -75,6 +76,7 @@
         ;; access push pull playing arrays for the section related to s
         ;; (sublst x y z) creates a list based on list x from index y and of z sequential elements
         (setq startidx-s 0)
+        (print startidx-s)
         (setq temp-push-s (sublst push startidx-s notes-in-subblock))
         (setq temp-pull-s (sublst pull startidx-s notes-in-subblock))
         (setq temp-playing-s (sublst playing startidx-s notes-in-subblock))
@@ -82,15 +84,18 @@
         (setq temp-pull-s-acc (sublst pull-acc startidx-s notes-in-subblock))
         (setq temp-playing-s-acc (sublst playing-acc startidx-s notes-in-subblock))
 
-        (setq startidx-r (* bars quant))
+        (setq startidx-r notes-in-subblock)
+        (print startidx-r)
         (setq temp-push-r (sublst push startidx-r notes-in-subblock))
+        (print (length temp-push-r))
         (setq temp-pull-r (sublst pull startidx-r notes-in-subblock))
         (setq temp-playing-r (sublst playing startidx-r notes-in-subblock))
         (setq temp-push-r-acc (sublst push-acc startidx-r notes-in-subblock))
         (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
         (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
         
-        (setq startidx-d (* 2 (* bars quant)))
+        (setq startidx-d (+ startidx-r notes-in-subblock))
+        (print startidx-d)
         (setq temp-push-d (sublst push startidx-d notes-in-subblock))
         (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
         (setq temp-playing-d (sublst playing startidx-d notes-in-subblock))
@@ -98,7 +103,8 @@
         (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
         (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
         
-        (setq startidx-c (* 3 (* bars quant)))
+        (setq startidx-c (+ startidx-d notes-in-subblock))
+        (print startidx-c)
         (setq temp-push-c (sublst push startidx-c notes-in-subblock))
         (setq temp-pull-c (sublst pull startidx-c notes-in-subblock))
         (setq temp-playing-c (sublst playing startidx-c notes-in-subblock))
@@ -331,12 +337,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-min-length-rock (sp push pull min-length)
-    ;; (floor number divisor) => quotient remainder
-    ;; because (length push) == 16, we always have l == min-length
-    ;; (setq l (floor (*  (- (length push) 1) min-length) 16))
-
     (loop :for j :from 0 :below (length push) :by 1 :do
-        (loop :for k :from 1 :below min-length :while (< (+ j k) (length pull)) :do
+        (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
              (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
         )
     )

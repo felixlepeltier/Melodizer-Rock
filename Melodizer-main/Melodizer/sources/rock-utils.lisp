@@ -35,17 +35,17 @@
         (progn
 
             ;; Pitch constraints
-            (if chord-key
+            (if (and chord-key (chord-key (parent rock-block)))
                 (setf   (diff-chord-key rock-block) 
                         (-  (name-to-note-value (chord-key (parent rock-block))) 
                             (name-to-note-value chord-key)))
             )
-            (if (or min-pitch-flag min-pitch)
+            (if (and (or min-pitch-flag min-pitch) (min-pitch (parent rock-block)))
                 (setf   (diff-min-pitch rock-block) 
                         (- (min-pitch (parent rock-block)) 
                             min-pitch))
             )
-            (if (or max-pitch-flag max-pitch)
+            (if (and (or max-pitch-flag max-pitch) (max-pitch (parent rock-block)))
                 (setf   (diff-max-pitch rock-block) 
                         (- (max-pitch (parent rock-block)) 
                             max-pitch))
@@ -55,23 +55,23 @@
             ;;Other constraints
             (if (not (typep rock-block 'mldz::accompaniment))
                 (progn 
-                    (if (or min-note-length-flag min-note-length)
+                    (if (and (or min-note-length-flag min-note-length) (min-note-length (parent rock-block)))
                         (setf   (diff-min-length rock-block) 
                                 (-  (log (min-note-length (parent rock-block)) 2) 
                                     (log min-note-length 2)))
                         
                     )
-                    (if (or max-note-length-flag max-note-length)
+                    (if (and (or max-note-length-flag max-note-length) (max-note-length (parent rock-block)))
                         (setf   (diff-max-length rock-block) 
                                 (-  (log (max-note-length (parent rock-block)) 2) 
                                     (log max-note-length 2)))
                     )
-                    (if min-simultaneous-notes
+                    (if (and min-simultaneous-notes (min-simultaneous-notes (parent rock-block)))
                         (setf   (diff-min-sim rock-block) 
                                 (- (min-simultaneous-notes (parent rock-block)) 
                                     min-simultaneous-notes))
                     )
-                    (if max-simultaneous-notes
+                    (if (and max-simultaneous-notes (max-simultaneous-notes (parent rock-block)) )
                         (setf   (diff-max-sim rock-block) 
                                 (- (max-simultaneous-notes (parent rock-block)) 
                                     max-simultaneous-notes))

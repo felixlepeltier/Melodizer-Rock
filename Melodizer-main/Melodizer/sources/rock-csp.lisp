@@ -30,11 +30,11 @@
         (setq pull-acc (nth 4 temp))
         (setq playing-acc (nth 5 temp))
 
-        (gil::g-specify-sol-variables sp push)
+        (gil::g-specify-sol-variables sp playing)
+        (gil::g-specify-percent-diff sp percent-diff)
 
-        (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
-        (gil::g-branch sp push-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
-        ;; (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp playing gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp playing-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
@@ -47,7 +47,7 @@
         (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
+        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
 
         (print "new-melodizer basic CSP constructed")
 
@@ -125,7 +125,9 @@
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-rock-constraints (sp rock push pull playing); sub-push sub-pull)
-
+    (print (type-of rock))
+    (print (min-note-length rock))
+    (print (max-note-length rock))
     (if (min-simultaneous-notes rock)
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
@@ -145,7 +147,9 @@
 
     ; Pitch constraints
 
-    (chord-key-cst sp push rock)
+    (if (chord-key rock)
+        (chord-key-cst sp push rock)
+    )
 
     (pitch-range sp push (min-pitch rock) (max-pitch rock))
 )
