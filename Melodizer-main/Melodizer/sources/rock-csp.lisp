@@ -111,7 +111,7 @@
                 (setq temp-pull-acc (sublst pull-acc startidx notes-per-block))
                 (setq temp-playing-acc (sublst playing-acc startidx notes-per-block))
                 (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing 
-                                            temp-push-acc temp-pull-acc temp-playing-acc quant sp)
+                                            temp-push-acc temp-pull-acc temp-playing-acc quant max-pitch max-simultaneous-notes sp)
             )
         )
 

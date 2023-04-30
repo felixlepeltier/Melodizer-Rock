@@ -30,20 +30,20 @@
 
 
 
-(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc quant sp)
+(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
     ;; call some variant of the post-optional-constraints function to constrain the push pull playing arrays
     ;; from srdc values
     (if (typep srdc-parent 'mldz::a)
         ;; 
-        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc quant sp)
+        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
         ;; 
-        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc quant sp)
+        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
     )
 )
 
 
 
-(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc quant sp)
+(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-A")
 
     ;; bars*quant elements and starts at startidx
@@ -112,42 +112,45 @@
         ;; s
         (print "constraining s")
         (constrain-s sp s-block A-block temp-push-s temp-pull-s temp-playing-s
-                                        temp-push-s-acc temp-pull-s-acc temp-playing-s-acc)
+                                        temp-push-s-acc temp-pull-s-acc temp-playing-s-acc max-pitch max-simultaneous-notes)
 
         ;; r
 
         (print "constraining r")
         (constrain-r sp r-block A-block temp-push-r temp-pull-r temp-playing-r  
                                         temp-push-r-acc temp-pull-r-acc temp-playing-r-acc
-                                        temp-push-s temp-pull-s temp-playing-s)
+                                        temp-push-s temp-pull-s temp-playing-s
+                                        max-pitch max-simultaneous-notes)
     
         ;; d
 
         (print "constraining d")
         (constrain-d sp d-block A-block temp-push-d temp-pull-d temp-playing-d
-                                        temp-push-d-acc temp-pull-d-acc temp-playing-d-acc)
+                                        temp-push-d-acc temp-pull-d-acc temp-playing-d-acc
+                                        max-pitch max-simultaneous-notes)
 
         ;; c
         
         (print "constraining c")
         (constrain-c sp c-block A-block temp-push-c temp-pull-c temp-playing-c
-                                        temp-push-c-acc temp-pull-c-acc temp-playing-c-acc)
+                                        temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
+                                        max-pitch max-simultaneous-notes)
 
     )
 )
 
-(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc quant sp)
+(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-B")
     ;; for now A and B behave the same way so it suffices to call the function written for A
     ;; when B will have different constraints then this function will have to be changed
     ;; to accomodate this.
-    (constrain-srdc-from-A B-block push pull playing push-acc pull-acc playing-acc quant sp)
+    (constrain-srdc-from-A B-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
 )
 
 
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
-(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc)
+(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
     ;; if a source melody is given, then use it to generate push pull playing 
     ;; then constrain the push pull and playing of s to be equal to these arrays
 
@@ -156,30 +159,59 @@
         ;; s subblock needs to correspond to the source melody
         ;; (   ;; then a source melody has been passed as argument and its value != nil
         (if (melody-source (parent s-parent))
-            (
-                (print "Setting the first s block to the source melody")
-                (let (push-source pull-source playing-source ppp-source)
-                    (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 16))
-                    (setq push-source (first ppp-source))
-                    (setq pull-source (second ppp-source))
-                    (setq playing-source (third ppp-source))
-                    ;; now we have to impose that the set-var-arrays push pull playing are equal 
-                    ;; to the lists push-source, pull-source and playing-source, but how ?
-                    
-                    ;; have to do this since the r block depends on these variables due to the 
-                    ;; similarity constraints between the two blocks
-
-                    ;; idea: void 	Gecode::dom (Home home, SetVar x, SetRelType r, const IntSet &s)
-                    ;; https://www.gecode.org/doc/6.2.0/reference/group__TaskModelSetDom.html
-                    ;; allows for setting the domain of variable x to an IntSet
-                    ;; so we can add this constraint to GiL as well as adding IntSets to GiL
-                    ;; such that we can create IntSets from lists (this is the format
-                    ;; that sets are returned as from the create-push-pull function)
-
-                    ;; this way we could then create a generalized domain constraint like above
-                    ;; but for SetVarArray, and we could also create a function that transforms
-                    ;; lists of lists into lists of IntSets to feed the constraint ?
+            (let (push-source pull-source playing-source ppp-source
+                var-push-source var-pull-source var-playing-source
                 )
+                (print "Setting the first s block to the source melody")
+                (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 16))
+
+                (setq push-source (first ppp-source))
+                (setq pull-source (second ppp-source))
+                (setq playing-source (third ppp-source))
+
+                (setq var-push-source (gil::add-set-var-array sp (length push-source) 0 max-pitch 0 max-simultaneous-notes))
+                (setq var-pull-source (gil::add-set-var-array sp (length pull-source) 0 max-pitch 0 max-simultaneous-notes))
+                (setq var-playing-source (gil::add-set-var-array sp (length playing-source) 0 max-pitch 0 max-simultaneous-notes))
+                
+                (loop :for i :from 0 :below (length push-source) :by 1 :do
+                    (if (or (typep (nth i push-source) 'list) (/= (nth i push-source) -1))
+                        (gil::g-rel sp (nth i var-push-source) gil::SRT_EQ (nth i push-source))
+                    )
+                )
+                (loop :for i :from 0 :below (length pull-source) :by 1 :do
+                    (if (or (typep (nth i pull-source) 'list) (/= (nth i pull-source) -1))
+                        (gil::g-rel sp (nth i var-pull-source) gil::SRT_EQ (nth i pull-source))
+                    )
+                )
+                (loop :for i :from 0 :below (length playing-source) :by 1 :do
+                    (if (or (typep (nth i playing-source) 'list) (/= (nth i playing-source) -1))
+                        (gil::g-rel sp (nth i var-playing-source) gil::SRT_EQ (nth i playing-source))
+                    )
+                )
+
+                (gil::g-count-setvararray sp push var-push-source 100)
+                (gil::g-count-setvararray sp push var-pull-source 100)
+                (gil::g-count-setvararray sp push var-playing-source 100)
+
+                (print "First s block has been set to the source melody")
+
+                ;; now we have to impose that the set-var-arrays push pull playing are equal 
+                ;; to the lists push-source, pull-source and playing-source, but how ?
+                
+                ;; have to do this since the r block depends on these variables due to the 
+                ;; similarity constraints between the two blocks
+
+                ;; idea: void 	Gecode::dom (Home home, SetVar x, SetRelType r, const IntSet &s)
+                ;; https://www.gecode.org/doc/6.2.0/reference/group__TaskModelSetDom.html
+                ;; allows for setting the domain of variable x to an IntSet
+                ;; so we can add this constraint to GiL as well as adding IntSets to GiL
+                ;; such that we can create IntSets from lists (this is the format
+                ;; that sets are returned as from the create-push-pull function)
+
+                ;; this way we could then create a generalized domain constraint like above
+                ;; but for SetVarArray, and we could also create a function that transforms
+                ;; lists of lists into lists of IntSets to feed the constraint ?
+            
             )
             (post-optional-rock-constraints sp s-block push pull playing)
         )
@@ -191,7 +223,7 @@
 )
 
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
-                                        push-s pull-s playing-s)
+                                        push-s pull-s playing-s max-pitch max-simultaneous-notes)
 
     ;; post optional constraints defined in the rock csp
     (post-optional-rock-constraints sp r-block push pull playing)
@@ -203,12 +235,12 @@
     )
 )
 
-(defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc)
+(defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
     (post-optional-rock-constraints sp d-block push pull playing)
     (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc)
 )
 
-(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc)
+(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
     (post-optional-rock-constraints sp c-block push pull playing)
     (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc)
 

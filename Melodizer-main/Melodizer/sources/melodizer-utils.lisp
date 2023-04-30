@@ -421,7 +421,11 @@
          (setq tree (second tree))
          (print "before chords")
          (print input-chords)
+         (print tree)
          (loop :for i :from 0 :below (length tree) :by 1 :do
+            (print "call to read-tree")
+            ;; bugs on the first call to read-tree with this error : 
+            ;; ERROR: Cannot take CDR of 1.
             (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (first (second (nth i tree)))) pitch 0 quant next))
             (setq push (append push (first temp)))
             (setq pull (append pull (second temp)))
