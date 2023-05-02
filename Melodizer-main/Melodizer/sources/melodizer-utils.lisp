@@ -415,6 +415,7 @@
          (next 0)
          (push (list))
          (pull (list '-1))
+        ;; (pull (list))
          (playing (list))
          (tree (om::tree input-chords))
          (pitch (to-pitch-list (om::chords input-chords))))
@@ -450,7 +451,7 @@
     (progn
         (print "Pitch:")
         (print pitch)
-        (setf length (/ length (length tree)))
+        (setf length (/ length (ceil-to-exp (length tree))))
         (print "pre-loop")
         (loop :for i :from 0 :below (length tree) :by 1 :do
             (if (typep (nth i tree) 'list)
@@ -467,7 +468,7 @@
                     (print "else")
                     (setf (nth pos push) (nth next pitch))
                     (loop :for j :from pos :below (+ pos (* length (nth i tree))) :by 1 :do
-                         (setf (nth j playing) (nth next pitch))
+                        (setf (nth j playing) (nth next pitch))
                     )
                     (setf pos (+ pos (* length (nth i tree))))
                     (setf (nth (- pos 1) pull) (nth next pitch))

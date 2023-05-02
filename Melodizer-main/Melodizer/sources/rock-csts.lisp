@@ -163,7 +163,7 @@
                 var-push-source var-pull-source var-playing-source
                 )
                 (print "Setting the first s block to the source melody")
-                (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 4))
+                (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 16))
 
                 (setq push-source (first ppp-source))
                 (setq pull-source (second ppp-source))
@@ -172,6 +172,16 @@
                 ;; they already have the correct size so no need to create new variables
                 ;; set constraints on ppp directly
 
+                (print "push-source")
+                (print push-source)
+
+                (print "pull-source")
+                (print pull-source)
+
+                (print "playing-source")
+                (print playing-source)
+
+                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                 (setq var-push-source (gil::add-set-var-array sp (length push-source) 0 max-pitch 0 max-simultaneous-notes))
                 (setq var-pull-source (gil::add-set-var-array sp (length pull-source) 0 max-pitch 0 max-simultaneous-notes))
                 (setq var-playing-source (gil::add-set-var-array sp (length playing-source) 0 max-pitch 0 max-simultaneous-notes))
@@ -180,21 +190,52 @@
                     (if (or (typep (nth i push-source) 'list) (/= (nth i push-source) -1))
                         (gil::g-rel sp (nth i var-push-source) gil::SRT_EQ (nth i push-source))
                     )
+
+                    (if (and (not (typep (nth i push-source) 'list)) (= (nth i push-source) -1))
+                        (gil::g-empty sp (nth i var-push-source))
+                    )
+                    (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i var-push-source))
                 )
-                (loop :for i :from 0 :below (length pull-source) :by 1 :do
+                (loop :for i :from 0 :below (- (length pull-source) 1) :by 1 :do
                     (if (or (typep (nth i pull-source) 'list) (/= (nth i pull-source) -1))
                         (gil::g-rel sp (nth i var-pull-source) gil::SRT_EQ (nth i pull-source))
                     )
+                    ;; (if (and (not (typep (nth i pull-source) 'list)) (= (nth i pull-source) -1))
+                        ;; (gil::g-empty sp (nth i var-pull-source))
+                    ;; )
+                    (gil::g-rel sp (nth i pull) gil::SRT_EQ (nth i var-pull-source))
                 )
                 (loop :for i :from 0 :below (length playing-source) :by 1 :do
                     (if (or (typep (nth i playing-source) 'list) (/= (nth i playing-source) -1))
                         (gil::g-rel sp (nth i var-playing-source) gil::SRT_EQ (nth i playing-source))
                     )
+                    ;; (if (and (not (typep (nth i playing-source) 'list)) (= (nth i playing-source) -1))
+                    ;;     (gil::g-empty sp (nth i var-playing-source))
+                    ;; )
+                    (gil::g-rel sp (nth i playing) gil::SRT_EQ (nth i var-playing-source))
                 )
 
-                (gil::g-count-setvararray sp push var-push-source 100)
-                (gil::g-count-setvararray sp push var-pull-source 100)
-                (gil::g-count-setvararray sp push var-playing-source 100)
+                ;; (gil::g-count-setvararray sp push var-push-source 100)
+                ;; (gil::g-count-setvararray sp push var-pull-source 100)
+                ;; (gil::g-count-setvararray sp push var-playing-source 100)
+                ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+                ;; (loop :for i :from 0 :below (length push-source) :by 1 :do
+                ;;     (if (or (typep (nth i push-source) 'list) (/= (nth i push-source) -1))
+                ;;         (setq var-push-source-temp (gil::add-set-var sp 0 max-pitch 0 max-simultaneous-notes))
+                ;;         (gil::g-rel sp (nth i push) gil::SRT_EQ (nth i push-source))
+                ;;     )
+                ;; )
+                ;; (loop :for i :from 0 :below (length pull-source) :by 1 :do
+                ;;     (if (or (typep (nth i pull-source) 'list) (/= (nth i pull-source) -1))
+                ;;         (gil::g-rel sp (nth i pull) gil::SRT_EQ (nth i pull-source))
+                ;;     )
+                ;; )
+                ;; (loop :for i :from 0 :below (length playing-source) :by 1 :do
+                ;;     (if (or (typep (nth i playing-source) 'list) (/= (nth i playing-source) -1))
+                ;;         (gil::g-rel sp (nth i playing) gil::SRT_EQ (nth i playing-source))
+                ;;     )
+                ;; )
 
                 (print "First s block has been set to the source melody")
 
@@ -222,6 +263,7 @@
         (post-optional-rock-constraints sp s-block push pull playing)
     )
     
+    ;; accompaniment
     (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc)
 )
 
@@ -229,7 +271,10 @@
                                         push-s pull-s playing-s max-pitch max-simultaneous-notes)
 
     ;; post optional constraints defined in the rock csp
-    (post-optional-rock-constraints sp r-block push pull playing)
+    ;; dont constrain if source melody given
+    (if (melody-source (parent r-parent))
+        (post-optional-rock-constraints sp r-block push pull playing)
+    )
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block

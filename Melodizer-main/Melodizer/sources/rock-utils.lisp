@@ -252,6 +252,16 @@
     )
 )
 
+(defun ceil-to-exp (val)
+    (cond
+        ((<= val 1) 1)
+        ((<= val 2) 2)
+        ((<= val 4) 4)
+        ((<= val 8) 8)
+        ((<= val 16) 16)
+    )
+)
+
 (defun propagate-bar-length-srdc (rock-block)
     (let ((parent (parent rock-block)) (nbars (bar-length rock-block)))
         (if (or (typep parent 'mldz::a) (typep parent 'mldz::b))
