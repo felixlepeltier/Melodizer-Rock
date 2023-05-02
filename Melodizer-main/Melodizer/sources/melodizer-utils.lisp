@@ -421,12 +421,13 @@
          (setq tree (second tree))
          (print "before chords")
          (print input-chords)
+         (print "tree:")
          (print tree)
          (loop :for i :from 0 :below (length tree) :by 1 :do
             (print "call to read-tree")
             ;; bugs on the first call to read-tree with this error : 
             ;; ERROR: Cannot take CDR of 1.
-            (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (first (second (nth i tree)))) pitch 0 quant next))
+            (setq temp (read-tree (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (nth i tree)) pitch 0 quant next))
             (setq push (append push (first temp)))
             (setq pull (append pull (second temp)))
             (setq playing (append playing (third temp)))
@@ -435,18 +436,26 @@
          (list push pull playing))
 )
 
+;; (car cdr)
+
+;; ((4 4) (1 1 1 1))
 ; <tree> is the rhythm tree to read
-; <pitch> is the ordered list of pitch
+; <pitch> is the ordered list of pitch (each element of push is represented by a list with the pitch of notes played on this quant)
 ; <pos> is the next position in push to add values
 ; <length> is the current duration of a note to add
 ; <next> is the index in pitch of the next notes we will add
 ;recursive function to read a rhythm tree and create push and pull
 (defun read-tree (push pull playing tree pitch pos length next)
+    (print "in read-tree")
     (progn
+        (print "Pitch:")
+        (print pitch)
         (setf length (/ length (length tree)))
+        (print "pre-loop")
         (loop :for i :from 0 :below (length tree) :by 1 :do
             (if (typep (nth i tree) 'list)
                 (let (temp)
+                    (print "if")
                     (setq temp (read-tree push pull playing (second (nth i tree)) pitch pos length next))
                     (setq push (first temp))
                     (setq pull (second temp))
@@ -455,6 +464,7 @@
                     (setf pos (fifth temp))
                 )
                 (progn
+                    (print "else")
                     (setf (nth pos push) (nth next pitch))
                     (loop :for j :from pos :below (+ pos (* length (nth i tree))) :by 1 :do
                          (setf (nth j playing) (nth next pitch))

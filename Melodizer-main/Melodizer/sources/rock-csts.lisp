@@ -163,11 +163,14 @@
                 var-push-source var-pull-source var-playing-source
                 )
                 (print "Setting the first s block to the source melody")
-                (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 16))
+                (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 4))
 
                 (setq push-source (first ppp-source))
                 (setq pull-source (second ppp-source))
                 (setq playing-source (third ppp-source))
+
+                ;; they already have the correct size so no need to create new variables
+                ;; set constraints on ppp directly
 
                 (setq var-push-source (gil::add-set-var-array sp (length push-source) 0 max-pitch 0 max-simultaneous-notes))
                 (setq var-pull-source (gil::add-set-var-array sp (length pull-source) 0 max-pitch 0 max-simultaneous-notes))
