@@ -280,6 +280,7 @@
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     (let ((sim (similarity-percent-s r-block)))
         (gil::g-count-setvararray sp playing playing-s sim)
+        (gil::g-count-setvararray sp push push-s sim)
     )
 )
 
