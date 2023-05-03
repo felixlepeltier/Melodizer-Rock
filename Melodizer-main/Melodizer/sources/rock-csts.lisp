@@ -154,9 +154,11 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc)
+    (gil::g-empty sp (first pull)) ; pull[0] == empty
+
     ;; if a source melody is given, then use it to generate push pull playing 
     ;; then constrain the push pull and playing of s to be equal to these arrays
-
+    
     (if (= (block-position s-parent) 0)
         ;; then we're in the first block of the global structure and the 
         ;; s subblock needs to correspond to the source melody
@@ -199,22 +201,28 @@
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
                                         push-s pull-s playing-s)
 
+    (gil::g-empty sp (first pull)) ; pull[0] == empty
+
     ;; post optional constraints defined in the rock csp
     (post-optional-rock-constraints sp r-block push pull playing)
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     (let ((sim (similarity-percent-s r-block)))
-        (gil::g-count-setvararray sp playing playing-s sim)
+        (cst-common-vars sp push-s push sim)
+        (cst-common-vars sp pull-s pull sim)
+        (cst-common-vars sp playing-s playing sim)
     )
 )
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc)
+    (gil::g-empty sp (first pull)) ; pull[0] == empty
     (post-optional-rock-constraints sp d-block push pull playing)
     (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc)
 )
 
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc)
+    (gil::g-empty sp (first pull)) ; pull[0] == empty
     (post-optional-rock-constraints sp c-block push pull playing)
     (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc)
 
@@ -359,5 +367,17 @@
             (gil::g-setunion sp l-pull-union l-pull)
             (gil::g-rel sp (nth j push) gil::SRT_SUB l-pull-union)
         )
+    )
+)
+
+(defun cst-common-vars (sp vars1 vars2 sim)
+    (let (count-vars bool-array)
+        (setq count-vars (gil::add-int-var sp 0 (length vars1))) ;; The number of common variables
+        (setq bool-array (gil::add-int-var-array sp (length vars1) 0 1)) ;; boolean for every variable 
+        (loop :for i :from 0 :below (length vars1) :by 1 do
+            (gil::g-rel-reify sp (nth i vars1) gil::SRT_EQ (nth i vars2) (nth i bool-array))
+        )
+        (gil::g-sum sp count-vars bool-array)
+        (gil::g-rel sp count-vars gil::IRT_LQ (ceiling (* (length vars1) (/ sim 100))))
     )
 )
