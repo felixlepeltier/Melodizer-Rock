@@ -51,7 +51,7 @@
 
         ; search engine
         ;; (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
+        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
 
         (print "new-melodizer basic CSP constructed")
 
@@ -134,11 +134,11 @@
 (defun post-optional-rock-constraints (sp rock push pull playing); sub-push sub-pull)
     (print "optional constraints")
     (print (min-simultaneous-notes rock))
-    (if (min-simultaneous-notes rock)
+    (if (and (min-simultaneous-notes rock) (typep (nth 0 push) 'gil::set-var))
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
 
-    (if (max-simultaneous-notes rock)
+    (if (and (max-simultaneous-notes rock) (typep (nth 0 push) 'gil::set-var))
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
 
@@ -154,7 +154,10 @@
     ; Pitch constraints
 
     (if (chord-key rock)
-        (chord-key-cst sp push rock)
+        (if (typep (nth 0 push) 'gil::set-var)
+            (chord-key-cst sp push rock)
+        )
+        
     )
 
     (pitch-range sp push (min-pitch rock) (max-pitch rock))

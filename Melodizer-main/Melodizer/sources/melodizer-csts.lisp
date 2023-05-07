@@ -41,7 +41,19 @@
 
 (defun pitch-range (sp push min-pitch max-pitch)
     (loop :for j :below (length push) :by 1 :do
-        (gil::g-dom-ints sp (nth j push) gil::SRT_SUB min-pitch max-pitch)
+        (if (typep (nth j push) 'gil::int-var)
+            (progn 
+                (let (bool-temp bool-one bool-min bool-max)
+                    (setq bool-one (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ -1))
+                    (setq bool-min (gil::add-bool-var-expr sp (nth j push) gil::IRT_GQ min-pitch))
+                    (setq bool-max (gil::add-bool-var-expr sp (nth j push) gil::IRT_LQ max-pitch))
+                    (setq bool-temp (gil::add-bool-var sp 0 1))
+                    (gil::g-op sp bool-min gil::BOT_AND bool-max bool-temp)
+                    (gil::g-op sp bool-temp gil::BOT_OR bool-one 1)
+                )
+            )
+            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB min-pitch max-pitch)
+        )
     )
 )
 

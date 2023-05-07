@@ -206,11 +206,13 @@
         (setq temp-push-d (sublst push startidx-d notes-in-subblock))
         (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
         (setq temp-playing-d (sublst playing startidx-d notes-in-subblock))
+        (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
         (setq temp-push-d-acc (sublst push-acc startidx-d notes-in-subblock))
         (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
         (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
         
         (setq startidx-c (+ startidx-d notes-in-subblock))
+        (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
         (setq temp-push-c (sublst push startidx-c notes-in-subblock))
         (setq temp-pull-c (sublst pull startidx-c notes-in-subblock))
         (setq temp-playing-c (sublst playing startidx-c notes-in-subblock))
@@ -310,10 +312,10 @@
 
             
             )
-            ;; (post-optional-rock-constraints sp s-block push pull playing)
+            (post-optional-rock-constraints sp s-block push pull playing)
         )
         ;; )
-        ;; (post-optional-rock-constraints sp s-block push pull playing)
+        (post-optional-rock-constraints sp s-block push pull playing)
     )
     
     ;; ;; accompaniment
@@ -327,9 +329,8 @@
 
     ;; post optional constraints defined in the rock csp
     ;; dont constrain if source melody given
-    ;; (if (not (melody-source (parent r-parent)))
-    ;;     (post-optional-rock-constraints sp r-block push pull playing)
-    ;; )
+
+    (post-optional-rock-constraints sp r-block push pull playing)
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
@@ -341,14 +342,14 @@
 )
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
-    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
-    ;; (post-optional-rock-constraints sp d-block push pull playing)
+    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    (post-optional-rock-constraints sp d-block push pull playing)
     (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc)
 )
 
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
-    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
-    ;; (post-optional-rock-constraints sp c-block push pull playing)
+    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    (post-optional-rock-constraints sp c-block push pull playing)
     (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc)
 
     ;; constrain c such that is respects the cadence specific rules
@@ -473,7 +474,12 @@
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
             (if (typep (nth j push) 'gil::int-var)
-                (gil::g-rel sp (nth (+ j k) pull) gil::IRT_NQ (nth j push))
+                (let (bool-temp bool2)
+                    (setq bool-temp (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ -1))
+                    (setq bool2 (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ (nth (+ j k) pull)))
+                    (gil::g-op sp bool-temp gil::BOT_OR bool2 1)
+                )
+                ;; (gil::g-rel sp (nth (+ j k) pull) gil::IRT_NQ (nth j push))
                 (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
             )
             ;;  (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
@@ -494,7 +500,7 @@
                 (loop :for k :from 0 :below l :by 1 :do
                     (setf (nth k int-array) (gil::add-int-var-expr sp (nth j push) gil::IOP_SUB (nth (+ 1 (+ j k)) pull)))
                 )
-                (gil::g-count sp int-array 0 gil::IRT_EQ 0 count)
+                (gil::g-count sp int-array 0 gil::IRT_EQ count)
                 (gil::g-rel sp count gil::IRT_GQ 1)
             )
         )
