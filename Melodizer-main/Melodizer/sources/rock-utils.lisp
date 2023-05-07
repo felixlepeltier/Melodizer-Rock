@@ -252,6 +252,16 @@
     )
 )
 
+(defun ceil-to-exp (val)
+    (cond
+        ((<= val 1) 1)
+        ((<= val 2) 2)
+        ((<= val 4) 4)
+        ((<= val 8) 8)
+        ((<= val 16) 16)
+    )
+)
+
 (defun propagate-bar-length-srdc (rock-block)
     (let ((parent (parent rock-block)) (nbars (bar-length rock-block)))
         (if (or (typep parent 'mldz::a) (typep parent 'mldz::b))
@@ -371,5 +381,134 @@
                 )
             )
         )
+    )
+)
+
+; Create push and pull list from a voice object
+(defun create-push-pull-int (input-chords quant)
+    (let (temp
+         (next 0)
+         (push (list))
+         (pull (list '-1))
+        ;; (pull (list))
+         (playing (list))
+         (tree (om::tree input-chords))
+         (pitch (to-pitch-list (om::chords input-chords))))
+         (setq tree (second tree))
+         (loop :for i :from 0 :below (length tree) :by 1 :do
+            (setq temp (read-tree-int (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (nth i tree)) pitch 0 quant next))
+            (setq push (append push (first temp)))
+            (setq pull (append pull (second temp)))
+            (setq playing (append playing (third temp)))
+            (setf next (fourth temp))
+         )
+         (list push pull playing))
+)
+
+;; ((4 4) (1 1 1 1))
+; <tree> is the rhythm tree to read
+; <pitch> is the ordered list of pitch (each element of push is represented by a list with the pitch of notes played on this quant)
+; <pos> is the next position in push to add values
+; <length> is the current duration of a note to add
+; <next> is the index in pitch of the next notes we will add
+;recursive function to read a rhythm tree and create push and pull
+(defun read-tree-int (push pull playing tree pitch pos length next)
+    (print "in read-tree-int")
+    (progn
+        (setf length (/ length (ceil-to-exp (length tree))))
+        (loop :for i :from 0 :below (length tree) :by 1 :do
+            (if (typep (nth i tree) 'list)
+                (let (temp)
+                    (setq temp (read-tree-int push pull playing (second (nth i tree)) pitch pos length next))
+                    (setq push (first temp))
+                    (setq pull (second temp))
+                    (setq playing (third temp))
+                    (setf next (fourth temp))
+                    (setf pos (fifth temp))
+                )
+                (progn
+                    (setf (nth pos push) (first (nth next pitch)))
+                    (loop :for j :from pos :below (+ pos (* length (nth i tree))) :by 1 :do
+                        (setf (nth j playing) (first (nth next pitch)))
+                    )
+                    (setf pos (+ pos (* length (nth i tree))))
+                    (setf (nth (- pos 1) pull) (first (nth next pitch)))
+                    (setf next (+ next 1))
+                )
+            )
+        )
+        (list push pull playing next pos)
+    )
+)
+
+; Getting a list of chords and a rhythm tree from the playing list of intvar
+(defun build-voice-int (sol push pull bars quant tempo)
+    (let ((p-push (list))
+          (p-pull (list))
+          (chords (list))
+          (tree (list))
+          (ties (list))
+          (prev 0)
+          )
+    (setq p-push (nconc p-push (mapcar (lambda (n) (* 100 (gil::g-values sol n))) push)))
+    ;; (print p-push)
+    ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
+    (setq p-pull (nconc p-pull (mapcar (lambda (n) (* 100 (gil::g-values sol n))) pull)))
+    ;; (print p-pull)
+    
+    (setq count 1)
+    (loop :for b :from 0 :below bars :by 1 :do
+        (if (not (nth (* b quant) p-push))
+            (setq rest 1)
+            (setq rest 0)
+        )
+        (setq rhythm (list))
+        (loop :for q :from 0 :below quant :by 1 :do
+            (setq i (+ (* b quant) q))
+            (cond
+                ((>= (nth i p-push) 0)
+                     ; if rhythm impulse
+                     (progn
+                        (setq duration 0)
+                        (setq j (+ i 1))
+                        (loop
+                            (if (>= (nth j p-pull) 0)
+                                (if (= (nth j p-pull) (nth i p-push))
+                                    (progn
+                                        (setq duration (* (floor 60000 (* tempo quant)) (- j i)))
+                                        (return)
+                                    )
+                                )
+                            )
+                            (incf j)
+                        )
+                        (setq chord (make-instance 'chord :LMidic (list (nth i p-push)) :Ldur (list duration)))
+                        (setq chords (nconc chords (list chord)))
+                        (cond
+                            ((= rest 1)
+                                (progn
+                                    (setq rhythm (nconc rhythm (list (* -1 count))))
+                                    (setq rest 0)))
+                            ((/= q 0)
+                                (setq rhythm (nconc rhythm (list count))))
+                        )
+                        (setq count 1))
+                )
+                ; else
+                (t (setq count (+ count 1)))
+            )
+        )
+        (if (= rest 1)
+            (setq rhythm (nconc rhythm (list (* -1 count))))
+            (setq rhythm (nconc rhythm (list count)))
+        )
+        (setq count 0)
+        (setq rhythm (list '(4 4) rhythm))
+
+        (setq tree (nconc tree (list rhythm)))
+    )
+    (setq tree (list '? tree))
+
+    (list chords tree)
     )
 )

@@ -1,7 +1,7 @@
 (in-package :mldz)
 
-(defun link-push-pull-playing (sp push pull playing max-pitch max-simultaneous-notes)
-
+(defun link-push-pull-playing-set (sp push pull playing max-pitch max-simultaneous-notes)
+    (print "link-push-pull-playing-set")
     ;initial constraint on pull, push, playing and durations
     (gil::g-empty sp (first pull)) ; pull[0] == empty
     ;;-------------------------------------------
@@ -16,8 +16,6 @@
     ;connect push, pull and playing
     (loop :for j :from 1 :below (length push) :do ;for each interval
         (let (temp z c)
-            ;; I think the cardinality should be (gil::add-set-var sp 0 max-pitch 0 max-simultaneous-notes) 
-            ;; but doesn't change much right now
             (setq temp (gil::add-set-var sp 0 max-pitch 0 max-simultaneous-notes)); temporary variables
             (gil::g-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) temp); temp[0] = playing[j-1] - pull[j]
             (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
@@ -28,23 +26,175 @@
     )
 )
 
+(defun link-push-pull-playing-int (sp push pull playing max-pitch)
+    (print "start link-push-pull-playing")
+    ;initial constraint on pull, push, playing and durations
+    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    (gil::g-rel sp (first push) gil::IRT_EQ (first playing)) ; push[0] == playing [0]
+
+    ;connect push, pull and playing
+    (loop :for j :from 1 :below (length push) :do ;for each interval
+        (let (
+            playing-j-playing-j-one
+            push-j-pull-j
+            push-j-playing-j
+            pull-j-playing-j-one
+            pull-j-one
+            pull-j-nq-one
+            push-j-one
+            push-j-nq-one
+            playing-j-one
+            playing-j-nq-one
+            )
+            (setq 
+                playing-j-playing-j-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ (nth (- j 1) playing))
+                push-j-pull-j (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ (nth j pull))
+                push-j-playing-j (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ (nth j playing))
+                pull-j-playing-j-one (gil::add-bool-var-expr sp (nth j pull) gil::IRT_EQ (nth (- j 1) playing))
+                pull-j-one (gil::add-bool-var-expr sp (nth j pull) gil::IRT_EQ -1)
+                pull-j-nq-one (gil::add-bool-var-expr sp (nth j pull) gil::IRT_NQ -1)
+                push-j-one (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ -1)
+                push-j-nq-one (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ -1)
+                playing-j-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1)
+                playing-j-nq-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_NQ -1)
+            )
+
+            ;; Playing note
+            ;; playing[j] = playing[j-1] if
+            ;; no note has been pushed and the previous note has not been pulled
+            ;; (push[j] = -1 AND pull[j] = -1) 
+            ;; or the same note has been pulled and pushed at the same time
+            ;; OR push[j] = pull[j]
+            ;;
+            ;; playing[j] = push[j] if
+            ;; a note has been pushed
+            ;; push[j] /= -1 
+            ;; or both playing[j] and push[j] = -1
+            ;; OR (playing[j] = -1 AND push[j] = -1)
+            (let (bool-temp bool-temp2)
+                (setq bool-temp (gil::add-bool-var sp 0 1))
+                ;; bool-temp = (push[j] = -1 AND pull[j] = -1)
+                (gil::g-op sp push-j-one gil::BOT_AND pull-j-one bool-temp)
+                ;; (bool-temp OR push[j] = pull[j]) = (playing[j] = playing[j-1])
+                (gil::g-op sp bool-temp gil::BOT_OR push-j-pull-j playing-j-playing-j-one)
+
+                (setq bool-temp2 (gil::add-bool-var sp 0 1))
+                ;; bool-temp2 = (playing[j] = -1 AND push[j] = -1)
+                (gil::g-op sp playing-j-one gil::BOT_AND push-j-one bool-temp2)
+                ;; (bool-temp2 OR push[j] /= -1) = (playing[j] = push[j])
+                (gil::g-op sp bool-temp2 gil::BOT_OR push-j-nq-one push-j-playing-j)
+            )
 
 
+            ;; Pulled note
+            ;; A note can be pulled only if it was previously playing
+            ;; (pull[j] = playing[j-1] OR pull[j] = -1) = 1
+            (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
 
-(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc quant sp)
-    ;; call some variant of the post-optional-constraints function to constrain the push pull playing arrays
-    ;; from srdc values
-    (if (typep srdc-parent 'mldz::a)
-        ;; 
-        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc quant sp)
-        ;; 
-        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc quant sp)
+            ;; Pushed note
+            ;; A note is pushed when a note is playing and the previous note was pulled
+            ;; push[j] /= -1 if
+            ;; playing[j] /= -1 AND pull[j] /= -1
+            (gil::g-op sp playing-j-nq-one gil::BOT_AND pull-j-nq-one push-j-nq-one)
+        
+        )
+        ;; (let (bool bool2 bool3 bool4 bool5)
+        ;;     ;; Cannot pull a note still playing    
+        ;;     ;; playing[j] = pull[j] only if (pull[j]=-1 and playing[j]=-1) 
+        ;;     (setq bool (gil::add-bool-var-expr sp (nth j pull) gil::IRT_NQ (nth j playing)))
+        ;;     (setq bool2 (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ (nth j playing)))
+        ;;     (setq bool3 (gil::add-bool-var-expr sp (nth j playing) gil::IRT_NQ -1))
+        ;;     (gil::g-rel sp bool3 gil::IRT_EQ bool)
+        ;; )
+        
+        ;; (let (bool bool2 bool3)
+        ;;     ;; A note can be pulled only if it was playing
+        ;;     ;; pull[j] = playing[j-1] or pull[j] = -1
+        ;;     (setq bool (gil::add-bool-var-expr sp (nth j pull) gil::IRT_EQ (nth (- j 1) playing)))
+        ;;     (setq bool2 (gil::add-bool-var-expr sp (nth j pull) gil::IRT_EQ -1))
+        ;;     (gil::g-op sp bool gil::BOT_OR bool2 1)
+
+        ;;     ;; A note is playing if it was not pulled
+        ;;     ;; playing[j-1] = pull[j] xor playing[j]
+        ;;     (setq bool3 (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ (nth (- j 1) playing)))
+        ;;     (gil::g-op sp bool gil::BOT_OR bool3 1)
+
+        ;; )
+
+        ;; (let (bool bool2 bool3 bool4 bool5)
+        ;;     ;; A note pushed is playing
+        ;;     ;; push[j] = playing[j] or push[j] = -1
+        ;;     ;; Which also means push[j]/=playing[j] => push[j]=-1
+        ;;     ;; Or push[j] = playing[j] <= push[j] /= -1
+        ;;     (setq bool (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ (nth j playing)))
+        ;;     (setq bool2 (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ -1))
+        ;;     (gil::g-op sp bool gil::BOT_OR bool2 1)
+
+        ;;     ;; A note pushed can't already be playing if it has not been pulled
+        ;;     ;; if push[j] = playing[j-1] then pull[j]= playing[j-1]
+        ;;     (setq bool3 (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ (nth (- j 1) playing)))
+        ;;     (setq bool4 (gil::add-bool-var-expr sp (nth j pull) gil::IRT_EQ (nth (- j 1) playing)))
+        ;;     (setq bool5 (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ (nth j pull)))
+        ;;     (gil::g-op sp bool4 gil::BOT_AND bool5 bool3)
+        ;; )
+    )
+)
+
+(defun link-pitches-push-pull (pitches lengths push pull playing max-pitch)
+    (let (count-push count-pitches count-lengths)
+        ;;Impose that every element of pitches is an element of push
+        (loop :for i :from 0 :below (length pitches) :by 1 do
+            (gil::g-member sp push (nth i pitches))
+        )
+        
+        ;; Impose the number of unused pitches slots to be the same number as the zero lengths
+        ;; and the same number as in push
+        ;; In other words, there is as many notes in pushed than in pitches and lengths
+        (setq count-push (gil::add-int-var sp 0 (length push)))
+        (setq count-pitches (gil::add-int-var sp 0 (length push)))
+        (setq count-lengths (gil::add-int-var sp 0 (length push)))
+        (gil::g-count sp push -1 gil::IRT_EQ count-push)
+        (gil::g-count sp pitches -1 gil::IRT_EQ count-pitches)
+        (gil::g-count sp lengths 0 gil::IRT_EQ count-lengths)
+        (gil::g-rel sp count-pitches gil::IRT_EQ count-push)
+        (gil::g-rel sp count-lengths gil::IRT_EQ count-pitches)
+
+        ;; Impose that all the -1 must be at the end of pitches and lengths
+        ;; by parcouring pitches from the end, imposing the count of -1 to be
+        ;; the size of the sublist if the current pitch = -1
+        ;; or to be the total number of -1 if it is different
+        (loop :for i :from (- (length pitches) 1) :above -1 :by 1 do
+            (let (bool bool2 bool3 count count2 (sublst sub-pitches i nil) (sublst sub-lengths i nil))
+                (setq bool (gil::add-bool-var-expr sp (nth i pitches) gil::IRT_NQ -1))
+                (setq count (gil::add-int-var sp 0 (length sub-pitches)))
+                (gil::g-count sp sub-pitches -1 gil::IRT_EQ count)
+                (gil::g-ite bool count-pitches (length sub-pitches) count)
+                (setq count2 (gil::add-int-var sp 0 (length sub-lengths)))
+                (gil::g-count2 sp sub-lengths 0 gil::IRT_EQ count2)
+                (gil::g-rel bool count-lengths (length sub-lengths) count)
+            )
+        )
+        
     )
 )
 
 
 
-(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc quant sp)
+
+(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+    ;; call some variant of the post-optional-constraints function to constrain the push pull playing arrays
+    ;; from srdc values
+    (if (typep srdc-parent 'mldz::a)
+        ;; 
+        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+        ;; 
+        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+    )
+)
+
+
+
+(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-A")
 
     ;; bars*quant elements and starts at startidx
@@ -118,98 +268,129 @@
         ;; s
         (print "constraining s")
         (constrain-s sp s-block A-block temp-push-s temp-pull-s temp-playing-s
-                                        temp-push-s-acc temp-pull-s-acc temp-playing-s-acc)
+                                        temp-push-s-acc temp-pull-s-acc temp-playing-s-acc max-pitch max-simultaneous-notes)
 
         ;; r
 
         (print "constraining r")
         (constrain-r sp r-block A-block temp-push-r temp-pull-r temp-playing-r  
                                         temp-push-r-acc temp-pull-r-acc temp-playing-r-acc
-                                        temp-push-s temp-pull-s temp-playing-s)
+                                        temp-push-s temp-pull-s temp-playing-s
+                                        max-pitch max-simultaneous-notes)
     
         ;; d
 
         (print "constraining d")
         (constrain-d sp d-block A-block temp-push-d temp-pull-d temp-playing-d
-                                        temp-push-d-acc temp-pull-d-acc temp-playing-d-acc)
+                                        temp-push-d-acc temp-pull-d-acc temp-playing-d-acc
+                                        max-pitch max-simultaneous-notes)
 
         ;; c
         
         (print "constraining c")
         (constrain-c sp c-block A-block temp-push-c temp-pull-c temp-playing-c
-                                        temp-push-c-acc temp-pull-c-acc temp-playing-c-acc)
+                                        temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
+                                        max-pitch max-simultaneous-notes)
 
     )
 )
 
-(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc quant sp)
+(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-B")
     ;; for now A and B behave the same way so it suffices to call the function written for A
     ;; when B will have different constraints then this function will have to be changed
     ;; to accomodate this.
-    (constrain-srdc-from-A B-block push pull playing push-acc pull-acc playing-acc quant sp)
+    (constrain-srdc-from-A B-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
 )
 
 
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
+<<<<<<< HEAD
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc)
     (gil::g-empty sp (first pull)) ; pull[0] == empty
 
     ;; if a source melody is given, then use it to generate push pull playing 
     ;; then constrain the push pull and playing of s to be equal to these arrays
     
+=======
+(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    
+    ;; ;; if a source melody is given, then use it to generate push pull playing 
+    ;; ;; then constrain the push pull and playing of s to be equal to these arrays
+
+>>>>>>> melody-source-wip
     (if (= (block-position s-parent) 0)
         ;; then we're in the first block of the global structure and the 
         ;; s subblock needs to correspond to the source melody
         ;; (   ;; then a source melody has been passed as argument and its value != nil
         (if (melody-source (parent s-parent))
-            (
-                (print "Setting the first s block to the source melody")
-                (let (push-source pull-source playing-source ppp-source)
-                    (setq ppp-source (create-push-pull (melody-source (parent s-parent)) 16))
-                    (setq push-source (first ppp-source))
-                    (setq pull-source (second ppp-source))
-                    (setq playing-source (third ppp-source))
-                    ;; now we have to impose that the set-var-arrays push pull playing are equal 
-                    ;; to the lists push-source, pull-source and playing-source, but how ?
-                    
-                    ;; have to do this since the r block depends on these variables due to the 
-                    ;; similarity constraints between the two blocks
-
-                    ;; idea: void 	Gecode::dom (Home home, SetVar x, SetRelType r, const IntSet &s)
-                    ;; https://www.gecode.org/doc/6.2.0/reference/group__TaskModelSetDom.html
-                    ;; allows for setting the domain of variable x to an IntSet
-                    ;; so we can add this constraint to GiL as well as adding IntSets to GiL
-                    ;; such that we can create IntSets from lists (this is the format
-                    ;; that sets are returned as from the create-push-pull function)
-
-                    ;; this way we could then create a generalized domain constraint like above
-                    ;; but for SetVarArray, and we could also create a function that transforms
-                    ;; lists of lists into lists of IntSets to feed the constraint ?
+            (let (push-source pull-source playing-source ppp-source
+                var-push-source var-pull-source var-playing-source
                 )
+                (print "Setting the first s block to the source melody")
+                (setq ppp-source (create-push-pull-int (melody-source (parent s-parent)) 16))
+
+                (setq push-source (first ppp-source))
+                (setq pull-source (second ppp-source))
+                (setq playing-source (third ppp-source))
+
+                ;; they already have the correct size so no need to create new variables
+                ;; set constraints on ppp directly
+
+                (print "push-source")
+                (print push-source)
+
+                (print "pull-source")
+                (print pull-source)
+
+                (print "playing-source")
+                (print playing-source)
+
+                (loop :for i :from 0 :below (length push-source) :by 1 :do
+                    (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
+                )
+                (loop :for i :from 0 :below (- (length pull-source) 1) :by 1 :do
+                    (gil::g-rel sp (nth i pull) gil::IRT_EQ (nth i pull-source))
+                )
+                (loop :for i :from 0 :below (length playing-source) :by 1 :do
+                    (gil::g-rel sp (nth i playing) gil::IRT_EQ (nth i playing-source))
+                )
+
+                (print "First s block has been set to the source melody")
+
+
+            
             )
-            (post-optional-rock-constraints sp s-block push pull playing)
+            ;; (post-optional-rock-constraints sp s-block push pull playing)
         )
         ;; )
-        (post-optional-rock-constraints sp s-block push pull playing)
+        ;; (post-optional-rock-constraints sp s-block push pull playing)
     )
     
+    ;; ;; accompaniment
     (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc)
 )
 
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
-                                        push-s pull-s playing-s)
+                                        push-s pull-s playing-s max-pitch max-simultaneous-notes)
+
+    (gil::g-rel sp (first pull) gil::IRT_EQ (nth (- (length playing-s) 1) playing-s)) ; pull[0]=playing-s[quant-1]
 
     (gil::g-empty sp (first pull)) ; pull[0] == empty
 
     ;; post optional constraints defined in the rock csp
-    (post-optional-rock-constraints sp r-block push pull playing)
+    ;; dont constrain if source melody given
+    ;; (if (not (melody-source (parent r-parent)))
+    ;;     (post-optional-rock-constraints sp r-block push pull playing)
+    ;; )
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     (let ((sim (similarity-percent-s r-block)))
         (cst-common-vars sp push-s push sim)
+<<<<<<< HEAD
         (cst-common-vars sp pull-s pull sim)
         (cst-common-vars sp playing-s playing sim)
     )
@@ -224,6 +405,22 @@
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc)
     (gil::g-empty sp (first pull)) ; pull[0] == empty
     (post-optional-rock-constraints sp c-block push pull playing)
+=======
+        ;; (cst-common-vars sp pull-s pull sim)
+        ;; (cst-common-vars sp playing-s playing sim)
+    )
+)
+
+(defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    ;; (post-optional-rock-constraints sp d-block push pull playing)
+    (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc)
+)
+
+(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    ;; (post-optional-rock-constraints sp c-block push pull playing)
+>>>>>>> melody-source-wip
     (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc)
 
     ;; constrain c such that is respects the cadence specific rules
@@ -371,6 +568,7 @@
 )
 
 (defun cst-common-vars (sp vars1 vars2 sim)
+<<<<<<< HEAD
     (let (count-vars bool-array)
         (setq count-vars (gil::add-int-var sp 0 (length vars1))) ;; The number of common variables
         (setq bool-array (gil::add-int-var-array sp (length vars1) 0 1)) ;; boolean for every variable 
@@ -379,5 +577,25 @@
         )
         (gil::g-sum sp count-vars bool-array)
         (gil::g-rel sp count-vars gil::IRT_LQ (ceiling (* (length vars1) (/ sim 100))))
+=======
+    (let (count-vars int-array n-vars perc)
+        (setq perc (/ sim 100))
+        (print "perc")
+        (print perc)
+        (print (length vars1))
+        (setq n-vars (ceiling (* (length vars1) perc)))
+        (print "n-vars")
+        (print n-vars)
+        
+        (setq count (gil::add-int-var sp 0 (min (length vars1) (length vars2))))
+        (setq int-array (gil::add-int-var-array sp (min (length vars1) (length vars2)) 0 1))
+
+        (loop :for i :from 0 :below (min (length vars1) (length vars2)) do
+            (setf (nth i int-array) (gil::add-int-var-expr sp (nth i vars1) gil::IOP_SUB (nth i vars2)))
+        )
+
+        (gil::g-count sp int-array 0 gil::IRT_EQ count)
+        (gil::g-rel sp count gil::IRT_GQ n-vars)
+>>>>>>> melody-source-wip
     )
 )
