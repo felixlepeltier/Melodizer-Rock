@@ -51,7 +51,7 @@
 
         ; search engine
         ;; (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
+        (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
 
         (print "new-melodizer basic CSP constructed")
 
@@ -70,7 +70,7 @@
     ; constraints
     ; return pull push playing
     (let (pull push playing pull-acc push-acc playing-acc block-list positions
-        sub-push sub-pull
+        sub-push sub-pull pitches-notes lengths-notes
 
          (bars (bar-length rock-csp))
          (quant 16)
@@ -81,17 +81,20 @@
         (print "get subblocks")
 
         ;; initialize the variables
-        (setq push (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
-        (setq pull (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
-        (setq playing (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-simultaneous-notes max-simultaneous-notes))
+        (setq push (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
+        (setq pull (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
+        (setq playing (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
+        ;; (setq pitches-notes (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
+        ;; (setq lengths-notes (gil::add-int-var-array sp (+ (* bars quant) 1) 0 quant))
 
         (setq push-acc (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
         (setq pull-acc (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
         (setq playing-acc (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-simultaneous-notes max-simultaneous-notes))
-
+        
         ;; connects push pull and playing with constraints
-        (link-push-pull-playing sp push pull playing max-pitch max-simultaneous-notes)
-        (link-push-pull-playing sp push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+        (link-push-pull-playing-int sp push pull playing max-pitch)
+        (link-push-pull-playing-set sp push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+        ;; (link-pitches-push-pull sp pitches-notes push pull playing max-pitch)
         
         
 
@@ -105,9 +108,9 @@
             ;; to (constrain-ppp-from-srdc)
             (let (temp-push temp-pull temp-playing temp-push-acc temp-pull-acc temp-playing-acc
                   srdc-parent startidx notes-per-block)
-                (setq notes-per-block (/(* bars quant) (length block-list)))
-                (setq startidx (* i notes-per-block))
                 (setq srdc-parent (nth i block-list))
+                (setq notes-per-block (* (bar-length srdc-parent) quant))
+                (setq startidx (* i notes-per-block))
                 (setq temp-push (sublst push startidx notes-per-block))
                 (setq temp-pull (sublst pull startidx notes-per-block))
                 (setq temp-playing (sublst playing startidx notes-per-block))
@@ -129,7 +132,8 @@
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-rock-constraints (sp rock push pull playing); sub-push sub-pull)
-
+    (print "optional constraints")
+    (print (min-simultaneous-notes rock))
     (if (min-simultaneous-notes rock)
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
@@ -178,6 +182,7 @@
          sol score-voice score-acc)
 
          (print "in search basic")
+         
 
         (om::while check :do
             (gil::time-stop-reset tstop);reset the tstop timer before launching the search
@@ -188,13 +193,15 @@
             )
         )
 
-         ;créer score qui retourne la liste de pitch et la rhythm tree
-        (setq score-voice (build-voice sol push pull bars quant (tempo rock-object)))
-
+        ;créer score qui retourne la liste de pitch et la rhythm tree
+        (print "building scores")
+        (print (gil::g-values sol push))
+        ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
+        (print (gil::g-values sol pull))
+        (print (gil::g-values sol playing))
+        (setq score-voice (build-voice-int sol push pull bars quant (tempo rock-object)))
         (setq score-acc (build-voice sol push-acc pull-acc bars quant (tempo rock-object)))
-
         
-
         (list 
             (make-instance 'om::poly
                 :voices (list 
