@@ -24,7 +24,7 @@
         (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
-        (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB)); branch and bound search-engine, remove t for dfs
+        (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS)); branch and bound search-engine, remove t for dfs
         (print se)
 
         (print "CSP constructed")

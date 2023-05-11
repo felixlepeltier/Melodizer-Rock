@@ -93,6 +93,7 @@
         
         ;; connects push pull and playing with constraints
         (link-push-pull-playing-int sp push pull playing max-pitch)
+        ;; (limit-intervals-cst sp playing)
         (link-push-pull-playing-set sp push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
         ;; (link-pitches-push-pull sp pitches-notes push pull playing max-pitch)
         
@@ -156,11 +157,13 @@
     (if (chord-key rock)
         (if (typep (nth 0 push) 'gil::set-var)
             (chord-key-cst sp push rock)
+            ;; (chord-key-cst-int sp push rock)
         )
         
     )
 
     (pitch-range sp push (min-pitch rock) (max-pitch rock))
+    
 )
 
 ;;;;;;;;;;;;;;;
@@ -200,11 +203,13 @@
 
         ;créer score qui retourne la liste de pitch et la rhythm tree
         (print "building scores")
-        (print (gil::g-values sol push))
+        ;; (print (gil::g-values sol push))
+        ;; (loop :for i :below (length playing) do (print (gil::g-values sol (nth i playing))))
         ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
-        (print (gil::g-values sol pull))
-        (print (gil::g-values sol playing))
+        ;; (print (gil::g-values sol pull))
+        ;; (print (gil::g-values sol playing))
         (setq score-voice (build-voice-int sol push pull bars quant (tempo rock-object)))
+        (print score-voice)
         (setq score-acc (build-voice sol push-acc pull-acc bars quant (tempo rock-object)))
         
         (list 

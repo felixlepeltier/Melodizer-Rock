@@ -45,6 +45,8 @@
             push-j-nq-one
             playing-j-one
             playing-j-nq-one
+            pull-j-nq-playing-j-one
+            playing-j-nq-playing-j-one
             )
             (setq 
                 playing-j-playing-j-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ (nth (- j 1) playing))
@@ -57,7 +59,15 @@
                 push-j-nq-one (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ -1)
                 playing-j-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1)
                 playing-j-nq-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_NQ -1)
+                pull-j-nq-playing-j-one (gil::add-bool-var-expr sp (nth (- j 1) playing) gil::IRT_NQ (nth j pull))
+                playing-j-nq-playing-j-one (gil::add-bool-var-expr sp (nth (- j 1) playing) gil::IRT_NQ (nth j playing))
             )
+
+            (gil::g-op sp playing-j-playing-j-one gil::BOT_OR push-j-playing-j 1)
+            (gil::g-op sp push-j-playing-j gil::BOT_OR push-j-one 1)
+            (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
+
+            (gil::g-op sp push-j-nq-one gil::BOT_IMP pull-j-playing-j-one 1)
 
             ;; Playing note
             ;; playing[j] = playing[j-1] if
@@ -71,32 +81,42 @@
             ;; push[j] /= -1 
             ;; or both playing[j] and push[j] = -1
             ;; OR (playing[j] = -1 AND push[j] = -1)
-            (let (bool-temp bool-temp2)
-                (setq bool-temp (gil::add-bool-var sp 0 1))
-                ;; bool-temp = (push[j] = -1 AND pull[j] = -1)
-                (gil::g-op sp push-j-one gil::BOT_AND pull-j-one bool-temp)
-                ;; (bool-temp OR push[j] = pull[j]) = (playing[j] = playing[j-1])
-                (gil::g-op sp bool-temp gil::BOT_OR push-j-pull-j playing-j-playing-j-one)
-
-                (setq bool-temp2 (gil::add-bool-var sp 0 1))
-                ;; bool-temp2 = (playing[j] = -1 AND push[j] = -1)
-                (gil::g-op sp playing-j-one gil::BOT_AND push-j-one bool-temp2)
-                ;; (bool-temp2 OR push[j] /= -1) = (playing[j] = push[j])
-                (gil::g-op sp bool-temp2 gil::BOT_OR push-j-nq-one push-j-playing-j)
-            )
+            ;; (let (bool-temp bool-temp2)
+            ;;     (setq bool-temp (gil::add-bool-var sp 0 1))
+            ;;     ;; bool-temp = (push[j] = -1 AND pull[j] = -1)
+            ;;     (gil::g-op sp push-j-one gil::BOT_AND pull-j-one bool-temp)
+            ;;     ;; (bool-temp OR push[j] = pull[j]) = (playing[j] = playing[j-1])
+            ;;     (gil::g-op sp bool-temp gil::BOT_OR push-j-pull-j playing-j-playing-j-one)
+            ;;     ;; (gil::g-op sp pull-j-one gil::BOT_OR push-j-pull-j playing-j-playing-j-one)
 
 
-            ;; Pulled note
-            ;; A note can be pulled only if it was previously playing
-            ;; (pull[j] = playing[j-1] OR pull[j] = -1) = 1
-            (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
+            ;;     (gil::g-op sp playing-j-playing-j-one gil::BOT_OR push-j-playing-j 1)
 
-            ;; Pushed note
-            ;; A note is pushed when a note is playing and the previous note was pulled
-            ;; push[j] /= -1 if
-            ;; playing[j] /= -1 AND pull[j] /= -1
-            (gil::g-op sp playing-j-nq-one gil::BOT_AND pull-j-nq-one push-j-nq-one)
-        
+
+            ;;     ;; if push[j] /= -1 => playing[j] = push[j] 
+            ;;     ;; push[i] = -1 OR playing[j] = push[j]
+            ;;     (setq bool-temp2 (gil::add-bool-var sp 0 1))
+            ;;     ;; bool-temp2 = (playing[j] = -1 AND push[j] = -1)
+            ;;     (gil::g-op sp playing-j-one gil::BOT_AND push-j-one bool-temp2)
+            ;;     ;; (bool-temp2 OR push[j] /= -1) = (playing[j] = push[j])
+            ;;     (gil::g-op sp bool-temp2 gil::BOT_OR push-j-nq-one push-j-playing-j)
+            ;;     (gil::g-op sp push-j-one gil::BOT_OR push-j-playing-j 1)
+            ;; )
+
+
+            ;; ;; Pulled note
+            ;; ;; A note can be pulled only if it was previously playing
+            ;; ;; (pull[j] = playing[j-1] OR pull[j] = -1) = 1
+            ;; (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
+            ;; (gil::g-op sp push-j-nq-one gil::BOT_OR playing-j-nq-playing-j-one pull-j-playing-j-one)
+            
+
+            ;; ;; A note is pushed when a note is playing and the previous note was pulled
+            ;; ;; push[j] = playing[j] if
+            ;; ;; playing[j] /= -1 AND pull[j] /= -1
+            ;; (gil::g-op sp push-j-playing-j gil::BOT_OR push-j-one 1)
+            ;; (gil::g-op sp playing-j-nq-one gil::BOT_AND pull-j-playing-j-one push-j-nq-one)
+
         )
     )
 )
@@ -335,9 +355,9 @@
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     (let ((sim (similarity-percent-s r-block)))
-        (cst-common-vars sp push-s push sim)
+        ;; (cst-common-vars sp push-s push sim)
         ;; (cst-common-vars sp pull-s pull sim)
-        ;; (cst-common-vars sp playing-s playing sim)
+        (cst-common-vars sp playing-s playing sim)
     )
 )
 
@@ -394,6 +414,7 @@
 
 
 (defun chord-key-cst (sp push rock)
+    (print "chord-key-cst")
     (if (chord-key rock)
         (if (chord-quality rock)
             (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
@@ -403,8 +424,10 @@
                     (all-notes (gil::add-set-var sp 0 127 0 127))
                     chordset notesets bool-array)
                     (setq chordset (build-scaleset chord offset))
+                    (print chordset)
                     (scale-follow-reify sp push chordset bool)
                     (setq notesets (build-notesets chord offset))
+                    (print notesets)
                     (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
                     (loop :for i :from 0 :below (length notesets) :do
                         (let ((push-bool-array (gil::add-bool-var-array sp (length push) 0 1)))
@@ -466,6 +489,33 @@
     )
 )
 
+(defun scale-follow-reify-int (sp push chordset bool)
+    (setq r (gil::add-bool-var-array sp (length push) 0 1))
+    (loop :for j :from 0 :below (length push) :do
+        (let ((push-bool-array (gil::add-bool-var-array sp (length chordset) 0 1)))
+            (loop :for i :from 0 :below (length chordset) :do
+                (gil::g-rel-reify sp (nth j push) gil::IRT_EQ (nth i chordset) (nth i push-bool-array))
+            )
+            (gil::g-rel sp gil::BOT_OR push-bool-array (nth j r))
+        )
+    )
+    (gil::g-rel sp gil::BOT_AND r bool)
+)
+
+(defun chord-key-cst-int (sp push rock)
+    ;; (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
+    ;;     (bool2 (gil::add-bool-var sp 0 1))
+    ;;     (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
+    ;;     (offset (- (name-to-note-value (chord-key rock)) 60))
+    ;;     (all-notes (gil::add-set-var sp 0 127 0 127))
+    ;;     chordset notesets bool-array)
+    ;;     (setq chordset (append '(-1) (build-scaleset chord offset)))
+    ;;     (print chordset)
+    ;;     (scale-follow-reify-int sp push chordset bool)
+    ;;     (gil::g-rel sp bool gil::IRT_EQ 1)
+    ;; )
+)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; LIMITING MINIMUM NOTE LENGTH ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -474,15 +524,16 @@
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
             (if (typep (nth j push) 'gil::int-var)
-                (let (bool-temp bool2)
+                (let (bool-temp bool2 bool3 bool4)
                     (setq bool-temp (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ -1))
-                    (setq bool2 (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ (nth (+ j k) pull)))
-                    (gil::g-op sp bool-temp gil::BOT_OR bool2 1)
+                    (setq bool3 (gil::add-bool-var-expr sp (nth (+ j k) pull) gil::IRT_EQ -1))
+                    ;; (setq bool2 (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ (nth (+ j k) pull)))
+                    ;; (setq bool4 (gil::add-bool-var sp 0 1))
+                    ;; (gil::g-op sp bool-temp gil::BOT_AND bool3 bool4)
+                    (gil::g-op sp bool-temp gil::BOT_OR bool3 1)
                 )
-                ;; (gil::g-rel sp (nth (+ j k) pull) gil::IRT_NQ (nth j push))
                 (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
             )
-            ;;  (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
         )
     )
 )
@@ -521,11 +572,11 @@
 (defun cst-common-vars (sp vars1 vars2 sim)
     (let (count-vars int-array n-vars perc)
         (setq perc (/ sim 100))
-        (print "perc")
         (setq n-vars (ceiling (* (length vars1) perc)))
-        
-        (setq count (gil::add-int-var sp 0 (min (length vars1) (length vars2))))
-        (setq int-array (gil::add-int-var-array sp (min (length vars1) (length vars2)) 0 127))
+        (print "n-vars")
+        (print n-vars)
+        (setq count (gil::add-int-var sp 0 (length vars1)))
+        (setq int-array (gil::add-int-var-array sp (length vars1) -127 127))
 
         (loop :for i :from 0 :below (min (length vars1) (length vars2)) do
             (setf (nth i int-array) (gil::add-int-var-expr sp (nth i vars1) gil::IOP_SUB (nth i vars2)))
@@ -533,5 +584,31 @@
 
         (gil::g-count sp int-array 0 gil::IRT_EQ count)
         (gil::g-rel sp count gil::IRT_GQ n-vars)
+    )
+)
+
+(defun limit-intervals-cst (sp playing)
+    (let ((max-interval 7) (augmented-intervals '(1 6)))
+        (loop :for i :from 1 :below (length playing) :do
+            (let (bool-interval-max interval interval-abs bool-pi bool-pi-one bool)
+                (setq bool-pi (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
+                (setq bool-pi-one (gil::add-bool-var-expr sp (nth (- i 1) playing) gil::IRT_EQ -1))
+                
+                ;; Define the interval between the two notes
+                ;; interval = |playing[i] - playing[i-1]|
+                (setq interval (gil::add-int-var-expr sp (nth i playing) gil::IOP_SUB (nth (- i 1) playing)))
+                (setq interval-abs (gil::add-int-var sp 0 127))
+                (gil::g-abs sp interval interval-abs)
+                
+                ;; The maximum interval
+                ;; interval <= 7 (perfect fifth)
+                (setq bool-interval-max (gil::add-bool-var-expr sp interval-abs gil::IRT_LQ max-interval))
+               
+                (setq bool (gil::add-bool-var sp 0 1))
+                (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
+                (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
+                ;; (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
+            )
+        )
     )
 )
