@@ -31,7 +31,10 @@
         (setq playing-acc (nth 5 temp))
 
         ;; for BAB
-        (gil::g-branch sp push gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        ;; (gil::g-branch sp (append push pull playing) gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
+        (gil::g-branch sp push gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
+        (gil::g-branch sp pull gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
+        (gil::g-branch sp playing gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp push-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         (gil::g-specify-sol-variables sp push)
@@ -40,8 +43,6 @@
         ;time stop
         (setq tstop (gil::t-stop)); create the time stop object
         (gil::time-stop-init tstop 500); initialize it (time is expressed in ms)
-
-        ;; (gil::g-branch sp pull gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         ;search options
         (setq sopts (gil::search-opts)); create the search options object
@@ -77,25 +78,25 @@
          (max-pitch 127)
          (max-simultaneous-notes 10)
          (min-simultaneous-notes 0)
+         (no-note -1)
+         nb-notes
          )
         (print "get subblocks")
+        (setq nb-notes (+ (* bars quant) 1))
 
         ;; initialize the variables
-        (setq push (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
-        (setq pull (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
-        (setq playing (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
-        ;; (setq pitches-notes (gil::add-int-var-array sp (+ (* bars quant) 1) -1 max-pitch))
-        ;; (setq lengths-notes (gil::add-int-var-array sp (+ (* bars quant) 1) 0 quant))
+        (setq push (gil::add-int-var-array sp nb-notes no-note max-pitch))
+        (setq pull (gil::add-int-var-array sp nb-notes no-note max-pitch))
+        (setq playing (gil::add-int-var-array sp nb-notes no-note max-pitch))
 
-        (setq push-acc (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
-        (setq pull-acc (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch 0 max-simultaneous-notes))
-        (setq playing-acc (gil::add-set-var-array sp (+ (* bars quant) 1) 0 max-pitch min-simultaneous-notes max-simultaneous-notes))
+        (setq push-acc (gil::add-set-var-array sp nb-notes 0 max-pitch 0 max-simultaneous-notes))
+        (setq pull-acc (gil::add-set-var-array sp nb-notes 0 max-pitch 0 max-simultaneous-notes))
+        (setq playing-acc (gil::add-set-var-array sp nb-notes 0 max-pitch min-simultaneous-notes max-simultaneous-notes))
         
         ;; connects push pull and playing with constraints
         (link-push-pull-playing-int sp push pull playing max-pitch)
-        ;; (limit-intervals-cst sp playing)
+        (limit-intervals-cst sp playing)
         (link-push-pull-playing-set sp push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
-        ;; (link-pitches-push-pull sp pitches-notes push pull playing max-pitch)
         
         
 
@@ -204,10 +205,9 @@
         ;créer score qui retourne la liste de pitch et la rhythm tree
         (print "building scores")
         ;; (print (gil::g-values sol push))
-        ;; (loop :for i :below (length playing) do (print (gil::g-values sol (nth i playing))))
         ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
         ;; (print (gil::g-values sol pull))
-        ;; (print (gil::g-values sol playing))
+        (print (gil::g-values sol playing))
         (setq score-voice (build-voice-int sol push pull bars quant (tempo rock-object)))
         (print score-voice)
         (setq score-acc (build-voice sol push-acc pull-acc bars quant (tempo rock-object)))

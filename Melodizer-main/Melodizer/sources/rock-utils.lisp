@@ -451,14 +451,14 @@
           (prev 0)
           )
     (setq p-push (nconc p-push (mapcar (lambda (n) (* 100 (gil::g-values sol n))) push)))
-    ;; (print p-push)
+    (print p-push)
     ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (* 100 (gil::g-values sol n))) pull)))
-    ;; (print p-pull)
+    (print p-pull)
     
     (setq count 1)
     (loop :for b :from 0 :below bars :by 1 :do
-        (if (not (nth (* b quant) p-push))
+        (if (< (nth (* b quant) p-push) 0)
             (setq rest 1)
             (setq rest 0)
         )
@@ -472,10 +472,15 @@
                         (setq duration 0)
                         (setq j (+ i 1))
                         (loop
+                            (if (>= j (length p-pull))
+                                (setq duration (* (floor 60000 (* tempo quant)) (- j i)))
+                                (return)
+                            )
                             (if (>= (nth j p-pull) 0)
                                 (if (= (nth j p-pull) (nth i p-push))
                                     (progn
                                         (setq duration (* (floor 60000 (* tempo quant)) (- j i)))
+                                        (print (- j i))
                                         (return)
                                     )
                                 )
@@ -508,7 +513,7 @@
         (setq tree (nconc tree (list rhythm)))
     )
     (setq tree (list '? tree))
-
+    (print tree)
     (list chords tree)
     )
 )
