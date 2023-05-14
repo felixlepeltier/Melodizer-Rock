@@ -444,18 +444,31 @@
     (gil::g-rel sp gil::BOT_AND r bool)
 )
 
-(defun chord-key-cst-int (sp push rock)
-    ;; (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-    ;;     (bool2 (gil::add-bool-var sp 0 1))
-    ;;     (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
-    ;;     (offset (- (name-to-note-value (chord-key rock)) 60))
-    ;;     (all-notes (gil::add-set-var sp 0 127 0 127))
-    ;;     chordset notesets bool-array)
-    ;;     (setq chordset (append '(-1) (build-scaleset chord offset)))
-    ;;     (print chordset)
-    ;;     (scale-follow-reify-int sp push chordset bool)
-    ;;     (gil::g-rel sp bool gil::IRT_EQ 1)
-    ;; )
+(defun chord-key-cst-int (sp push playing rock)
+    (let (
+        (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
+        (offset (- (name-to-note-value (chord-key rock)) 60))
+        chordset
+        )
+        (setq chordset (build-scaleset chord offset))
+        (loop :for i :from 0 :below (length playing) :by 1 :do
+            (if (= (mod i 8) 0)
+                (let (bool-array bool-temp)
+                    (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
+                    (loop :for n :from 0 :below (length chordset) :by 1 :do
+                        (let (bool)
+                            (setq bool (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ (nth n chordset)))
+                            (gil::g-rel sp bool gil::IRT_EQ (nth n bool-array))
+                        )
+                    )
+                    (setq bool-temp (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
+                    (gil::g-rel sp bool-temp gil::IRT_EQ (nth (length chordset) bool-array))
+                    (gil::g-rel sp gil::BOT_XOR bool-array 1)
+                )
+                (limit-one-interval-cst sp (nth i playing) (nth (- i 1) playing) 2 nil)
+            )
+        )
+    )
 )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -527,27 +540,35 @@
 )
 
 (defun limit-intervals-cst (sp playing)
-    (let ((max-interval 7) (augmented-intervals '(1 6)))
+    (let ((max-interval 9) (augmented-intervals '(1 6 8)))
         (loop :for i :from 1 :below (length playing) :do
-            (let (bool-interval-max interval interval-abs bool-pi bool-pi-one bool)
-                (setq bool-pi (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
-                (setq bool-pi-one (gil::add-bool-var-expr sp (nth (- i 1) playing) gil::IRT_EQ -1))
-
-                ;; Define the interval between the two notes
-                ;; interval = |playing[i] - playing[i-1]|
-                (setq interval (gil::add-int-var-expr sp (nth i playing) gil::IOP_SUB (nth (- i 1) playing)))
-                (setq interval-abs (gil::add-int-var sp 0 127))
-                (gil::g-abs sp interval interval-abs)
-
-                ;; The maximum interval
-                ;; interval <= 7 (perfect fifth)
-                (setq bool-interval-max (gil::add-bool-var-expr sp interval-abs gil::IRT_LQ max-interval))
-
-                (setq bool (gil::add-bool-var sp 0 1))
-                (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
-                (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
-                ;; (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
-            )
+            (limit-one-interval-cst sp (nth i playing) (nth (- i 1) playing) max-interval augmented-intervals)
         )
     )
+)
+
+(defun limit-one-interval-cst (sp playing-i playing-i-one max-interval forbidden-intervals)
+    (let (bool-interval-max interval interval-abs bool-pi bool-pi-one bool)
+            (setq bool-pi (gil::add-bool-var-expr sp playing-i gil::IRT_EQ -1))
+            (setq bool-pi-one (gil::add-bool-var-expr sp playing-i-one gil::IRT_EQ -1))
+
+            ;; Define the interval between the two notes
+            ;; interval = |playing[i] - playing[i-1]|
+            (setq interval (gil::add-int-var-expr sp playing-i gil::IOP_SUB playing-i-one))
+            (setq interval-abs (gil::add-int-var sp 0 127))
+            (gil::g-abs sp interval interval-abs)
+
+            ;; The maximum interval
+            ;; interval <= 7 (perfect fifth)
+            (setq bool-interval-max (gil::add-bool-var-expr sp interval-abs gil::IRT_LQ max-interval))
+
+            ;; The next three line are a way to authorize rests in the middle of a measure
+            ;; (setq bool (gil::add-bool-var sp 0 1))
+            ;; (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
+            ;; (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
+            (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
+            (loop :for a :below (length forbidden-intervals) :do
+                (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
+            )
+        )
 )

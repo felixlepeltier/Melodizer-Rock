@@ -480,7 +480,6 @@
                                 (if (= (nth j p-pull) (nth i p-push))
                                     (progn
                                         (setq duration (* (floor 60000 (* tempo quant)) (- j i)))
-                                        (print (- j i))
                                         (return)
                                     )
                                 )

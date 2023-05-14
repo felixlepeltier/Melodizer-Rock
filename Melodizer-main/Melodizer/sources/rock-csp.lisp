@@ -158,7 +158,7 @@
     (if (chord-key rock)
         (if (typep (nth 0 push) 'gil::set-var)
             (chord-key-cst sp push rock)
-            ;; (chord-key-cst-int sp push rock)
+            (chord-key-cst-int sp push playing rock)
         )
         
     )
