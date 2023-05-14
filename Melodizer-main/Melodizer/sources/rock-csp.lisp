@@ -133,7 +133,7 @@
 
 ;posts the optional constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-rock-constraints (sp rock push pull playing); sub-push sub-pull)
+(defun post-optional-rock-constraints (sp rock push pull playing is-cadence); sub-push sub-pull)
     (print "optional constraints")
     (print (min-simultaneous-notes rock))
     (if (and (min-simultaneous-notes rock) (typep (nth 0 push) 'gil::set-var))
@@ -144,25 +144,120 @@
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
 
-    ; Time constraints
-    (if (min-note-length-flag rock)
-        (note-min-length-rock sp push pull (min-note-length rock))
-    )
 
-    (if (max-note-length-flag rock)
-        (note-max-length-rock sp push pull (max-note-length rock))
-    )
+    (cond 
+        ((not (typep rock 'mldz::accompaniment))
+            (progn
+                ; Pitch constraints
+                (if (chord-key rock)
+                    (if (typep (nth 0 push) 'gil::set-var)
+                        (chord-key-cst sp push rock)
+                        (chord-key-cst-int sp push playing rock)
+                    )
+                )
+                ; Time constraints
+                (if (min-note-length-flag rock)
+                    (note-min-length-rock sp push pull (min-note-length rock))
+                )
 
-    ; Pitch constraints
-
-    (if (chord-key rock)
-        (if (typep (nth 0 push) 'gil::set-var)
-            (chord-key-cst sp push rock)
-            (chord-key-cst-int sp push playing rock)
+                (if (max-note-length-flag rock)
+                    (note-max-length-rock sp push pull (max-note-length rock))
+                )
+            )  
         )
-        
-    )
 
+
+        ((and    is-cadence
+                (typep rock 'mldz::accompaniment))
+            (progn
+                ;; (let ((bar-len (/ (bar-length (parent rock)) 4))
+                ;;     )
+                ;; )
+                ; Time constraints
+                (if (min-note-length-flag rock)
+                    (note-min-length-rock sp push pull (/ (min-note-length rock) 2))
+                )
+
+                (if (max-note-length-flag rock)
+                    (note-max-length-rock sp push pull (max-note-length rock))
+                )
+            )
+        )
+
+        ;; (print "after if is cadence")
+
+        ((and    (not is-cadence)
+                (typep rock 'mldz::accompaniment))
+            ;; (progn
+            ;;     (if (min-note-length-flag rock)
+            ;;         (note-min-length-rock sp push pull (min-note-length rock))
+            ;;     )
+
+            ;;     (if (max-note-length-flag rock)
+            ;;         (note-max-length-rock sp push pull (max-note-length rock))
+            ;;     )
+            ;; )
+
+            (progn
+                ; Pitch constraints
+                (if (chord-key rock)
+                    (if (typep (nth 0 push) 'gil::set-var)
+                        (chord-key-cst sp push rock)
+                        (chord-key-cst-int sp push playing rock)
+                    )
+                )
+                ; Time constraints
+                (if (min-note-length-flag rock)
+                    (note-min-length-rock sp push pull (min-note-length rock))
+                )
+
+                (if (max-note-length-flag rock)
+                    (note-max-length-rock sp push pull (max-note-length rock))
+                )
+            )  
+        )
+
+
+        ;; (print "after if is not cadence")
+
+    )
+    ;; (if ((not (typep rock 'mldz::accompaniment)))
+    ;;     (progn
+    ;;         ; Pitch constraints
+    ;;         (if (chord-key rock)
+    ;;             (if (typep (nth 0 push) 'gil::set-var)
+    ;;                 (chord-key-cst sp push rock)
+    ;;                 (chord-key-cst-int sp push playing rock)
+    ;;             )  
+    ;;         )
+    ;;         ; Time constraints
+    ;;         (if (min-note-length-flag rock)
+    ;;             (note-min-length-rock sp push pull (min-note-length rock))
+    ;;         )
+
+    ;;         (if (max-note-length-flag rock)
+    ;;             (note-max-length-rock sp push pull (max-note-length rock))
+    ;;         )
+    ;;     )
+    ;; )
+    ;; (if (and    (is-cadence)
+    ;;             (typep rock 'mldz::accompaniment))
+    ;;     (progn
+    ;;         ;; (let ((bar-len (/ (bar-length (parent rock)) 4))
+    ;;         ;;     )
+    ;;         ;; )
+    ;;         ; Time constraints
+    ;;         (if (min-note-length-flag rock)
+    ;;             (note-min-length-rock sp push pull (/ (min-note-length rock) 2))
+    ;;         )
+
+    ;;         (if (max-note-length-flag rock)
+    ;;             (note-max-length-rock sp push pull (max-note-length rock))
+    ;;         )
+    ;;     )
+    
+    ;; )
+    
     (pitch-range sp push (min-pitch rock) (max-pitch rock))
     
 )

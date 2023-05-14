@@ -156,6 +156,8 @@
         (setq temp-pull-s-acc (sublst pull-acc startidx-s notes-in-subblock))
         (setq temp-playing-s-acc (sublst playing-acc startidx-s notes-in-subblock))
 
+        (print "here")
+
         (setq startidx-r notes-in-subblock)
         (setq temp-push-r (sublst push startidx-r notes-in-subblock))
         (setq temp-pull-r (sublst pull startidx-r notes-in-subblock))
@@ -163,7 +165,9 @@
         (setq temp-push-r-acc (sublst push-acc startidx-r notes-in-subblock))
         (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
         (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
-        
+
+        (print "here")
+
         (setq startidx-d (+ startidx-r notes-in-subblock))
         (setq temp-push-d (sublst push startidx-d notes-in-subblock))
         (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
@@ -172,7 +176,9 @@
         (setq temp-push-d-acc (sublst push-acc startidx-d notes-in-subblock))
         (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
         (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
-        
+
+        (print "here")
+
         (setq startidx-c (+ startidx-d notes-in-subblock))
         (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
         (setq temp-push-c (sublst push startidx-c notes-in-subblock))
@@ -181,6 +187,8 @@
         (setq temp-push-c-acc (sublst push-acc startidx-c notes-in-subblock))
         (setq temp-pull-c-acc (sublst pull-acc startidx-c notes-in-subblock))
         (setq temp-playing-c-acc (sublst playing-acc startidx-c notes-in-subblock))
+
+        (print "here")
 
 
 
@@ -274,14 +282,14 @@
 
             
             )
-            (post-optional-rock-constraints sp s-block push pull playing)
+            (post-optional-rock-constraints sp s-block push pull playing nil)
         )
         ;; )
-        (post-optional-rock-constraints sp s-block push pull playing)
+        (post-optional-rock-constraints sp s-block push pull playing nil)
     )
     
     ;; ;; accompaniment
-    (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc)
+    (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil)
 )
 
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
@@ -292,8 +300,8 @@
     ;; post optional constraints defined in the rock csp
     ;; dont constrain if source melody given
 
-    (post-optional-rock-constraints sp r-block push pull playing)
-    (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc)
+    (post-optional-rock-constraints sp r-block push pull playing nil)
+    (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     (let ((sim (similarity-percent-s r-block)))
@@ -305,14 +313,15 @@
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
     ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
-    (post-optional-rock-constraints sp d-block push pull playing)
-    (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc)
+    (post-optional-rock-constraints sp d-block push pull playing nil)
+    (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil)
 )
 
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
     ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
-    (post-optional-rock-constraints sp c-block push pull playing)
-    (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc)
+    (post-optional-rock-constraints sp c-block push pull playing t)
+    (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t)
+    
 
     ;; constrain c such that is respects the cadence specific rules
     ;; if cadence-type of the parent block is "Default", then pick cadence depending on the position of the block
@@ -322,36 +331,150 @@
     (print "Before the case on cadence-type")
     (let ((block-list-len (length (block-list (parent c-parent)))) ;; how many blocks are in the global structure
         (position (block-position c-parent)) ;; position of the current block in the global structure (start index is 0)
-        (c-type (cadence-type c-parent)))
+        (c-type (cadence-type c-parent))
+        (bar-len (bar-length c-block)))
         (cond 
             ((string= c-type "Default") 
                 (print "cadence-type")
                 (print "Default")
+
+                (let ((key (chord-key c-block))
+                    (quality (chord-quality c-block))
+                    (chord-midi-value (name-to-note-value (chord-key c-block)))
+                    (triad-to-play (list)) ;; intervals depending on quality
+                    (chords-to-play (list)) ;; root key(s) on which the triad(s) is(are) played
+                    (notes-to-play (list)) ;; notes to be pushed, list of lists
+                    )
+
+                    (print "here")
+
+                    ;; if major then a triad is root, root+4, root+7
+                    ;; if minor then a triad is root, root+3, root+7
+                    (cond ((string= quality "Major") (setq triad-to-play (list 0 4 7)))
+                        ((string= quality "Minor") (setq triad-to-play (list 0 3 7)))
+                        ;; ((not quality) (setq triad-to-play (list 0 4 7)))
+                    )
+                    
+                    (print "here")
+                        
+                    ;; I IV V  distance par rapport a la key (ton)
+                    ;; Major : 0| 2,5| 3,5
+                    ;; Minor : 0| 2,5| 3,5
+                    ;; Perfect V -> I
+                    (setq chords-to-play (list 7 0))
+                    (print "here")
+                    (setq notes-to-play (append notes-to-play (list (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 2 triad-to-play)))))
+                    ;; (print "notes-to-play")
+                    ;; (print notes-to-play)
+                    (setq notes-to-play (append (list notes-to-play) (list (list (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 2 triad-to-play))))))
+                    (print "here")
+                    ;; (setq (min-note-length (accomp c-block)) (/ (min-note-length (accomp c-block)) 2))
+
+                    ;; (print "notes-to-play")
+                    ;; (print notes-to-play)
+                    (gil::g-rel sp (nth 0 push-acc) gil::SRT_EQ (nth 0 notes-to-play))
+                    (gil::g-rel sp (nth 8 push-acc) gil::SRT_EQ (nth 1 notes-to-play))
+                    (print "here")
+                    ;; (if (> bar-len 1)
+                    ;;     (setq (min-note-length accomp) (floor (/ (min-note-length accomp) bar-len)))
+                    ;; )
+                )
+                ;; (let ((key (chord-key c-block))
+                ;;     (quality (chord-quality c-block))
+                ;;     (chord (get-chord (chord-quality c-block)))  ;if - mode selectionné
+                ;;     (chord-midi-value (name-to-note-value (chord-key c-block)))
+                ;;     (offset (- (name-to-note-value (chord-key c-block)) 60))
+                ;;     ;; (all-notes (gil::add-set-var sp 0 127 0 127))
+                ;;     chordset noteset triad-to-play
+                ;;     (degree-sequence (list))
+                ;;     (chords-to-play (list)))
+
+                ;;     ;; fill the degree sequence based on the cadence that's gonna be played
+                ;;     ;; lets pretend we have just V
+                ;;     (setq degree-sequence (append degree-sequence 5))
+
+                ;;     ;; chords to play are going to be the chord-midi-value to which 
+                ;;     ;; we add the offsets corresponding to the degrees of the sequence
+                ;;     ;; so if we have C Major and choose to play chord of degree V
+                ;;     ;; then we have to play the chord of 7 semitones above the chord-midi-value
+                ;;     ;; therefore : 
+                ;;     (setq chords-to-play (append chords-to-play (+ chord-midi-value 7)))
+
+                ;;     ;; from there we establish the three notes that this chord is made from
+                ;;     ;; by stacking two triads, which gives us the following three notes:
+                ;;     ;; root, major 3rd, perfect 5th
+                ;;     ;; which corresponds to these semitones increases from the root key
+                ;;     ;; 0,4,7
+
+                ;;     ;; (setq triad-to-play (list (* (+ (+ chord-midi-value 7) 0) 100) (* (+ (+ chord-midi-value 7) 4) 100) (* (+ (+ chord-midi-value 7) 7) 100)))
+                ;;     (setq triad-to-play (list (+ (+ chord-midi-value 7) 0) (+ (+ chord-midi-value 7) 4) (+ (+ chord-midi-value 7) 7)))
+
+                ;;     (print "triad-to-play")
+                ;;     (print triad-to-play)
+
+
+                ;;     (print "push-acc length:")
+                ;;     (print (length push-acc))
+                ;;     ;; then try to constrain the accompaniment to be equal to triad-to-play
+                ;;     ;; just as a small test, try to set push[0] to this triad
+                ;;     ;; (print (first push-acc))
+
+
+                ;;     (gil::g-rel sp (nth 0 push-acc) gil::SRT_EQ triad-to-play)
+                ;;     (setq (min-note-length c-block))
+
+                ;;     ;; (setq chordset (build-scaleset chord offset))
+                ;;     ;; (print "chordset")
+                ;;     ;; (print chordset)
+                ;;     ;; ;; (scale-follow-reify sp push chordset bool)
+                ;;     ;; (setq notesets (build-notesets chord offset))
+                ;;     ;; (print "notesets")
+                ;;     ;; (print notesets)
+                    
+                ;;     ;; consider that we're in C major for now, as this is default
+
+                ;;     ;; we try and force the V chord to be played
+                ;;     ;; ! IV V chords in major have these offsets in semitones (same in minor ?)
+                ;;     ;; 0 5 7 from the reference key
+                ;;     ;; and are then built from the chord of said key
+                ;;     ;; key + semitone offset = chord to play (ctp)
+                ;;     ;; major triad = root, major 3rd and perfect 5th
+                ;;     ;; major third stacked with a minor third interval
+                ;;     ;; 4 semitones + 3 semitones
+                ;;     ;; the setvar pushed in quant 0 will be : 
+
+                ;;     ;; (ctp+0 ctp+4 ctp+7)
+
+                ;; )
             )
             ((string= c-type "Perfect") 
                 (print "cadence-type")
                 (print "Perfect")
                 ;; Cadence parfaite : accord du cinquième degré suivi du premier degré. C’est très conclusif et c’est en général utilisé à la fin d’une phrase/section/pièce pour marquer la fin d’une partie, pas nécessairement du morceau complet.
+                ;; V -> I
+
             )
             ((string= c-type "Plagal") 
                 (print "cadence-type")
                 (print "Plagal")
                 ;; Cadence plagale : accord du quatrième degré suivi du premier degré. C’est moins conclusif et moins fréquemment utilisé
+                ;; IV -> I
             )
             ((string= c-type "Semi") 
                 (print "cadence-type")
                 (print "Semi")
                 ;; Demi cadence : n’importe quel accord vers le cinquième degré. Ca crée de la tension parce que l’harmonie reste en suspension et ne se résoud pas. 
+                ;; anything -> V
             )
             ((string= c-type "Deceptive") 
                 (print "cadence-type")
                 (print "Deceptive")
                 ;; Deceptive cadence : accord du cinquième degré vers le sixième ou troisième degré. Ca crée une surprise puisque l’oreille s’attend à entendre le premier degré, et c’est souvent utilisé pour prolonger une phrase ou entre 2 sections pour donner un sentiment de continuité.
+                ;; V -> VI || V -> III
             )
         )
     )
     (print "After the case on cadence-type")
-
 )
 
 
