@@ -418,9 +418,10 @@
 )
 
 ; Getting a list of chords and a rhythm tree from the playing list of intvar
-(defun build-voice-int (sol push pull bars quant tempo)
+(defun build-voice-int (sol push pull playing bars quant tempo)
     (let ((p-push (list))
           (p-pull (list))
+          (p-playing (list))
           (chords (list))
           (tree (list))
           (ties (list))
@@ -431,13 +432,16 @@
     ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (* 100 (gil::g-values sol n))) pull)))
     (print p-pull)
+    (setq p-playing (nconc p-playing (mapcar (lambda (n) (* 100 (gil::g-values sol n))) playing)))
     
     (setq count 1)
+    ;; (setq rest 0)
     (loop :for b :from 0 :below bars :by 1 :do
-        (if (< (nth (* b quant) p-push) 0)
+        (if (< (nth (* b quant) p-playing) 0)
             (setq rest 1)
             (setq rest 0)
         )
+        (print rest)
         (setq rhythm (list))
         (loop :for q :from 0 :below quant :by 1 :do
             (setq i (+ (* b quant) q))
@@ -473,6 +477,13 @@
                                 (setq rhythm (nconc rhythm (list count))))
                         )
                         (setq count 1))
+                )
+                ((and (< (nth i p-playing) 0) (= rest 0))
+                    (setq rest 1)
+                    (if (> count 0)
+                        (setq rhythm (nconc rhythm (list count)))
+                    )
+                    (setq count 1)
                 )
                 ; else
                 (t (setq count (+ count 1)))

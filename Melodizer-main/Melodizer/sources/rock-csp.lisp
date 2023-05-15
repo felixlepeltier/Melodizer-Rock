@@ -34,7 +34,7 @@
         ;; (gil::g-branch sp (append push pull playing) gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp push gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp pull gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
-        (gil::g-branch sp playing gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
+        (gil::g-branch sp playing gil::INT_VAR_DEGREE_MAX gil::INT_VAL_RND)
         (gil::g-branch sp push-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         (gil::g-specify-sol-variables sp push)
@@ -125,6 +125,7 @@
                 (if (= i (idx-first-b rock-csp))
                     (setq push-B0 temp-push)
                 )
+                ;; (print push-A0)
                 (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing 
                                             temp-push-acc temp-pull-acc temp-playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
             )
@@ -308,7 +309,7 @@
         ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
         ;; (print (gil::g-values sol pull))
         (print (gil::g-values sol playing))
-        (setq score-voice (build-voice-int sol push pull bars quant (tempo rock-object)))
+        (setq score-voice (build-voice-int sol push pull playing bars quant (tempo rock-object)))
         (print score-voice)
         (setq score-acc (build-voice sol push-acc pull-acc bars quant (tempo rock-object)))
         

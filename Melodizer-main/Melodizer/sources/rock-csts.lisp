@@ -172,7 +172,6 @@
         (setq temp-pull-s-acc (sublst pull-acc startidx-s notes-in-subblock))
         (setq temp-playing-s-acc (sublst playing-acc startidx-s notes-in-subblock))
 
-        (print "here")
 
         (setq startidx-r notes-in-subblock)
         (setq temp-push-r (sublst push startidx-r notes-in-subblock))
@@ -182,21 +181,19 @@
         (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
         (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
 
-        (print "here")
 
         (setq startidx-d (+ startidx-r notes-in-subblock))
         (setq temp-push-d (sublst push startidx-d notes-in-subblock))
         (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
         (setq temp-playing-d (sublst playing startidx-d notes-in-subblock))
-        (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
+        ;; (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
         (setq temp-push-d-acc (sublst push-acc startidx-d notes-in-subblock))
         (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
         (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
 
-        (print "here")
 
         (setq startidx-c (+ startidx-d notes-in-subblock))
-        (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
+        ;; (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
         (setq temp-push-c (sublst push startidx-c notes-in-subblock))
         (setq temp-pull-c (sublst pull startidx-c notes-in-subblock))
         (setq temp-playing-c (sublst playing startidx-c notes-in-subblock))
@@ -204,7 +201,6 @@
         (setq temp-pull-c-acc (sublst pull-acc startidx-c notes-in-subblock))
         (setq temp-playing-c-acc (sublst playing-acc startidx-c notes-in-subblock))
 
-        (print "here")
 
 
 
@@ -251,7 +247,7 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
-    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     
     ;; ;; if a source melody is given, then use it to generate push pull playing 
     ;; ;; then constrain the push pull and playing of s to be equal to these arrays
@@ -456,10 +452,8 @@
                     (all-notes (gil::add-set-var sp 0 127 0 127))
                     chordset notesets bool-array)
                     (setq chordset (build-scaleset chord offset))
-                    (print chordset)
                     (scale-follow-reify sp push chordset bool)
                     (setq notesets (build-notesets chord offset))
-                    (print notesets)
                     (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
                     (loop :for i :from 0 :below (length notesets) :do
                         (let ((push-bool-array (gil::add-bool-var-array sp (length push) 0 1)))
@@ -653,10 +647,10 @@
             (setq bool-interval-max (gil::add-bool-var-expr sp interval-abs gil::IRT_LQ max-interval))
 
             ;; The next three line are a way to authorize rests in the middle of a measure
-            ;; (setq bool (gil::add-bool-var sp 0 1))
-            ;; (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
-            ;; (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
-            (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
+            (setq bool (gil::add-bool-var sp 0 1))
+            (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
+            (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
+            ;; (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
             (loop :for a :below (length forbidden-intervals) :do
                 (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
             )
@@ -672,8 +666,11 @@
         (diff (- (name-to-note-value chord1) (name-to-note-value chord2)) )
         temp-push        
         )
+        (print "translate")
         (setq notes (append '(-1) notes))
+        (print notes)
         (setq new-notes (append '(-1) new-notes))
+        (print new-notes)
         (setq temp-push (gil::add-int-var-array sp (length push) -1 127))
         (loop :for i :from 0 :below (length push) :do
             (let ((bool-array (gil::add-bool-var-array sp (length notes) 0 1)) bool-temp bool-tot difference)
@@ -689,7 +686,7 @@
                 ;; Either the note belong to the chord or the difference between the old and new note 
                 ;; is equal to the difference between the chords
                 (setq bool-tot (gil::add-bool-var sp 0 1))
-                (gil::g-rel sp gil::BOT_XOR bool-array bool-tot)
+                (gil::g-rel sp gil::BOT_OR bool-array bool-tot)
                 (setq difference (gil::add-int-var-expr sp (nth i push) gil::IOP_SUB (nth i temp-push)))
                 (setq bool-temp (gil::add-bool-var-expr sp difference gil::IRT_EQ diff))
                 (gil::g-op sp bool-tot gil::BOT_OR bool-temp 1)
