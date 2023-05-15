@@ -175,11 +175,11 @@
                 ;; )
                 ; Time constraints
                 (if (min-note-length-flag rock)
-                    (note-min-length-rock sp push pull (/ (min-note-length rock) 2))
+                    (note-min-length-rock sp push pull (* (/ (min-note-length rock) 2) (bar-length rock)))
                 )
 
                 (if (max-note-length-flag rock)
-                    (note-max-length-rock sp push pull (max-note-length rock))
+                    (note-max-length-rock sp push pull (* (/ (max-note-length rock) 2) (bar-length rock)))
                 )
             )
         )
