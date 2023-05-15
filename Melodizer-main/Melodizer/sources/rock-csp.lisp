@@ -79,7 +79,7 @@
          (max-simultaneous-notes 10)
          (min-simultaneous-notes 0)
          (no-note -1)
-         nb-notes
+         nb-notes push-A0 push-B0
          )
         (print "get subblocks")
         (setq nb-notes (+ (* bars quant) 1))
@@ -119,8 +119,14 @@
                 (setq temp-push-acc (sublst push-acc startidx notes-per-block))
                 (setq temp-pull-acc (sublst pull-acc startidx notes-per-block))
                 (setq temp-playing-acc (sublst playing-acc startidx notes-per-block))
+                (if (= i (idx-first-a rock-csp))
+                    (setq push-A0 temp-push)
+                )
+                (if (= i (idx-first-b rock-csp))
+                    (setq push-B0 temp-push)
+                )
                 (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing 
-                                            temp-push-acc temp-pull-acc temp-playing-acc quant max-pitch max-simultaneous-notes sp)
+                                            temp-push-acc temp-pull-acc temp-playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
             )
         )
 
@@ -135,12 +141,11 @@
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-optional-rock-constraints (sp rock push pull playing is-cadence); sub-push sub-pull)
     (print "optional constraints")
-    (print (min-simultaneous-notes rock))
-    (if (and (min-simultaneous-notes rock) (typep (nth 0 push) 'gil::set-var))
+    (if (and (typep (nth 0 push) 'gil::set-var) (min-simultaneous-notes rock))
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
 
-    (if (and (max-simultaneous-notes rock) (typep (nth 0 push) 'gil::set-var))
+    (if (and (typep (nth 0 push) 'gil::set-var) (max-simultaneous-notes rock))
         (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
     )
 

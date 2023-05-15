@@ -104,24 +104,40 @@
 )
 
 
-(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
     ;; call some variant of the post-optional-constraints function to constrain the push pull playing arrays
     ;; from srdc values
     (if (typep srdc-parent 'mldz::a)
         ;; 
-        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
         ;; 
-        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch max-simultaneous-notes sp)
     )
 )
 
 
 
-(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-A")
 
     ;; bars*quant elements and starts at startidx
     ;; for the sub arrays of push pull playing
+    (if (/= (block-position A-block) (idx-first-a (parent A-block)))
+        (let (sim 
+            temp-push        
+            )
+            (if (typep A-block 'mldz::a)
+                (setq sim (similarity-percent-A0 A-block))
+                (setq sim (similarity-percent-B0 A-block))
+            )
+            (setq temp-push (translate-chords sp (chord-key (nth (idx-first-a (parent A-block)) (block-list (parent A-block)))) 
+                                                (chord-quality (nth (idx-first-a (parent A-block)) (block-list (parent A-block))))
+                                                (chord-key A-block) (chord-quality A-block) push-A0))
+            (cst-common-vars sp temp-push push sim)
+        ;; (cst-common-vars sp pull-s pull sim)
+        ;; (cst-common-vars sp playing-s playing sim)
+        )
+    )
 
 
     (let ((bars (bar-length (s-block A-block)))
@@ -223,12 +239,12 @@
     )
 )
 
-(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-B")
     ;; for now A and B behave the same way so it suffices to call the function written for A
     ;; when B will have different constraints then this function will have to be changed
     ;; to accomodate this.
-    (constrain-srdc-from-A B-block push pull playing push-acc pull-acc playing-acc quant max-pitch max-simultaneous-notes sp)
+    (constrain-srdc-from-A B-block push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch max-simultaneous-notes sp)
 )
 
 
@@ -304,8 +320,13 @@
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
-    (let ((sim (similarity-percent-s r-block)))
-        (cst-common-vars sp push-s push sim)
+    ;; translated to the key of the r-block
+    (let ((sim (similarity-percent-s r-block)) 
+            temp-push        
+        )
+        (setq temp-push (translate-chords sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
+                                        (chord-key r-block) (chord-quality r-block) push-s))
+        (cst-common-vars sp temp-push push sim)
         ;; (cst-common-vars sp pull-s pull sim)
         ;; (cst-common-vars sp playing-s playing sim)
     )
@@ -640,4 +661,40 @@
                 (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
             )
         )
+)
+
+(defun translate-chords (sp chord1 quality1 chord2 quality2 push)
+    (let (
+        (notes (build-scaleset (get-chord quality1)  ;if - mode selectionné
+                    (- (name-to-note-value chord1) 60)))
+        (new-notes (build-scaleset (get-chord quality2)  ;if - mode selectionné
+                    (- (name-to-note-value chord2) 60)))
+        (diff (- (name-to-note-value chord1) (name-to-note-value chord2)) )
+        temp-push        
+        )
+        (setq notes (append '(-1) notes))
+        (setq new-notes (append '(-1) new-notes))
+        (setq temp-push (gil::add-int-var-array sp (length push) -1 127))
+        (loop :for i :from 0 :below (length push) :do
+            (let ((bool-array (gil::add-bool-var-array sp (length notes) 0 1)) bool-temp bool-tot difference)
+                (loop :for n :from 0 :below (length notes) :do
+                    (let (bool1 bool2)
+                        ;; If the note belongs to the chord, force the new note to belong to the new chord
+                        (setq bool1 (gil::add-bool-var-expr sp (nth i push) gil::IRT_EQ (nth n notes)))
+                        (setq bool2 (gil::add-bool-var-expr sp (nth i temp-push) gil::IRT_EQ (nth n new-notes)))
+                        (gil::g-rel sp bool1 gil::IRT_EQ bool2)
+                        (gil::g-rel sp (nth n bool-array) gil::IRT_EQ bool1)
+                    )
+                )
+                ;; Either the note belong to the chord or the difference between the old and new note 
+                ;; is equal to the difference between the chords
+                (setq bool-tot (gil::add-bool-var sp 0 1))
+                (gil::g-rel sp gil::BOT_XOR bool-array bool-tot)
+                (setq difference (gil::add-int-var-expr sp (nth i push) gil::IOP_SUB (nth i temp-push)))
+                (setq bool-temp (gil::add-bool-var-expr sp difference gil::IRT_EQ diff))
+                (gil::g-op sp bool-tot gil::BOT_OR bool-temp 1)
+            )
+        )
+        temp-push
+    )
 )

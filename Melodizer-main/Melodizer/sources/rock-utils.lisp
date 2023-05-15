@@ -66,16 +66,6 @@
                                 (-  (log (max-note-length (parent rock-block)) 2) 
                                     (log max-note-length 2)))
                     )
-                    (if (and min-simultaneous-notes (min-simultaneous-notes (parent rock-block)))
-                        (setf   (diff-min-sim rock-block) 
-                                (- (min-simultaneous-notes (parent rock-block)) 
-                                    min-simultaneous-notes))
-                    )
-                    (if (and max-simultaneous-notes (max-simultaneous-notes (parent rock-block)) )
-                        (setf   (diff-max-sim rock-block) 
-                                (- (max-simultaneous-notes (parent rock-block)) 
-                                    max-simultaneous-notes))
-                    )
                 )
             )
 
@@ -141,20 +131,6 @@
                                     (max-note-length x) (floor (expt 2 (- (log max-note-length 2) (diff-max-length x))))))
                     )
                 )
-                (if min-simultaneous-notes
-                    (cond 
-                        ((relative-to-parent x)
-                            (setf (min-simultaneous-notes x) (- min-simultaneous-notes (diff-min-sim x)))
-                        )
-                    )
-                )
-                (if max-simultaneous-notes
-                    (cond 
-                        ((relative-to-parent x)
-                            (setf (max-simultaneous-notes x) (- max-simultaneous-notes (diff-max-sim x)))
-                        )
-                    )
-                )
             )
         )
         
@@ -168,8 +144,8 @@
                                     :min-note-length (min-note-length x)
                                     :max-note-length-flag (max-note-length-flag x)
                                     :max-note-length  (max-note-length x)
-                                    :min-simultaneous-notes (min-simultaneous-notes x)
-                                    :max-simultaneous-notes (max-simultaneous-notes x)
+                                    :min-simultaneous-notes min-simultaneous-notes
+                                    :max-simultaneous-notes max-simultaneous-notes
                                     :chord-quality (chord-quality x)
         )
         

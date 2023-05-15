@@ -15,15 +15,8 @@
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 1 :type integer)
-      ;; (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for the first s block")
+      (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 0 :type integer)
       (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
-      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
-      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-notes :accessor min-notes :initform nil :type integer)
-      (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 1 :type integer)
       (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
@@ -42,6 +35,7 @@
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
       (cadence-type :accessor cadence-type :initform "Default" :type string :documentation "Type of cadence used in the current block")
       (block-position :accessor block-position :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
+      (similarity-percent-A0 :accessor similarity-percent-A0 :initform 50 :type integer :documentation "Percentage of resemblance with first A")
     )
 )
 
@@ -79,17 +73,17 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (A-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 50)
+        :size (om::om-make-point 500 50)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
       (changes-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 100)
+        :size (om::om-make-point 500 100)
         :position (om::om-make-point 5 60)
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 500)
+        :size (om::om-make-point 500 500)
         :position (om::om-make-point 5 165)
         :bg-color om::*azulito*)
       )
@@ -97,7 +91,13 @@
     )
 
     (setf elements-A-panel (make-A-panel self A-panel))
-    (setf elements-constraints-panel (make-constraints-AB-panel self constraints-panel))
+    (print (block-position (om::object self)))
+    (print (idx-first-a (parent (om::object self))))
+    (if (= (block-position (om::object self)) (idx-first-a (parent (om::object self))))
+      (setf elements-constraints-panel (make-constraints-AB-panel self constraints-panel))
+      (setf elements-constraints-panel (make-constraints-not-first-panel self constraints-panel))
+    )
+    
     (setf elements-changes-panel (make-changes-panel self changes-panel))
 
     ; add the subviews for the different parts into the main view
@@ -128,13 +128,9 @@
       (c-block :accessor c-block :initarg :c-block :initform (make-instance 'c) :documentation "")
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 1 :type integer)
+      (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 0 :type integer)
       ;; (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for the first s block")
       (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
-      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
-      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
@@ -155,6 +151,7 @@
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
       (cadence-type :accessor cadence-type :initform "Default" :type string :documentation "Type of cadence used in the current block")
       (block-position :accessor block-position :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
+      (similarity-percent-B0 :accessor similarity-percent-B0 :initform 50 :type integer :documentation "Percentage of resemblance with first B")
     )
 )
 
@@ -191,17 +188,17 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (B-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 50)
+        :size (om::om-make-point 500 50)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
       (changes-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 100)
+        :size (om::om-make-point 500 100)
         :position (om::om-make-point 5 60)
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 810 500)
+        :size (om::om-make-point 500 500)
         :position (om::om-make-point 5 170)
         :bg-color om::*azulito*)
       )
@@ -209,7 +206,10 @@
     )
 
     (setf elements-B-panel (make-B-panel self B-panel))
-    (setf elements-constraints-panel (make-constraints-AB-panel self constraints-panel))
+    (if (= (block-position (om::object self)) (idx-first-b (parent (om::object self))))
+      (setf elements-constraints-panel (make-constraints-AB-panel self constraints-panel))
+      (setf elements-constraints-panel (make-constraints-not-first-panel self constraints-panel))
+    )
     (setf elements-changes-panel (make-changes-panel self changes-panel))
 
     ; add the subviews for the different parts into the main view
@@ -451,6 +451,8 @@
       )
     )
 
+    
+
   )
 )
 
@@ -489,88 +491,27 @@
       )
     )
 
+
+
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 300 2)
+    ;;   (om::om-make-point 120 20)
+    ;;   "Time constraints"
+    ;;   :font om::*om-default-font1b*
+    ;; )
+
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 150)
+      (om::om-make-point 15 100)
       (om::om-make-point 200 20)
-      "Minimum simultaneous notes"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 150)
-      (om::om-make-point 80 20)
-      "Minimum simultaneous notes"
-      :range (loop :for n :from 0 :upto 10 collect (number-to-string n))
-      :value (number-to-string (min-simultaneous-notes (om::object editor)))
-      :di-action #'(lambda (m)
-        (let ((old-diff 0))
-          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-          (if (relative-to-same (om::object editor))
-              (setq old-diff (diff-min-sim (om::object editor)))
-          )
-          (setf (min-simultaneous-notes (om::object editor)) (string-to-number check))
-          (change-subblocks-values (om::object editor) 
-                                  :min-simultaneous-notes (min-simultaneous-notes (om::object editor)))
-          (if (relative-to-same (om::object editor))
-              (propagate-AB (om::object editor) :diff-min-sim (- old-diff (diff-min-sim (om::object editor))))
-          )
-        )
-      )
-    )
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 200)
-      (om::om-make-point 200 20)
-      "Maximum simultaneous notes"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 200)
-      (om::om-make-point 80 20)
-      "Maximum simultaneous notes"
-      :range  (loop :for n :from 0 :upto 10 :collect (number-to-string n))
-      :value (number-to-string (max-simultaneous-notes (om::object editor)))
-      :di-action #'(lambda (m)
-        (let ((old-diff 0))
-          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-          (if (relative-to-same (om::object editor))
-              (setq old-diff (diff-max-sim (om::object editor)))
-          )
-          (setf (max-simultaneous-notes (om::object editor)) (string-to-number check))
-          (change-subblocks-values (om::object editor) 
-                                  :max-simultaneous-notes (max-simultaneous-notes (om::object editor)))
-          (if (relative-to-same (om::object editor))
-              (propagate-AB (om::object editor) :diff-max-sim (- old-diff (diff-max-sim (om::object editor))))
-          )
-        )
-      )
-    )
-
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 300 2)
-      (om::om-make-point 120 20)
-      "Time constraints"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 300 50)
-      (om::om-make-point 200 20)
-      "Minimum note length"
+      "Min note length"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 430 50)
+      (om::om-make-point 120 100)
       (om::om-make-point 20 20)
       ""
       :checked-p (min-note-length-flag (om::object editor))
@@ -587,7 +528,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 450 50)
+      (om::om-make-point 170 100)
       (om::om-make-point 80 20); size
       "Minimum note length"
       :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
@@ -611,15 +552,15 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 100)
+      (om::om-make-point 15 150)
       (om::om-make-point 200 20)
-      "Maximum note length"
+      "Max note length"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 430 100)
+      (om::om-make-point 120 150)
       (om::om-make-point 20 20)
       ""
       :checked-p (max-note-length-flag (om::object editor))
@@ -636,7 +577,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 450 100)
+      (om::om-make-point 170 150)
       (om::om-make-point 80 20); size
       "Maximum note length"
       :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
@@ -660,7 +601,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 2)
+      (om::om-make-point 300 10)
       (om::om-make-point 200 20)
       "Pitch constraints"
       :font om::*om-default-font1b*
@@ -670,7 +611,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 50)
+      (om::om-make-point 300 50)
       (om::om-make-point 200 20)
       "Chord key"
       :font om::*om-default-font1b*
@@ -678,7 +619,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 670 50)
+      (om::om-make-point 400 50)
       (om::om-make-point 80 20)
       "Chord key"
       :range '("C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
@@ -703,7 +644,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 100)
+      (om::om-make-point 300 100)
       (om::om-make-point 200 20)
       "Chord quality"
       :font om::*om-default-font1b*
@@ -711,12 +652,11 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 670 100)
+      (om::om-make-point 400 100)
       (om::om-make-point 80 20)
       "Chord quality"
       :value (chord-quality (om::object editor))
-      :range '("Major" "Minor" "Augmented" "Diminished" "Major 7" "Minor 7" "Dominant 7" "Minor 7 flat 5" "Diminished 7" "Minor-major 7"
-        "Major 9" "Minor 9" "9 Augmented 5" "9 flatted 5" "7 flat 9" "Augmented 9" "Minor 11" "Major 11" "Dominant 11" "Dominant # 11" "Major # 11")
+      :range '("Major" "Minor" "Augmented" "Diminished")
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
         (if (string= check "None")
@@ -729,7 +669,7 @@
 
      (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 150)
+      (om::om-make-point 300 150)
       (om::om-make-point 200 20)
       "Minimum pitch"
       :font om::*om-default-font1b*
@@ -737,7 +677,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 670 150)
+      (om::om-make-point 400 150)
       (om::om-make-point 20 20)
       ""
       :checked-p (min-pitch-flag (om::object editor))
@@ -754,8 +694,8 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 690 150)
-      (om::om-make-point 80 20)
+      (om::om-make-point 300 170)
+      (om::om-make-point 150 20)
       "Minimum pitch"
       :range '(1 127)
       :increment 1
@@ -778,7 +718,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 550 200)
+      (om::om-make-point 300 220)
       (om::om-make-point 200 20)
       "Maximum pitch"
       :font om::*om-default-font1b*
@@ -786,7 +726,7 @@
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 670 200)
+      (om::om-make-point 400 220)
       (om::om-make-point 20 20)
       ""
       :checked-p (max-pitch-flag (om::object editor))
@@ -803,8 +743,8 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 690 200)
-      (om::om-make-point 80 20)
+      (om::om-make-point 300 240)
+      (om::om-make-point 150 20)
       "Maximum pitch"
       :range '(1 127)
       :increment 1
@@ -826,4 +766,234 @@
     )
   )
 
+)
+
+(defun make-constraints-not-first-panel (editor panel)
+  (let ((subviews '()))
+    (setf subviews (append subviews (list
+      (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 250 10)
+      (om::om-make-point 200 20)
+      "Pitch constraints"
+      :font om::*om-default-font1b*
+      )
+
+    ; Key
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 250 50)
+      (om::om-make-point 200 20)
+      "Chord key"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 350 50)
+      (om::om-make-point 80 20)
+      "Chord key"
+      :range '("C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :value (chord-key (om::object editor))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-key (om::object editor)) nil)
+          (setf (chord-key (om::object editor)) check)
+        )
+        (let ((old-diff 0))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-chord-key (om::object editor)))
+          )
+          (change-subblocks-values (om::object editor) :chord-key check)
+          (if (relative-to-same (om::object editor))
+            (propagate-AB (om::object editor) :diff-chord-key (- old-diff (diff-chord-key (om::object editor))))
+          )
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 250 100)
+      (om::om-make-point 200 20)
+      "Chord quality"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 350 100)
+      (om::om-make-point 80 20)
+      "Chord quality"
+      :value (chord-quality (om::object editor))
+      :range '("Major" "Minor" "Augmented" "Diminished")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-quality (om::object editor)) nil)
+          (setf (chord-quality (om::object editor)) check))
+        (change-subblocks-values (om::object editor) :chord-quality check)
+        
+      )
+    )
+
+     (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 250 150)
+      (om::om-make-point 200 20)
+      "Minimum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 350 150)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (min-pitch-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-pitch-flag (om::object editor)) 1)
+                      (setf (min-pitch-flag (om::object editor)) nil)
+                    )
+                    (change-subblocks-values (om::object editor) 
+                                :min-pitch-flag (min-pitch-flag (om::object editor)) 
+                                :min-pitch (min-pitch (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 250 170)
+      (om::om-make-point 150 20)
+      "Minimum pitch"
+      :range '(1 127)
+      :increment 1
+      :value (min-pitch (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (min-pitch (om::object editor)) (om::om-slider-value s))
+        (let ((old-diff 0))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-min-pitch (om::object editor)))
+          )
+          (change-subblocks-values (om::object editor) 
+                                  :min-pitch-flag (min-pitch-flag (om::object editor)) 
+                                  :min-pitch (min-pitch (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-min-pitch (- old-diff (diff-min-pitch (om::object editor))))
+          )
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 250 220)
+      (om::om-make-point 200 20)
+      "Maximum pitch"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 350 220)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (max-pitch-flag (om::object editor))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-pitch-flag (om::object editor)) 1)
+                      (setf (max-pitch-flag (om::object editor)) nil)
+                    )
+                    (change-subblocks-values (om::object editor) 
+                                            :max-pitch-flag (max-pitch-flag (om::object editor)) 
+                                            :max-pitch (max-pitch (om::object editor)))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 250 240)
+      (om::om-make-point 150 20)
+      "Maximum pitch"
+      :range '(1 127)
+      :increment 1
+      :value (max-pitch (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (max-pitch (om::object editor)) (om::om-slider-value s))
+        (let ((old-diff 0))
+          (if (relative-to-same (om::object editor))
+              (setq old-diff (diff-max-pitch (om::object editor)))
+          )
+          (change-subblocks-values (om::object editor) 
+                                  :max-pitch-flag (max-pitch-flag (om::object editor)) 
+                                  :max-pitch (max-pitch (om::object editor)))
+          (if (relative-to-same (om::object editor))
+              (propagate-AB (om::object editor) :diff-max-pitch (- old-diff (diff-max-pitch (om::object editor))))
+          )
+        )
+      )
+    )
+
+    )
+    ))
+    
+    (if (typep (om::object editor) 'mldz::a)
+      (setf subviews (append subviews (list
+          (om::om-make-dialog-item
+            'om::om-static-text
+            (om::om-make-point 10 10)
+            (om::om-make-point 200 20)
+            "Similarity with first A block"
+            :font om::*om-default-font1b*
+          )
+          (om::om-make-dialog-item
+            'om::slider
+            (om::om-make-point 10 40)
+            (om::om-make-point 150 20)
+            "Similarity with first A block"
+            :range '(1 100)
+            :increment 1
+            :value (similarity-percent-A0 (om::object editor))
+            :di-action #'(lambda (s)
+              (setf (similarity-percent-A0 (om::object editor)) (om::om-slider-value s))
+              (print "similarity-percent-A0: ")
+              (print (similarity-percent-A0 (om::object editor)))
+            )
+          )
+      )))
+      (setf subviews (append subviews (list
+          (om::om-make-dialog-item
+            'om::om-static-text
+            (om::om-make-point 10 10)
+            (om::om-make-point 200 20)
+            "Similarity with first B block"
+            :font om::*om-default-font1b*
+          )
+          (om::om-make-dialog-item
+            'om::slider
+            (om::om-make-point 10 40)
+            (om::om-make-point 150 20)
+            "Similarity with first B block"
+            :range '(1 100)
+            :increment 1
+            :value (similarity-percent-B0 (om::object editor))
+            :di-action #'(lambda (s)
+              (setf (similarity-percent-B0 (om::object editor)) (om::om-slider-value s))
+              (print "similarity-percent-B0: ")
+              (print (similarity-percent-B0 (om::object editor)))
+            )
+          )
+      )))
+    )
+
+    (loop :for x :in subviews :do
+      (om::om-add-subviews
+          panel
+          x
+      )
+    )
+  )
 )

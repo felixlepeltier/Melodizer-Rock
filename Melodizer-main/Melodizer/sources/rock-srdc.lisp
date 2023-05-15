@@ -12,14 +12,7 @@
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
       (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      ;; (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for the first s block")
       (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
-      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
-      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-notes :accessor min-notes :initform nil :type integer)
-      (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 1 :type integer)
       (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
@@ -101,14 +94,7 @@
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
       (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      ;; (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
-      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
-      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-notes :accessor min-notes :initform nil :type integer)
-      (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 1 :type integer)
       (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
@@ -198,14 +184,7 @@
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
       (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      ;; (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
-      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
-      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-notes :accessor min-notes :initform nil :type integer)
-      (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 1 :type integer)
       (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
@@ -286,14 +265,7 @@
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
       (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      ;; (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "")
       (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-simultaneous-notes :accessor min-simultaneous-notes :initform 0 :type integer)
-      (diff-max-sim :accessor diff-max-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-simultaneous-notes :accessor max-simultaneous-notes :initform 10 :type integer)
-      (diff-min-sim :accessor diff-min-sim :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-notes :accessor min-notes :initform nil :type integer)
-      (max-notes :accessor max-notes :initform nil :type integer)
       (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
       (min-note-length :accessor min-note-length :initform 1 :type integer)
       (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
@@ -462,52 +434,6 @@
       )
     )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 150)
-      (om::om-make-point 200 20)
-      "Minimum simultaneous notes"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 150)
-      (om::om-make-point 80 20)
-      "Minimum simultaneous notes"
-      :range (loop :for n :from 0 :upto 10 collect (number-to-string n))
-      :value (number-to-string (min-simultaneous-notes (om::object editor)))
-      :di-action #'(lambda (m)
-          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-          (setf (min-simultaneous-notes (om::object editor)) (string-to-number check))
-          (change-subblocks-values (om::object editor) 
-                                  :min-simultaneous-notes (min-simultaneous-notes (om::object editor)))
-      )
-    )
-
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 15 200)
-      (om::om-make-point 200 20)
-      "Maximum simultaneous notes"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 170 200)
-      (om::om-make-point 80 20)
-      "Maximum simultaneous notes"
-      :range  (loop :for n :from 0 :upto 10 :collect (number-to-string n))
-      :value (number-to-string (max-simultaneous-notes (om::object editor)))
-      :di-action #'(lambda (m)
-          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-          (setf (max-simultaneous-notes (om::object editor)) (string-to-number check))
-          (change-subblocks-values (om::object editor) 
-                                  :max-simultaneous-notes (max-simultaneous-notes (om::object editor)))
-      )
-    )
-
 
     (om::om-make-dialog-item
       'om::om-static-text
@@ -650,8 +576,7 @@
       (om::om-make-point 80 20)
       "Chord quality"
       :value (chord-quality (om::object editor))
-      :range '("Major" "Minor" "Augmented" "Diminished" "Major 7" "Minor 7" "Dominant 7" "Minor 7 flat 5" "Diminished 7" "Minor-major 7"
-        "Major 9" "Minor 9" "9 Augmented 5" "9 flatted 5" "7 flat 9" "Augmented 9" "Minor 11" "Major 11" "Dominant 11" "Dominant # 11" "Major # 11")
+      :range '("Major" "Minor" "Augmented" "Diminished")
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
         (if (string= check "None")
