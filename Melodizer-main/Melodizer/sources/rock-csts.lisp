@@ -78,8 +78,8 @@
             (gil::g-op sp playing-j-one gil::BOT_IMP push-j-one 1)
             (gil::g-op sp playing-j-one gil::BOT_IMP pull-j-playing-j-one 1)
             ;; Same note playing implies push[j] = pull[j] <=> playing[j] = playing[j-1]
-            (gil::g-op sp playing-j-playing-j-one gil::BOT_IMP push-j-pull-j 1)
-            (gil::g-op sp push-j-pull-j gil::BOT_IMP playing-j-playing-j-one 1)
+            ;; (gil::g-op sp playing-j-playing-j-one gil::BOT_IMP push-j-pull-j 1)
+            ;; (gil::g-op sp push-j-pull-j gil::BOT_IMP playing-j-playing-j-one 1)
             
 
             ;; Pulled note
@@ -119,10 +119,11 @@
 
 (defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-A")
+    (let ((post-optional t))
 
     ;; bars*quant elements and starts at startidx
     ;; for the sub arrays of push pull playing
-    (if (/= (block-position A-block) (idx-first-a (parent A-block)))
+    (if (and (/= (block-position A-block) (idx-first-a (parent A-block))))
         (let (sim 
             temp-push        
             )
@@ -134,104 +135,108 @@
                                                 (chord-quality (nth (idx-first-a (parent A-block)) (block-list (parent A-block))))
                                                 (chord-key A-block) (chord-quality A-block) push-A0))
             (cst-common-vars sp temp-push push sim)
-        ;; (cst-common-vars sp pull-s pull sim)
-        ;; (cst-common-vars sp playing-s playing sim)
+            (if (= sim 100)
+                (setq post-optional nil)
+                (setq post-optional t)
+            )
         )
     )
+    (if (> (bar-length (s-block A-block)) 0)
+        (let ((bars (bar-length (s-block A-block)))
+            (s-block (s-block A-block))
+            (r-block (r-block A-block))
+            (d-block (d-block A-block))
+            (c-block (c-block A-block))
+            notes-in-subblock 
+            startidx-s startidx-r startidx-d startidx-c
+            temp-push-s temp-pull-s temp-playing-s
+            temp-push-s-acc temp-pull-s-acc temp-playing-s-acc
+            temp-push-r temp-pull-r temp-playing-r 
+            temp-push-r-acc temp-pull-r-acc temp-playing-r-acc 
+            temp-push-d temp-pull-d temp-playing-d
+            temp-push-d-acc temp-pull-d-acc temp-playing-d-acc 
+            temp-push-c temp-pull-c temp-playing-c
+            temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
+            )
 
 
-    (let ((bars (bar-length (s-block A-block)))
-         (s-block (s-block A-block))
-         (r-block (r-block A-block))
-         (d-block (d-block A-block))
-         (c-block (c-block A-block))
-         notes-in-subblock 
-         startidx-s startidx-r startidx-d startidx-c
-         temp-push-s temp-pull-s temp-playing-s
-         temp-push-s-acc temp-pull-s-acc temp-playing-s-acc
-         temp-push-r temp-pull-r temp-playing-r 
-         temp-push-r-acc temp-pull-r-acc temp-playing-r-acc 
-         temp-push-d temp-pull-d temp-playing-d
-         temp-push-d-acc temp-pull-d-acc temp-playing-d-acc 
-         temp-push-c temp-pull-c temp-playing-c
-         temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
-         )
+            ;; notes in each sub block (s/r/d/c)
+            (setq notes-in-subblock (* bars quant))
+            ;; sectioning the array into the respective parts for s r d c
+
+            ;; access push pull playing arrays for the section related to s
+            ;; (sublst x y z) creates a list based on list x from index y and of z sequential elements
+            (setq startidx-s 0)
+            (setq temp-push-s (sublst push startidx-s notes-in-subblock))
+            (setq temp-pull-s (sublst pull startidx-s notes-in-subblock))
+            (setq temp-playing-s (sublst playing startidx-s notes-in-subblock))
+            (setq temp-push-s-acc (sublst push-acc startidx-s notes-in-subblock))
+            (setq temp-pull-s-acc (sublst pull-acc startidx-s notes-in-subblock))
+            (setq temp-playing-s-acc (sublst playing-acc startidx-s notes-in-subblock))
 
 
-        ;; notes in each sub block (s/r/d/c)
-        (setq notes-in-subblock (* bars quant))
-        ;; sectioning the array into the respective parts for s r d c
-
-        ;; access push pull playing arrays for the section related to s
-        ;; (sublst x y z) creates a list based on list x from index y and of z sequential elements
-        (setq startidx-s 0)
-        (setq temp-push-s (sublst push startidx-s notes-in-subblock))
-        (setq temp-pull-s (sublst pull startidx-s notes-in-subblock))
-        (setq temp-playing-s (sublst playing startidx-s notes-in-subblock))
-        (setq temp-push-s-acc (sublst push-acc startidx-s notes-in-subblock))
-        (setq temp-pull-s-acc (sublst pull-acc startidx-s notes-in-subblock))
-        (setq temp-playing-s-acc (sublst playing-acc startidx-s notes-in-subblock))
+            (setq startidx-r notes-in-subblock)
+            (setq temp-push-r (sublst push startidx-r notes-in-subblock))
+            (setq temp-pull-r (sublst pull startidx-r notes-in-subblock))
+            (setq temp-playing-r (sublst playing startidx-r notes-in-subblock))
+            (setq temp-push-r-acc (sublst push-acc startidx-r notes-in-subblock))
+            (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
+            (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
 
 
-        (setq startidx-r notes-in-subblock)
-        (setq temp-push-r (sublst push startidx-r notes-in-subblock))
-        (setq temp-pull-r (sublst pull startidx-r notes-in-subblock))
-        (setq temp-playing-r (sublst playing startidx-r notes-in-subblock))
-        (setq temp-push-r-acc (sublst push-acc startidx-r notes-in-subblock))
-        (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
-        (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
+            (setq startidx-d (+ startidx-r notes-in-subblock))
+            (setq temp-push-d (sublst push startidx-d notes-in-subblock))
+            (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
+            (setq temp-playing-d (sublst playing startidx-d notes-in-subblock))
+            (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
+            (setq temp-push-d-acc (sublst push-acc startidx-d notes-in-subblock))
+            (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
+            (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
 
 
-        (setq startidx-d (+ startidx-r notes-in-subblock))
-        (setq temp-push-d (sublst push startidx-d notes-in-subblock))
-        (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
-        (setq temp-playing-d (sublst playing startidx-d notes-in-subblock))
-        ;; (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
-        (setq temp-push-d-acc (sublst push-acc startidx-d notes-in-subblock))
-        (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
-        (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
-
-
-        (setq startidx-c (+ startidx-d notes-in-subblock))
-        ;; (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
-        (setq temp-push-c (sublst push startidx-c notes-in-subblock))
-        (setq temp-pull-c (sublst pull startidx-c notes-in-subblock))
-        (setq temp-playing-c (sublst playing startidx-c notes-in-subblock))
-        (setq temp-push-c-acc (sublst push-acc startidx-c notes-in-subblock))
-        (setq temp-pull-c-acc (sublst pull-acc startidx-c notes-in-subblock))
-        (setq temp-playing-c-acc (sublst playing-acc startidx-c notes-in-subblock))
+            (setq startidx-c (+ startidx-d notes-in-subblock))
+            (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
+            (setq temp-push-c (sublst push startidx-c notes-in-subblock))
+            (setq temp-pull-c (sublst pull startidx-c notes-in-subblock))
+            (setq temp-playing-c (sublst playing startidx-c notes-in-subblock))
+            (setq temp-push-c-acc (sublst push-acc startidx-c notes-in-subblock))
+            (setq temp-pull-c-acc (sublst pull-acc startidx-c notes-in-subblock))
+            (setq temp-playing-c-acc (sublst playing-acc startidx-c notes-in-subblock))
 
 
 
 
-        ;; set constraints on these arrays from the values saved in the slots of s-block 
-        ;; s
-        (print "constraining s")
-        (constrain-s sp s-block A-block temp-push-s temp-pull-s temp-playing-s
-                                        temp-push-s-acc temp-pull-s-acc temp-playing-s-acc max-pitch max-simultaneous-notes)
+            ;; set constraints on these arrays from the values saved in the slots of s-block 
+            ;; s
+            (print "constraining s")
+            (constrain-s sp s-block A-block temp-push-s temp-pull-s temp-playing-s
+                                            temp-push-s-acc temp-pull-s-acc temp-playing-s-acc 
+                                            max-pitch max-simultaneous-notes post-optional)
 
-        ;; r
+            ;; r
 
-        (print "constraining r")
-        (constrain-r sp r-block A-block temp-push-r temp-pull-r temp-playing-r  
-                                        temp-push-r-acc temp-pull-r-acc temp-playing-r-acc
-                                        temp-push-s temp-pull-s temp-playing-s
-                                        max-pitch max-simultaneous-notes)
-    
-        ;; d
-
-        (print "constraining d")
-        (constrain-d sp d-block A-block temp-push-d temp-pull-d temp-playing-d
-                                        temp-push-d-acc temp-pull-d-acc temp-playing-d-acc
-                                        max-pitch max-simultaneous-notes)
-
-        ;; c
+            (print "constraining r")
+            (constrain-r sp r-block A-block temp-push-r temp-pull-r temp-playing-r  
+                                            temp-push-r-acc temp-pull-r-acc temp-playing-r-acc
+                                            temp-push-s temp-pull-s temp-playing-s
+                                            max-pitch max-simultaneous-notes post-optional)
         
-        (print "constraining c")
-        (constrain-c sp c-block A-block temp-push-c temp-pull-c temp-playing-c
-                                        temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
-                                        max-pitch max-simultaneous-notes)
+            ;; d
 
+            (print "constraining d")
+            (constrain-d sp d-block A-block temp-push-d temp-pull-d temp-playing-d
+                                            temp-push-d-acc temp-pull-d-acc temp-playing-d-acc
+                                            max-pitch max-simultaneous-notes post-optional)
+
+            ;; c
+            
+            (print "constraining c")
+            (constrain-c sp c-block A-block temp-push-c temp-pull-c temp-playing-c
+                                            temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
+                                            max-pitch max-simultaneous-notes post-optional)
+
+        )
+    )
     )
 )
 
@@ -246,7 +251,7 @@
 
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
-(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
     ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     
     ;; ;; if a source melody is given, then use it to generate push pull playing 
@@ -270,14 +275,14 @@
                 ;; they already have the correct size so no need to create new variables
                 ;; set constraints on ppp directly
 
-                (print "push-source")
-                (print push-source)
+                ;; (print "push-source")
+                ;; (print push-source)
 
-                (print "pull-source")
-                (print pull-source)
+                ;; (print "pull-source")
+                ;; (print pull-source)
 
-                (print "playing-source")
-                (print playing-source)
+                ;; (print "playing-source")
+                ;; (print playing-source)
 
                 (loop :for i :from 0 :below (length push-source) :by 1 :do
                     (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
@@ -290,14 +295,16 @@
                 )
 
                 (print "First s block has been set to the source melody")
-
-
             
             )
-            (post-optional-rock-constraints sp s-block push pull playing nil)
+            (if post-optional
+                (post-optional-rock-constraints sp s-block push pull playing nil)
+            )
         )
         ;; )
-        (post-optional-rock-constraints sp s-block push pull playing nil)
+        (if post-optional
+            (post-optional-rock-constraints sp s-block push pull playing nil)
+        )
     )
     
     ;; ;; accompaniment
@@ -305,39 +312,47 @@
 )
 
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
-                                        push-s pull-s playing-s max-pitch max-simultaneous-notes)
+                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-optional)
 
     (gil::g-rel sp (first pull) gil::IRT_EQ (nth (- (length playing-s) 1) playing-s)) ; pull[0]=playing-s[quant-1]
 
     ;; post optional constraints defined in the rock csp
     ;; dont constrain if source melody given
 
-    (post-optional-rock-constraints sp r-block push pull playing nil)
+    (if (and post-optional (or (not (melody-source (parent r-parent))) (< (similarity-percent-s r-block) 100)))
+        (post-optional-rock-constraints sp r-block push pull playing nil)
+    )
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     ;; translated to the key of the r-block
     (let ((sim (similarity-percent-s r-block)) 
-            temp-push        
+            temp-push  temp-playing      
         )
         (setq temp-push (translate-chords sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
                                         (chord-key r-block) (chord-quality r-block) push-s))
+        ;; (setq temp-playing (translate-chords sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
+        ;;                                 (chord-key r-block) (chord-quality r-block) playing-s))
         (cst-common-vars sp temp-push push sim)
         ;; (cst-common-vars sp pull-s pull sim)
-        ;; (cst-common-vars sp playing-s playing sim)
+        ;; (cst-common-vars sp temp-playing playing sim)
     )
 )
 
-(defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+(defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
     ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
-    (post-optional-rock-constraints sp d-block push pull playing nil)
+    (if post-optional
+        (post-optional-rock-constraints sp d-block push pull playing nil)
+    )
     (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil)
 )
 
 
-(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
+(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
     ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
-    (post-optional-rock-constraints sp c-block push pull playing t)
+    (if post-optional    
+        (post-optional-rock-constraints sp c-block push pull playing t)
+    )
     (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t)
     
 
@@ -647,13 +662,14 @@
             (setq bool-interval-max (gil::add-bool-var-expr sp interval-abs gil::IRT_LQ max-interval))
 
             ;; The next three line are a way to authorize rests in the middle of a measure
-            (setq bool (gil::add-bool-var sp 0 1))
-            (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
-            (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
-            ;; (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
-            (loop :for a :below (length forbidden-intervals) :do
-                (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
-            )
+            ;; (setq bool (gil::add-bool-var sp 0 1))
+            ;; (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
+            ;; (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
+            (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
+
+            ;; (loop :for a :below (length forbidden-intervals) :do
+            ;;     (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
+            ;; )
         )
 )
 

@@ -34,7 +34,7 @@
         ;; (gil::g-branch sp (append push pull playing) gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp push gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp pull gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
-        (gil::g-branch sp playing gil::INT_VAR_DEGREE_MAX gil::INT_VAL_RND)
+        (gil::g-branch sp playing gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp push-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
         (gil::g-specify-sol-variables sp push)
