@@ -201,6 +201,7 @@
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (difference-percent-s :accessor difference-percent-s :initform 75 :type integer)
     )
 )
 
@@ -239,14 +240,21 @@
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
+      (d-constraints-panel (om::om-make-view 'om::om-view
+        :size (om::om-make-point 300 500)
+        :position (om::om-make-point 820 5)
+        :bg-color om::*azulito*)
+      )
     )
 
     (setf elements-constraints-panel (make-constraints-panel self constraints-panel))
+    (setf elements-d-constraints-panel (make-d-constraints-panel self d-constraints-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       constraints-panel
+      d-constraints-panel
     )
   )
   ; return the editor
@@ -396,6 +404,33 @@
           (setf (cadence-type (parent (om::object editor))) "Default")
           (setf (cadence-type (parent (om::object editor))) check)
         )
+      )
+    )
+  )
+)
+
+(defun make-d-constraints-panel (editor panel)
+  (om::om-add-subviews
+    panel
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 10 10)
+      (om::om-make-point 200 20)
+      "Difference with s block"
+      :font om::*om-default-font1b*
+    )
+    (om::om-make-dialog-item
+      'om::slider
+      (om::om-make-point 10 40)
+      (om::om-make-point 80 20)
+      "Difference with s block"
+      :range '(1 100)
+      :increment 1
+      :value (difference-percent-s (om::object editor))
+      :di-action #'(lambda (s)
+        (setf (difference-percent-s (om::object editor)) (om::om-slider-value s))
+        (print "difference-percent-s: ")
+        (print (difference-percent-s (om::object editor)))
       )
     )
   )

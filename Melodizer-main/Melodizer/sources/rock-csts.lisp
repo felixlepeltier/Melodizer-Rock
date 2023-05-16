@@ -224,6 +224,7 @@
             (print "constraining d")
             (constrain-d sp d-block A-block temp-push-d temp-pull-d temp-playing-d
                                             temp-push-d-acc temp-pull-d-acc temp-playing-d-acc
+                                            temp-push-s temp-pull-s temp-playing-s
                                             max-pitch max-simultaneous-notes post-optional)
 
             ;; c
@@ -358,19 +359,26 @@
         )
         (setq temp-push (translate-chords sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
                                         (chord-key r-block) (chord-quality r-block) push-s))
-        ;; (setq temp-playing (translate-chords sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
-        ;;                                 (chord-key r-block) (chord-quality r-block) playing-s))
         (cst-common-vars sp temp-push push sim)
-        ;; (cst-common-vars sp pull-s pull sim)
-        ;; (cst-common-vars sp temp-playing playing sim)
     )
 )
 
-(defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
+(defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc 
+                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-optional)
     (if post-optional
         (post-optional-rock-constraints sp d-block push pull playing nil)
     )
     (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil)
+
+     ;; constrain d such that it has a difference of (difference-percent-s d-block) with notes played in s-block
+    ;; translated to the key of the d-block
+    (let ((diff (difference-percent-s d-block)) 
+            temp-push  temp-playing      
+        )
+        (setq temp-push (translate-chords sp (chord-key (s-block d-parent)) (chord-quality (s-block d-parent))
+                                        (chord-key d-block) (chord-quality d-block) push-s))
+        (cst-common-vars sp temp-push push (- 100 diff))
+    )
 )
 
 
@@ -659,6 +667,23 @@
         )
 
         (gil::g-count sp int-array 0 gil::IRT_EQ count)
+        (gil::g-rel sp count gil::IRT_GQ n-vars)
+    )
+)
+
+(defun cst-different-vars (sp vars1 vars2 diff)
+    (let (count-vars int-array n-vars perc)
+        (setq perc (/ diff 100))
+        (setq n-vars (ceiling (* (length vars1) perc)))
+        
+        (setq count (gil::add-int-var sp 0 (length vars1)))
+        (setq int-array (gil::add-int-var-array sp (length vars1) -127 127))
+
+        (loop :for i :from 0 :below (min (length vars1) (length vars2)) do
+            (setf (nth i int-array) (gil::add-int-var-expr sp (nth i vars1) gil::IOP_SUB (nth i vars2)))
+        )
+
+        (gil::g-count sp int-array 0 gil::IRT_NQ count)
         (gil::g-rel sp count gil::IRT_GQ n-vars)
     )
 )
