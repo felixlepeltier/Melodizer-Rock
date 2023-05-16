@@ -113,6 +113,7 @@
                 (setq srdc-parent (nth i block-list))
                 (setq notes-per-block (* (bar-length srdc-parent) quant))
                 (setq startidx (* i notes-per-block))
+                (print startidx)
                 (setq temp-push (sublst push startidx notes-per-block))
                 (setq temp-pull (sublst pull startidx notes-per-block))
                 (setq temp-playing (sublst playing startidx notes-per-block))
@@ -125,7 +126,9 @@
                 (if (= i (idx-first-b rock-csp))
                     (setq push-B0 temp-push)
                 )
-                ;; (print push-A0)
+                (if (> i 0)
+                    (gil::g-rel sp (first temp-pull) gil::IRT_EQ (nth (- startidx 1) playing))
+                )
                 (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing 
                                             temp-push-acc temp-pull-acc temp-playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
             )

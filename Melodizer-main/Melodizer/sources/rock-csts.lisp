@@ -124,9 +124,7 @@
     ;; bars*quant elements and starts at startidx
     ;; for the sub arrays of push pull playing
     (if (and (/= (block-position A-block) (idx-first-a (parent A-block))))
-        (let (sim 
-            temp-push        
-            )
+        (let (sim temp-push)
             (if (typep A-block 'mldz::a)
                 (setq sim (similarity-percent-A0 A-block))
                 (setq sim (similarity-percent-B0 A-block))
@@ -252,7 +250,7 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
-    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     
     ;; ;; if a source melody is given, then use it to generate push pull playing 
     ;; ;; then constrain the push pull and playing of s to be equal to these arrays
@@ -274,20 +272,19 @@
             ;; if in a block that needs to have it's melody set to a source
             (if set-A
                 ;; set-A
-                (let (push-source pull-source playing-source ppp-source
-                    var-push-source var-pull-source var-playing-source
-                    )
+                (let (push-source pull-source playing-source ppp-source)
                     (print "Setting the first A block's s to the source melody")
                     (setq ppp-source (create-push-pull-int (melody-source (parent s-parent)) 16))
 
                     (setq push-source (first ppp-source))
                     (setq pull-source (second ppp-source))
                     (setq playing-source (third ppp-source))
+                    (print push-source)
 
                     (loop :for i :from 0 :below (length push-source) :by 1 :do
                         (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
                     )
-                    (loop :for i :from 0 :below (- (length pull-source) 1) :by 1 :do
+                    (loop :for i :from 1 :below (- (length pull-source) 1) :by 1 :do
                         (gil::g-rel sp (nth i pull) gil::IRT_EQ (nth i pull-source))
                     )
                     (loop :for i :from 0 :below (length playing-source) :by 1 :do
@@ -298,20 +295,19 @@
                     
                 )
                 ;; set-B
-                (let (push-source pull-source playing-source ppp-source
-                    var-push-source var-pull-source var-playing-source
-                    )
+                (let (push-source pull-source playing-source ppp-source)
                     (print "Setting the first B block's s to the source melody")
                     (setq ppp-source (create-push-pull-int (melody-source-B (parent s-parent)) 16))
-
+                    
                     (setq push-source (first ppp-source))
                     (setq pull-source (second ppp-source))
                     (setq playing-source (third ppp-source))
+                    (print push-source)
 
                     (loop :for i :from 0 :below (length push-source) :by 1 :do
                         (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
                     )
-                    (loop :for i :from 0 :below (- (length pull-source) 1) :by 1 :do
+                    (loop :for i :from 1 :below (- (length pull-source) 1) :by 1 :do
                         (gil::g-rel sp (nth i pull) gil::IRT_EQ (nth i pull-source))
                     )
                     (loop :for i :from 0 :below (length playing-source) :by 1 :do
@@ -323,7 +319,9 @@
             )
             ;; neither set-A nor set-B =>
             ;; don't need to set a source melody, constrain as it should normally do
-            (post-optional-rock-constraints sp s-block push pull playing nil)
+            (if post-optional
+                (post-optional-rock-constraints sp s-block push pull playing nil)
+            )
         )
         ;; ;; accompaniment should always be constrained
         (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil)
@@ -340,10 +338,17 @@
 
     ;; post optional constraints defined in the rock csp
     ;; dont constrain if source melody given
-
-    (if (and post-optional (or (not (melody-source (parent r-parent))) (< (similarity-percent-s r-block) 100)))
-        (post-optional-rock-constraints sp r-block push pull playing nil)
+    (let (melody)
+        (if (typep r-parent 'mldz::a)
+            (setq melody (melody-source (parent r-parent)))
+            (setq melody (melody-source-B (parent r-parent)))
+        )
+        (if (and post-optional (or (not melody) (< (similarity-percent-s r-block) 100)))
+            (post-optional-rock-constraints sp r-block push pull playing nil)
+        )
     )
+
+    
     (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
@@ -362,7 +367,6 @@
 )
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
-    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     (if post-optional
         (post-optional-rock-constraints sp d-block push pull playing nil)
     )
@@ -371,7 +375,6 @@
 
 
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
-    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     (if post-optional    
         (post-optional-rock-constraints sp c-block push pull playing t)
     )
@@ -704,11 +707,8 @@
         (diff (- (name-to-note-value chord1) (name-to-note-value chord2)) )
         temp-push        
         )
-        (print "translate")
         (setq notes (append '(-1) notes))
-        (print notes)
         (setq new-notes (append '(-1) new-notes))
-        (print new-notes)
         (setq temp-push (gil::add-int-var-array sp (length push) -1 127))
         (loop :for i :from 0 :below (length push) :do
             (let ((bool-array (gil::add-bool-var-array sp (length notes) 0 1)) bool-temp bool-tot difference)

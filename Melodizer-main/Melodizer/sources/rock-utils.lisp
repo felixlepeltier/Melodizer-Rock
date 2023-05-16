@@ -452,10 +452,8 @@
           (prev 0)
           )
     (setq p-push (nconc p-push (mapcar (lambda (n) (* 100 (gil::g-values sol n))) push)))
-    (print p-push)
     ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (* 100 (gil::g-values sol n))) pull)))
-    (print p-pull)
     (setq p-playing (nconc p-playing (mapcar (lambda (n) (* 100 (gil::g-values sol n))) playing)))
     
     (setq count 1)
