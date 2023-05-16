@@ -11,7 +11,8 @@
 (om::defclass! rock ()
     (
       (block-list :accessor block-list :initarg :block-list :initform nil :documentation "Block list containing the global musical structure")
-    (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for the first s block")
+    (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for s of the first A block")
+    (melody-source-B :accessor melody-source-B :initarg :melody-source-B :initform nil :documentation "Source melody for s of the first B block")
     (bar-length :accessor bar-length :initform 0 :type integer)
     (nb-a :accessor nb-a  :initform 0 :type integer :documentation "number of block A in the structure")
     (nb-b :accessor nb-b  :initform 0 :type integer :documentation "number of block B in the structure")
@@ -155,6 +156,7 @@
           
           (let ((bar-length 0) (new-block (make-instance 'A :parent (om::object editor) (om::object editor))))
             (setf (block-position new-block) (length (block-list (om::object editor))))
+            (setf (block-position-A new-block) (count-A-block-list (block-list (parent new-block))))
             (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list new-block)))
             (if (= (length (block-list (om::object editor))) 1)
               (setq bar-length 0)
@@ -197,6 +199,7 @@
           ;; (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
           (let ((bar-length 0) (new-block (make-instance 'B :parent (om::object editor) (om::object editor))))
             (setf (block-position new-block) (length (block-list (om::object editor))))
+            (setf (block-position-B new-block) (count-B-block-list (block-list (parent new-block))))
             (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list new-block)))
             (if (= (length (block-list (om::object editor))) 1)
               (setq bar-length 0)

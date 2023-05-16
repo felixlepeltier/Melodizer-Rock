@@ -267,6 +267,30 @@
     )
 )
 
+
+(defun count-A-block-list (block-list)
+    (let ((count 0))
+        (dolist (n block-list)
+            (if (typep n 'mldz::a)
+                (setq count (+ count 1))
+            )
+        )
+        count
+    )
+)
+
+(defun count-B-block-list (block-list)
+    (let ((count 0))
+        (dolist (n block-list)
+            (if (typep n 'mldz::b)
+                (setq count (+ count 1))
+            )
+        )
+        count
+    )
+)
+
+
 ;; each diff argument is the difference between the old diff and new diff of the changed block A or B
 ;; For example, if a block A goes from diff-max-pitch 5 to diff-max-pitch 3, the argument diff-max-pitch is 2
 (defun propagate-AB (AB-block &key  diff-min-sim 

@@ -252,64 +252,86 @@
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
-    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+    (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     
     ;; ;; if a source melody is given, then use it to generate push pull playing 
     ;; ;; then constrain the push pull and playing of s to be equal to these arrays
 
-    (if (= (block-position s-parent) 0)
-        ;; then we're in the first block of the global structure and the 
-        ;; s subblock needs to correspond to the source melody
-        ;; (   ;; then a source melody has been passed as argument and its value != nil
-        (if (melody-source (parent s-parent))
-            (let (push-source pull-source playing-source ppp-source
-                var-push-source var-pull-source var-playing-source
-                )
-                (print "Setting the first s block to the source melody")
-                (setq ppp-source (create-push-pull-int (melody-source (parent s-parent)) 16))
+    ;; set-A-source = (/= melody-source nil) and (block-position-A == 0)
+    ;; set-B-source = (/= melody-source-B nil) and (block-position-B == 0)
 
-                (setq push-source (first ppp-source))
-                (setq pull-source (second ppp-source))
-                (setq playing-source (third ppp-source))
-
-                ;; they already have the correct size so no need to create new variables
-                ;; set constraints on ppp directly
-
-                ;; (print "push-source")
-                ;; (print push-source)
-
-                ;; (print "pull-source")
-                ;; (print pull-source)
-
-                ;; (print "playing-source")
-                ;; (print playing-source)
-
-                (loop :for i :from 0 :below (length push-source) :by 1 :do
-                    (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
-                )
-                (loop :for i :from 0 :below (- (length pull-source) 1) :by 1 :do
-                    (gil::g-rel sp (nth i pull) gil::IRT_EQ (nth i pull-source))
-                )
-                (loop :for i :from 0 :below (length playing-source) :by 1 :do
-                    (gil::g-rel sp (nth i playing) gil::IRT_EQ (nth i playing-source))
-                )
-
-                (print "First s block has been set to the source melody")
-            
-            )
-            (if post-optional
-                (post-optional-rock-constraints sp s-block push pull playing nil)
-            )
+    ;; if  (/= melody-source nil) and (block-position-A == 0)
+    (let ((melody-A (melody-source (parent s-parent)))
+        (melody-B (melody-source-B (parent s-parent)))
+        (first-A (= (block-position-A s-parent) 0))
+        (first-B (= (block-position-B s-parent) 0))
+        set-A set-B
         )
-        ;; )
-        (if post-optional
+        (setq set-A (and first-A melody-A))
+        (setq set-B (and first-B melody-B))
+
+        (if (or set-A set-B)
+            ;; if in a block that needs to have it's melody set to a source
+            (if set-A
+                ;; set-A
+                (let (push-source pull-source playing-source ppp-source
+                    var-push-source var-pull-source var-playing-source
+                    )
+                    (print "Setting the first A block's s to the source melody")
+                    (setq ppp-source (create-push-pull-int (melody-source (parent s-parent)) 16))
+
+                    (setq push-source (first ppp-source))
+                    (setq pull-source (second ppp-source))
+                    (setq playing-source (third ppp-source))
+
+                    (loop :for i :from 0 :below (length push-source) :by 1 :do
+                        (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
+                    )
+                    (loop :for i :from 0 :below (- (length pull-source) 1) :by 1 :do
+                        (gil::g-rel sp (nth i pull) gil::IRT_EQ (nth i pull-source))
+                    )
+                    (loop :for i :from 0 :below (length playing-source) :by 1 :do
+                        (gil::g-rel sp (nth i playing) gil::IRT_EQ (nth i playing-source))
+                    )
+
+                    (print "First A block's s has been set to the source melody")
+                    
+                )
+                ;; set-B
+                (let (push-source pull-source playing-source ppp-source
+                    var-push-source var-pull-source var-playing-source
+                    )
+                    (print "Setting the first B block's s to the source melody")
+                    (setq ppp-source (create-push-pull-int (melody-source-B (parent s-parent)) 16))
+
+                    (setq push-source (first ppp-source))
+                    (setq pull-source (second ppp-source))
+                    (setq playing-source (third ppp-source))
+
+                    (loop :for i :from 0 :below (length push-source) :by 1 :do
+                        (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
+                    )
+                    (loop :for i :from 0 :below (- (length pull-source) 1) :by 1 :do
+                        (gil::g-rel sp (nth i pull) gil::IRT_EQ (nth i pull-source))
+                    )
+                    (loop :for i :from 0 :below (length playing-source) :by 1 :do
+                        (gil::g-rel sp (nth i playing) gil::IRT_EQ (nth i playing-source))
+                    )
+
+                    (print "First B block's s has been set to the source melody")
+                )
+            )
+            ;; neither set-A nor set-B =>
+            ;; don't need to set a source melody, constrain as it should normally do
             (post-optional-rock-constraints sp s-block push pull playing nil)
         )
+        ;; ;; accompaniment should always be constrained
+        (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil)
     )
-    
-    ;; ;; accompaniment
-    (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil)
+
 )
+
+
 
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
                                         push-s pull-s playing-s max-pitch max-simultaneous-notes post-optional)

@@ -36,6 +36,8 @@
       (cadence-type :accessor cadence-type :initform "Default" :type string :documentation "Type of cadence used in the current block")
       (block-position :accessor block-position :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
       (similarity-percent-A0 :accessor similarity-percent-A0 :initform 50 :type integer :documentation "Percentage of resemblance with first A")
+      (block-position-A :accessor block-position-A :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
+      (block-position-B :accessor block-position-B :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
     )
 )
 
@@ -129,7 +131,6 @@
       (parent :accessor parent :initarg :parent :initform nil :documentation "")
       (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
       (relative-to-same :accessor relative-to-same :initarg :relative-to-same :initform 0 :type integer)
-      ;; (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for the first s block")
       (bar-length :accessor bar-length :initform 0 :type integer)
       (min-notes :accessor min-notes :initform nil :type integer)
       (max-notes :accessor max-notes :initform nil :type integer)
@@ -152,6 +153,8 @@
       (cadence-type :accessor cadence-type :initform "Default" :type string :documentation "Type of cadence used in the current block")
       (block-position :accessor block-position :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
       (similarity-percent-B0 :accessor similarity-percent-B0 :initform 50 :type integer :documentation "Percentage of resemblance with first B")
+      (block-position-A :accessor block-position-A :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
+      (block-position-B :accessor block-position-B :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
     )
 )
 
