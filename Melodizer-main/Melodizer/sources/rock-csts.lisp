@@ -408,6 +408,8 @@
         )
         (cond ((string= quality "Major") (setq triad-to-play (list 0 4 7)))
             ((string= quality "Minor") (setq triad-to-play (list 0 3 7)))
+            ((string= quality "Augmented") (setq triad-to-play (list 0 4 8)))
+            ((string= quality "Diminished") (setq triad-to-play (list 0 3 6)))
         )
         (cond 
             ((string= c-type "Default") 
