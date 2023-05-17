@@ -35,3 +35,138 @@
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
     )
 )
+
+(defun make-accompaniment-panel (editor panel)
+  (om::om-add-subviews
+    panel
+  (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 10)
+      (om::om-make-point 200 20)
+      "Accompaniment constraints"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 50)
+      (om::om-make-point 200 20)
+      "Min note length"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 145 50)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (min-note-length-flag (accomp (om::object editor)))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (min-note-length-flag (accomp (om::object editor))) 1)
+                      (setf (min-note-length-flag (accomp (om::object editor))) nil)
+                    )
+                    (change-subblocks-values (accomp (om::object editor)) 
+                                :min-note-length-flag (min-note-length-flag (accomp (om::object editor))) 
+                                :min-note-length (min-note-length (accomp (om::object editor))))     
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 165 50)
+      (om::om-make-point 80 20); size
+      "Min note length"
+      :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
+      :value (number-to-string (min-note-length (accomp (om::object editor))))
+      :di-action #'(lambda (m)
+          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+          (setf (min-note-length (accomp (om::object editor))) (string-to-number check))
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 100)
+      (om::om-make-point 200 20)
+      "Max note length"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::om-check-box
+      (om::om-make-point 145 100)
+      (om::om-make-point 20 20)
+      ""
+      :checked-p (max-note-length-flag (accomp (om::object editor)))
+      :di-action #'(lambda (c)
+                    (if (om::om-checked-p c)
+                      (setf (max-note-length-flag (accomp (om::object editor))) 1)
+                      (setf (max-note-length-flag (accomp (om::object editor))) nil)
+                    )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 165 100)
+      (om::om-make-point 80 20); size
+      "Max note length"
+      :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
+      :value (number-to-string (max-note-length (accomp (om::object editor))))
+      :di-action #'(lambda (m)
+          (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+          (setf (max-note-length (accomp (om::object editor))) (string-to-number check))
+      )
+    )
+
+    ; Key
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 150)
+      (om::om-make-point 200 20)
+      "Chord key"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 165 150)
+      (om::om-make-point 80 20)
+      "Chord key"
+      :range '("C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+      :value (chord-key (accomp (om::object editor)))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-key (accomp (om::object editor))) nil)
+          (setf (chord-key (accomp (om::object editor))) check)
+        )
+      )
+    )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 15 200)
+      (om::om-make-point 200 20)
+      "Chord quality"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 165 200)
+      (om::om-make-point 80 20)
+      "Chord quality"
+      :value (chord-quality (accomp (om::object editor)))
+      :range '("Major" "Minor" "Augmented" "Diminished")
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (if (string= check "None")
+          (setf (chord-quality (accomp (om::object editor))) nil)
+          (setf (chord-quality (accomp (om::object editor))) check))
+      )
+    )
+  )
+)

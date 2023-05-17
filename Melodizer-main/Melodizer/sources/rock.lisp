@@ -528,22 +528,22 @@
       :font om::*om-default-font1b*
     )
 
-    (om::om-make-dialog-item
-      'om::om-check-box
-      (om::om-make-point 400 150)
-      (om::om-make-point 20 20)
-      ""
-      :checked-p (min-pitch-flag (om::object editor))
-      :di-action #'(lambda (c)
-                    (if (om::om-checked-p c)
-                      (setf (min-pitch-flag (om::object editor)) 1)
-                      (setf (min-pitch-flag (om::object editor)) nil)
-                    )
-                    (change-subblocks-values (om::object editor) 
-                                :min-pitch-flag (min-pitch-flag (om::object editor)) 
-                                :min-pitch (min-pitch (om::object editor)))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-check-box
+    ;;   (om::om-make-point 400 150)
+    ;;   (om::om-make-point 20 20)
+    ;;   ""
+    ;;   :checked-p (min-pitch-flag (om::object editor))
+    ;;   :di-action #'(lambda (c)
+    ;;                 (if (om::om-checked-p c)
+    ;;                   (setf (min-pitch-flag (om::object editor)) 1)
+    ;;                   (setf (min-pitch-flag (om::object editor)) nil)
+    ;;                 )
+    ;;                 (change-subblocks-values (om::object editor) 
+    ;;                             :min-pitch-flag (min-pitch-flag (om::object editor)) 
+    ;;                             :min-pitch (min-pitch (om::object editor)))
+    ;;   )
+    ;; )
 
     (om::om-make-dialog-item
       'om::slider
@@ -569,22 +569,22 @@
       :font om::*om-default-font1b*
     )
 
-    (om::om-make-dialog-item
-      'om::om-check-box
-      (om::om-make-point 400 220)
-      (om::om-make-point 20 20)
-      ""
-      :checked-p (max-pitch-flag (om::object editor))
-      :di-action #'(lambda (c)
-                    (if (om::om-checked-p c)
-                      (setf (max-pitch-flag (om::object editor)) 1)
-                      (setf (max-pitch-flag (om::object editor)) nil)
-                    )
-                    (change-subblocks-values (om::object editor) 
-                                            :max-pitch-flag (max-pitch-flag (om::object editor)) 
-                                            :max-pitch (max-pitch (om::object editor)))
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-check-box
+    ;;   (om::om-make-point 400 220)
+    ;;   (om::om-make-point 20 20)
+    ;;   ""
+    ;;   :checked-p (max-pitch-flag (om::object editor))
+    ;;   :di-action #'(lambda (c)
+    ;;                 (if (om::om-checked-p c)
+    ;;                   (setf (max-pitch-flag (om::object editor)) 1)
+    ;;                   (setf (max-pitch-flag (om::object editor)) nil)
+    ;;                 )
+    ;;                 (change-subblocks-values (om::object editor) 
+    ;;                                         :max-pitch-flag (max-pitch-flag (om::object editor)) 
+    ;;                                         :max-pitch (max-pitch (om::object editor)))
+    ;;   )
+    ;; )
 
     (om::om-make-dialog-item
       'om::slider

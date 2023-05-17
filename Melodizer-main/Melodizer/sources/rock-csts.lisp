@@ -491,7 +491,7 @@
 )
 
 
-(defun chord-key-cst (sp push rock)
+(defun chord-key-cst (sp playing rock)
     (print "chord-key-cst")
     (let ((key (chord-key rock))
         (quality (chord-quality rock))
@@ -507,8 +507,10 @@
                                     (+ chord-midi-value (nth 1 triad-to-play))
                                     (+ chord-midi-value (nth 2 triad-to-play))))
 
-
-        (gil::g-rel sp (nth 0 push) gil::SRT_EQ notes-to-play)
+        (loop :for i :from 0 :below (length playing) :do
+            (gil::g-rel sp (nth i playing) gil::SRT_EQ notes-to-play)
+        )
+        
     )
     ;; (if (chord-key rock)
     ;;     (if (chord-quality rock)
@@ -736,9 +738,9 @@
             ;; (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
             (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
 
-            ;; (loop :for a :below (length forbidden-intervals) :do
-            ;;     (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
-            ;; )
+            (loop :for a :below (length forbidden-intervals) :do
+                (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
+            )
         )
 )
 
