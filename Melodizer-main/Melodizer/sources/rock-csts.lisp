@@ -78,8 +78,8 @@
             (gil::g-op sp playing-j-one gil::BOT_IMP push-j-one 1)
             (gil::g-op sp playing-j-one gil::BOT_IMP pull-j-playing-j-one 1)
             ;; Same note playing implies push[j] = pull[j] <=> playing[j] = playing[j-1]
-            ;; (gil::g-op sp playing-j-playing-j-one gil::BOT_IMP push-j-pull-j 1)
-            ;; (gil::g-op sp push-j-pull-j gil::BOT_IMP playing-j-playing-j-one 1)
+            (gil::g-op sp playing-j-playing-j-one gil::BOT_IMP push-j-pull-j 1)
+            (gil::g-op sp push-j-pull-j gil::BOT_IMP playing-j-playing-j-one 1)
             
 
             ;; Pulled note
@@ -119,16 +119,15 @@
 
 (defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-A")
-    (let ((post-optional t))
-
+    (let ((post-optional t) sim)
+    (if (typep A-block 'mldz::a)
+        (setq sim (similarity-percent-A0 A-block))
+        (setq sim (similarity-percent-B0 A-block))
+    )
     ;; bars*quant elements and starts at startidx
     ;; for the sub arrays of push pull playing
-    (if (and (/= (block-position A-block) (idx-first-a (parent A-block))))
-        (let (sim temp-push)
-            (if (typep A-block 'mldz::a)
-                (setq sim (similarity-percent-A0 A-block))
-                (setq sim (similarity-percent-B0 A-block))
-            )
+    (if (and (typep A-block 'mldz::a) (/= (block-position A-block) (idx-first-a (parent A-block))))
+        (let (temp-push)
             (setq temp-push (translate-chords sp (chord-key (nth (idx-first-a (parent A-block)) (block-list (parent A-block)))) 
                                                 (chord-quality (nth (idx-first-a (parent A-block)) (block-list (parent A-block))))
                                                 (chord-key A-block) (chord-quality A-block) push-A0))
@@ -136,6 +135,20 @@
             (if (= sim 100)
                 (setq post-optional nil)
                 (setq post-optional t)
+            )
+        )
+    
+        (if (and (typep A-block 'mldz::b) (/= (block-position A-block) (idx-first-b (parent A-block))))
+            (let (temp-push)
+                (setq temp-push (translate-chords sp (chord-key (nth (idx-first-b (parent A-block)) (block-list (parent A-block)))) 
+                                                    (chord-quality (nth (idx-first-b (parent A-block)) (block-list (parent A-block))))
+                                                    (chord-key A-block) (chord-quality A-block) push-B0))
+                (cst-common-vars sp temp-push push sim)
+                (if (= sim 100)
+                    (setq post-optional nil)
+                    (setq post-optional t)
+                )
+                (print "not first B")
             )
         )
     )
@@ -180,26 +193,32 @@
             (setq temp-push-r-acc (sublst push-acc startidx-r notes-in-subblock))
             (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
             (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
+            (minimise-interval sp (nth (- startidx-r 1) playing) (first temp-playing-r) 
+                                    (chord-key r-block) (chord-quality r-block))
 
 
             (setq startidx-d (+ startidx-r notes-in-subblock))
             (setq temp-push-d (sublst push startidx-d notes-in-subblock))
             (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
             (setq temp-playing-d (sublst playing startidx-d notes-in-subblock))
-            (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
             (setq temp-push-d-acc (sublst push-acc startidx-d notes-in-subblock))
             (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
             (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
+            (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
+            (minimise-interval sp (nth (- startidx-d 1) playing) (first temp-playing-d) 
+                                    (chord-key d-block) (chord-quality d-block))
 
 
             (setq startidx-c (+ startidx-d notes-in-subblock))
-            (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
             (setq temp-push-c (sublst push startidx-c notes-in-subblock))
             (setq temp-pull-c (sublst pull startidx-c notes-in-subblock))
             (setq temp-playing-c (sublst playing startidx-c notes-in-subblock))
             (setq temp-push-c-acc (sublst push-acc startidx-c notes-in-subblock))
             (setq temp-pull-c-acc (sublst pull-acc startidx-c notes-in-subblock))
             (setq temp-playing-c-acc (sublst playing-acc startidx-c notes-in-subblock))
+            (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
+            (minimise-interval sp (nth (- startidx-c 1) playing) (first temp-playing-c) 
+                                    (chord-key c-block) (chord-quality c-block))
 
 
 
@@ -512,100 +531,18 @@
         )
         
     )
-    ;; (if (chord-key rock)
-    ;;     (if (chord-quality rock)
-    ;;         (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-    ;;                 (bool2 (gil::add-bool-var sp 0 1))
-    ;;                 (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
-    ;;                 (offset (- (name-to-note-value (chord-key rock)) 60))
-    ;;                 (all-notes (gil::add-set-var sp 0 127 0 127))
-    ;;                 chordset notesets bool-array)
-    ;;                 (setq chordset (build-scaleset chord offset))
-    ;;                 (scale-follow-reify sp push chordset bool)
-    ;;                 (setq notesets (build-notesets chord offset))
-    ;;                 (setq bool-array (gil::add-bool-var-array sp (length notesets) 0 1))
-    ;;                 (loop :for i :from 0 :below (length notesets) :do
-    ;;                     (let ((push-bool-array (gil::add-bool-var-array sp (length push) 0 1)))
-    ;;                         (loop :for j :from 0 :below (length push) :do
-    ;;                             (gil::g-rel-reify sp (nth j push) gil::SRT_DISJ (nth i notesets) (nth j push-bool-array))
-    ;;                         )
-    ;;                         (gil::g-rel sp gil::BOT_AND push-bool-array (nth i bool-array))
-    ;;                     )
-    ;;                 )
-
-    ;;                 (gil::g-rel sp gil::BOT_OR bool-array bool2)
-    ;;                 (gil::g-rel sp bool gil::SRT_EQ 1)
-    ;;         )
-
-    ;;         (let ((bool (gil::add-bool-var sp 0 1)) ; créer le booleen pour la reify
-    ;;                 (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
-    ;;                 (offset (- (name-to-note-value (chord-key rock)) 60))
-    ;;                 (all-notes (gil::add-set-var sp 0 127 0 127))
-    ;;                 chordset)
-    ;;                 (gil::g-setunion sp all-notes push)
-    ;;                 (setq chordset (build-scaleset chord offset))
-    ;;                 (gil::g-rel sp bool gil::SRT_EQ 1) ;forcer le reify a true dans ce cas
-    ;;                 (scale-follow-reify sp push chordset bool))
-    ;;     )
-    ;;     (if (chord-quality rock)
-    ;;         (let (chord chordset notesets
-    ;;                 (bool-array (gil::add-bool-var-array sp 12 0 1)); créer le booleen pour la reify
-    ;;                 (all-notes (gil::add-set-var sp 0 127 01 127)))
-    ;;             (gil::g-setunion sp all-notes push)
-    ;;             (loop :for key :from 0 :below 12 :by 1 :do
-    ;;                 (let ((bool1 (gil::add-bool-var sp 0 1))
-    ;;                         (bool2 (gil::add-bool-var sp 0 1))
-    ;;                         (bool-array-note (gil::add-bool-var-array sp (length notesets) 0 1))
-    ;;                         chordset notesets)
-    ;;                     (setq chord (get-chord (chord-quality rock)))
-    ;;                     (setq chordset (build-scaleset chord key))
-    ;;                     (setq notesets (build-notesets chord key))
-
-    ;;                     (loop :for i :from 0 :below (length notesets) :do
-    ;;                             (gil::g-rel-reify sp all-notes gil::SRT_DISJ (nth i notesets) (nth i bool-array-note))
-    ;;                     )
-    ;;                     (gil::g-rel sp gil::BOT_AND bool-array-note bool1)
-    ;;                     (scale-follow-reify sp push chordset bool2)
-    ;;                     (gil::g-op sp (nth key bool-array) gil::BOT_AND bool 0))
-    ;;             )
-    ;;             (gil::g-rel sp gil::BOT_OR bool-array 1)
-    ;;         )
-    ;;         (let (chord chordset
-    ;;                 (bool-array (gil::add-bool-var-array sp 12 0 1)))
-    ;;             (loop :for key :from 0 :below 12 :by 1 :do
-    ;;                 (setq chord (get-chord (chord-quality rock)))
-    ;;                 (setq chordset (build-scaleset chord key))
-    ;;                 (scale-follow-reify sp push chordset (nth key bool-array))
-    ;;             )
-    ;;             (gil::g-rel sp gil::BOT_OR bool-array 1)
-    ;;         )
-
-    ;;     )
-    ;; )
 )
 
-(defun scale-follow-reify-int (sp push chordset bool)
-    (setq r (gil::add-bool-var-array sp (length push) 0 1))
-    (loop :for j :from 0 :below (length push) :do
-        (let ((push-bool-array (gil::add-bool-var-array sp (length chordset) 0 1)))
-            (loop :for i :from 0 :below (length chordset) :do
-                (gil::g-rel-reify sp (nth j push) gil::IRT_EQ (nth i chordset) (nth i push-bool-array))
-            )
-            (gil::g-rel sp gil::BOT_OR push-bool-array (nth j r))
-        )
-    )
-    (gil::g-rel sp gil::BOT_AND r bool)
-)
 
 (defun chord-key-cst-int (sp push playing rock)
     (let (
-        (chord (get-chord (chord-quality rock)))  ;if - mode selectionné
+        (chord (get-scale-chord (chord-quality rock)))  ;if - mode selectionné
         (offset (- (name-to-note-value (chord-key rock)) 60))
         chordset
         )
         (setq chordset (build-scaleset chord offset))
         (loop :for i :from 0 :below (length playing) :by 1 :do
-            (if (= (mod i 8) 0)
+            (if (= (mod i 4) 0)
                 (let (bool-array bool-temp)
                     (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
                     (loop :for n :from 0 :below (length chordset) :by 1 :do
@@ -739,16 +676,16 @@
             (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
 
             (loop :for a :below (length forbidden-intervals) :do
-                (gil::g-rel sp interval gil::IRT_NQ (nth a forbidden-intervals))
+                (gil::g-rel sp interval-abs gil::IRT_NQ (nth a forbidden-intervals))
             )
         )
 )
 
 (defun translate-chords (sp chord1 quality1 chord2 quality2 push)
     (let (
-        (notes (build-scaleset (get-chord quality1)  ;if - mode selectionné
+        (notes (build-scaleset (get-scale-chord quality1)  ;if - mode selectionné
                     (- (name-to-note-value chord1) 60)))
-        (new-notes (build-scaleset (get-chord quality2)  ;if - mode selectionné
+        (new-notes (build-scaleset (get-scale-chord quality2)  ;if - mode selectionné
                     (- (name-to-note-value chord2) 60)))
         (diff (- (name-to-note-value chord1) (name-to-note-value chord2)) )
         temp-push        
@@ -777,5 +714,27 @@
             )
         )
         temp-push
+    )
+)
+
+(defun minimise-interval (sp playing-i-one playing-i chord quality)
+    (let (interval interval-abs scalset interval-array)
+        (setq interval (gil::add-int-var-expr sp playing-i gil::IOP_SUB playing-i-one))
+        (setq interval-abs (gil::add-int-var sp 0 127))
+        (gil::g-abs sp interval interval-abs)
+
+        (setq scaleset (append '(-1) (build-scaleset (get-scale-chord quality)  ;if - mode selectionné
+                    (- (name-to-note-value chord) 60))))
+        (print scaleset)
+        (setq interval-array (gil::add-int-var-array sp (length scaleset) -1 127))
+        (loop :for i :from 0 :below (length scaleset) :do
+            (let (interval-temp (note (nth i scaleset)))
+                ;; (print note)
+                (setq interval-temp (gil::add-int-var-expr sp playing-i-one gil::IOP_SUB note))
+                (gil::g-abs sp interval-temp (nth i interval-array))
+            )
+        )   
+        (gil::g-lmin sp interval-abs interval-array)     
+        (print "end of minimise")
     )
 )

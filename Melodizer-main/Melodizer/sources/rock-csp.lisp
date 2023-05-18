@@ -79,6 +79,7 @@
          (max-simultaneous-notes 10)
          (min-simultaneous-notes 0)
          (no-note -1)
+         (startidx 0)
          nb-notes push-A0 push-B0
          )
         (print "get subblocks")
@@ -109,10 +110,10 @@
             ;; cut the push pull playing array into (length block-list) parts and feed the adequate part
             ;; to (constrain-ppp-from-srdc)
             (let (temp-push temp-pull temp-playing temp-push-acc temp-pull-acc temp-playing-acc
-                  srdc-parent startidx notes-per-block)
+                  srdc-parent notes-per-block)
                 (setq srdc-parent (nth i block-list))
                 (setq notes-per-block (* (bar-length srdc-parent) quant))
-                (setq startidx (* i notes-per-block))
+                ;; (setq startidx (* i notes-per-block))
                 (print startidx)
                 (setq temp-push (sublst push startidx notes-per-block))
                 (setq temp-pull (sublst pull startidx notes-per-block))
@@ -126,11 +127,18 @@
                 (if (= i (idx-first-b rock-csp))
                     (setq push-B0 temp-push)
                 )
-                (if (> i 0)
-                    (gil::g-rel sp (first temp-pull) gil::IRT_EQ (nth (- startidx 1) playing))
+                (if (> startidx 0)
+                    (progn
+                        (gil::g-rel sp (first temp-pull) gil::IRT_EQ (nth (- startidx 1) playing))
+                        (minimise-interval sp (nth (- startidx 1) playing) (first temp-playing) 
+                                    (chord-key srdc-parent) (chord-quality srdc-parent))
+                    )
+                    
                 )
+                
                 (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing 
                                             temp-push-acc temp-pull-acc temp-playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
+                (setq startidx (+ startidx notes-per-block))
             )
         )
 
@@ -261,9 +269,9 @@
 
         ;créer score qui retourne la liste de pitch et la rhythm tree
         (print "building scores")
-        ;; (print (gil::g-values sol push))
+        (print (gil::g-values sol push))
         ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
-        ;; (print (gil::g-values sol pull))
+        (print (gil::g-values sol pull))
         (print (gil::g-values sol playing))
         (setq score-voice (build-voice-int sol push pull playing bars quant (tempo rock-object)))
         (print score-voice)

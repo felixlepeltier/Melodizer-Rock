@@ -65,10 +65,7 @@
                     (if (om::om-checked-p c)
                       (setf (min-note-length-flag (accomp (om::object editor))) 1)
                       (setf (min-note-length-flag (accomp (om::object editor))) nil)
-                    )
-                    (change-subblocks-values (accomp (om::object editor)) 
-                                :min-note-length-flag (min-note-length-flag (accomp (om::object editor))) 
-                                :min-note-length (min-note-length (accomp (om::object editor))))     
+                    )  
       )
     )
 
