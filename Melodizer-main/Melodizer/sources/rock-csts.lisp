@@ -434,17 +434,13 @@
             ((string= c-type "Default") 
                 (print "cadence-type")
                 (print "Default")
-                ;; I IV V  distance par rapport a la key (ton)
-                ;; Major : 0| 2,5| 3,5
-                ;; Minor : 0| 2,5| 3,5
-                ;; Perfect V -> I
-                (setq chords-to-play (list 7 0))
-                (setq notes-to-play (append notes-to-play (list (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 2 triad-to-play)))))
-
-                (setq notes-to-play (append (list notes-to-play) (list (list (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 2 triad-to-play))))))
-
-                (gil::g-rel sp (nth 0 push-acc) gil::SRT_EQ (nth 0 notes-to-play))
-                (gil::g-rel sp (nth (* (/ mnl 2) (bar-length (accomp c-block))) push-acc) gil::SRT_EQ (nth 1 notes-to-play))
+                ;; TODO: Set a default type of cadence depending on for example, the position of a block within the structure
+                ;; (more conclusive cadence towards the end etc.)
+            )
+            ((string= c-type "None") 
+                (print "cadence-type")
+                (print "No cadence")
+                ;; TODO: Check if None functions properly
             )
             ((string= c-type "Perfect") 
                 (print "cadence-type")
@@ -463,8 +459,6 @@
 
                 (gil::g-rel sp (nth 0 push-acc) gil::SRT_EQ (nth 0 notes-to-play))
                 (gil::g-rel sp (nth (* (/ mnl 2) (bar-length (accomp c-block))) push-acc) gil::SRT_EQ (nth 1 notes-to-play))
-                    
-                
             )
             ((string= c-type "Plagal") 
                 (print "cadence-type")
@@ -478,8 +472,6 @@
 
                 (gil::g-rel sp (nth 0 push-acc) gil::SRT_EQ (nth 0 notes-to-play))
                 (gil::g-rel sp (nth (* (/ mnl 2) (bar-length (accomp c-block))) push-acc) gil::SRT_EQ (nth 1 notes-to-play))
-                
-                
             )
             ((string= c-type "Semi") 
                 (print "cadence-type")
@@ -494,9 +486,7 @@
                 (setq notes-to-play (append (list notes-to-play) (list (list (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 1 chords-to-play)) (nth 2 triad-to-play))))))
 
                 (gil::g-rel sp (nth 0 push-acc) gil::SRT_EQ (nth 0 notes-to-play))
-                (gil::g-rel sp (nth (* (/ mnl 2) (bar-length (accomp c-block))) push-acc) gil::SRT_EQ (nth 1 notes-to-play))
-                
-                
+                (gil::g-rel sp (nth (* (/ mnl 2) (bar-length (accomp c-block))) push-acc) gil::SRT_EQ (nth 1 notes-to-play))   
             )
             ((string= c-type "Deceptive") 
                 (print "cadence-type")

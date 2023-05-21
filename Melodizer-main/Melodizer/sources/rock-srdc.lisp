@@ -352,11 +352,11 @@
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
-      (accompaniment-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 300 300)
-        :position (om::om-make-point 510 5)
-        :bg-color om::*azulito*)
-      )
+      ;; (accompaniment-panel (om::om-make-view 'om::om-view
+      ;;   :size (om::om-make-point 300 300)
+      ;;   :position (om::om-make-point 510 5)
+      ;;   :bg-color om::*azulito*)
+      ;; )
       (c-constraints-panel (om::om-make-view 'om::om-view
         :size (om::om-make-point 800 100)
         :position (om::om-make-point 5 310)
@@ -369,13 +369,13 @@
 
     ; add the subviews for the different parts into the main view
     (setf elements-constraints-panel (make-constraints-srdc-panel self constraints-panel))
-    (setf elements-accompaniment-panel (make-accompaniment-panel self accompaniment-panel))
+    ;; (setf elements-accompaniment-panel (make-accompaniment-panel self accompaniment-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       constraints-panel
-      accompaniment-panel
+      ;; accompaniment-panel
       c-constraints-panel
     )
   )
@@ -429,12 +429,12 @@
       (om::om-make-point 10 40)
       (om::om-make-point 150 20)
       "Cadence choice"
-      :range '("Default" "Perfect" "Plagal" "Semi" "Deceptive")
+      :range '("Perfect" "Plagal" "Semi" "None")
       :value (cadence-type (parent (om::object editor)))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "Default")
-          (setf (cadence-type (parent (om::object editor))) "Default")
+        (if (string= check "None")
+          (setf (cadence-type (parent (om::object editor))) "None")
           (setf (cadence-type (parent (om::object editor))) check)
         )
       )
