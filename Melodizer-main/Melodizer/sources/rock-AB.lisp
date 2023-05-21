@@ -85,7 +85,7 @@
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 500 300)
         :position (om::om-make-point 5 165)
         :bg-color om::*azulito*)
       )
@@ -201,7 +201,7 @@
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 500)
+        :size (om::om-make-point 500 300)
         :position (om::om-make-point 5 170)
         :bg-color om::*azulito*)
       )
@@ -421,7 +421,7 @@
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 10 10)
-      (om::om-make-point 200 20)
+      (om::om-make-point 300 20)
       "Types of changes"
       :font om::*om-default-font1b*
     )
@@ -429,7 +429,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 10 30)
-      (om::om-make-point 200 20)
+      (om::om-make-point 300 20)
       "Relative to rock"
       :checked-p (relative-to-parent (om::object editor))
       :di-action #'(lambda (c)
@@ -443,7 +443,7 @@
     (om::om-make-dialog-item
       'om::om-check-box
       (om::om-make-point 10 50)
-      (om::om-make-point 200 20)
+      (om::om-make-point 300 20)
       "Relative to same type blocks"
       :checked-p (relative-to-same (om::object editor))
       :di-action #'(lambda (c)

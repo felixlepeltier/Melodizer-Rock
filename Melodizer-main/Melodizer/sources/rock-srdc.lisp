@@ -159,7 +159,7 @@
         :bg-color om::*azulito*)
       )
       (r-constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 800 100)
+        :size (om::om-make-point 805 100)
         :position (om::om-make-point 5 310)
         :bg-color om::*azulito*)
       )
@@ -260,7 +260,7 @@
         :bg-color om::*azulito*)
       )
       (d-constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 800 100)
+        :size (om::om-make-point 805 100)
         :position (om::om-make-point 5 310)
         :bg-color om::*azulito*)
       )
@@ -358,7 +358,7 @@
       ;;   :bg-color om::*azulito*)
       ;; )
       (c-constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 800 100)
+        :size (om::om-make-point 500 100)
         :position (om::om-make-point 5 310)
         :bg-color om::*azulito*)
       )

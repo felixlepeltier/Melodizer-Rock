@@ -80,7 +80,7 @@
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 730 500)
+        :size (om::om-make-point 730 300)
         :position (om::om-make-point 5 310)
         :bg-color om::*azulito*)
       )
@@ -270,7 +270,7 @@
       (if (typep x 'mldz::a)
         (setf subview-list (append subview-list (list (om::om-make-dialog-item
           'om::om-button
-          (om::om-make-point 5 (+ 5 (* 30 loop-index))) ; position (horizontal, vertical)
+          (om::om-make-point 5 (+ 5 (* 40 loop-index))) ; position (horizontal, vertical)
           (om::om-make-point 100 40) ; size (horizontal, vertical)
           "A"
           :di-action #'(lambda (b)
@@ -292,7 +292,7 @@
       (if (typep x 'mldz::b)
         (setf subview-list (append subview-list (list (om::om-make-dialog-item
           'om::om-button
-          (om::om-make-point 5 (+ 5 (* 30 loop-index))) ; position (horizontal, vertical)
+          (om::om-make-point 5 (+ 5 (* 40 loop-index))) ; position (horizontal, vertical)
           (om::om-make-point 100 40) ; size (horizontal, vertical)
           "B"
           :di-action #'(lambda (b)
