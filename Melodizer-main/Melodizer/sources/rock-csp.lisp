@@ -22,7 +22,7 @@
         (chord-min-length 2)) ; minimum length of a chord with associated constraint
 
         ;Setting constraint for this block and child blocks
-        (setq temp (get-sub-rock-values sp rock-csp))
+        (setq temp (constrain-rock sp rock-csp))
         (setq push (nth 0 temp))
         (setq pull (nth 1 temp))
         (setq playing (nth 2 temp))
@@ -63,12 +63,9 @@
 
 ;recursive function to set the constraint on all the blocks in the tree structure
 ; TODO : adapt function for A A B A and launch functions for s r d c
-(defun get-sub-rock-values (sp rock-csp)
-    (print "At the start of get-sub-rock-values (sp rock-csp)")
+(defun constrain-rock (sp rock-csp)
+    (print "At the start of constrain-rock (sp rock-csp)")
 
-    ; for block child of rock-csp
-    ; (pull supersets de get-sub-block-values(block) )
-    ; constraints
     ; return pull push playing
     (let (pull push playing pull-acc push-acc playing-acc block-list positions
         sub-push sub-pull pitches-notes lengths-notes
@@ -82,7 +79,7 @@
          (startidx 0)
          nb-notes push-A0 push-B0
          )
-        (print "get subblocks")
+
         (setq nb-notes (+ (* bars quant) 1))
 
         ;; initialize the variables
@@ -142,17 +139,16 @@
             )
         )
 
-        ;; (post-optional-rock-constraints sp rock-csp push pull playing)
-        (print "At the end of get-sub-rock-values (sp rock-csp)")
+        (print "At the end of constrain-rock (sp rock-csp)")
         ;; return
         (list push pull playing push-acc pull-acc playing-acc)
     )
 )
 
-;posts the optional constraints specified in the list
+;posts the constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-optional-rock-constraints (sp rock push pull playing is-cadence); sub-push sub-pull)
-    (print "optional constraints")
+(defun post-rock-constraints (sp rock push pull playing is-cadence); sub-push sub-pull)
+    (print "posting rock constraints")
     (if (typep rock 'mldz::accompaniment)
         (progn
             (if (and (min-simultaneous-notes rock) (typep (nth 0 push) 'gil::set-var))

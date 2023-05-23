@@ -105,8 +105,6 @@
 
 
 (defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
-    ;; call some variant of the post-optional-constraints function to constrain the push pull playing arrays
-    ;; from srdc values
     (if (typep srdc-parent 'mldz::a)
         ;; 
         (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
@@ -119,7 +117,7 @@
 
 (defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
     (print "constrain-srdc-from-A")
-    (let ((post-optional t) sim)
+    (let ((post-constraints t) sim)
     (if (typep A-block 'mldz::a)
         (setq sim (similarity-percent-A0 A-block))
         (setq sim (similarity-percent-B0 A-block))
@@ -133,8 +131,8 @@
                                                 (chord-key A-block) (chord-quality A-block) push-A0))
             (cst-common-vars sp temp-push push sim)
             (if (= sim 100)
-                (setq post-optional nil)
-                (setq post-optional t)
+                (setq post-constraints nil)
+                (setq post-constraints t)
             )
         )
     
@@ -145,8 +143,8 @@
                                                     (chord-key A-block) (chord-quality A-block) push-B0))
                 (cst-common-vars sp temp-push push sim)
                 (if (= sim 100)
-                    (setq post-optional nil)
-                    (setq post-optional t)
+                    (setq post-constraints nil)
+                    (setq post-constraints t)
                 )
                 (print "not first B")
             )
@@ -228,7 +226,7 @@
             (print "constraining s")
             (constrain-s sp s-block A-block temp-push-s temp-pull-s temp-playing-s
                                             temp-push-s-acc temp-pull-s-acc temp-playing-s-acc 
-                                            max-pitch max-simultaneous-notes post-optional)
+                                            max-pitch max-simultaneous-notes post-constraints)
 
             ;; r
 
@@ -236,7 +234,7 @@
             (constrain-r sp r-block A-block temp-push-r temp-pull-r temp-playing-r  
                                             temp-push-r-acc temp-pull-r-acc temp-playing-r-acc
                                             temp-push-s temp-pull-s temp-playing-s
-                                            max-pitch max-simultaneous-notes post-optional)
+                                            max-pitch max-simultaneous-notes post-constraints)
         
             ;; d
 
@@ -244,14 +242,14 @@
             (constrain-d sp d-block A-block temp-push-d temp-pull-d temp-playing-d
                                             temp-push-d-acc temp-pull-d-acc temp-playing-d-acc
                                             temp-push-s temp-pull-s temp-playing-s
-                                            max-pitch max-simultaneous-notes post-optional)
+                                            max-pitch max-simultaneous-notes post-constraints)
 
             ;; c
             
             (print "constraining c")
             (constrain-c sp c-block A-block temp-push-c temp-pull-c temp-playing-c
                                             temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
-                                            max-pitch max-simultaneous-notes post-optional)
+                                            max-pitch max-simultaneous-notes post-constraints)
 
         )
     )
@@ -269,7 +267,7 @@
 
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
-(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
+(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-constraints)
     ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     
     ;; ;; if a source melody is given, then use it to generate push pull playing 
@@ -339,12 +337,12 @@
             )
             ;; neither set-A nor set-B =>
             ;; don't need to set a source melody, constrain as it should normally do
-            (if post-optional
-                (post-optional-rock-constraints sp s-block push pull playing nil)
+            (if post-constraints
+                (post-rock-constraints sp s-block push pull playing nil)
             )
         )
         ;; ;; accompaniment should always be constrained
-        (post-optional-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil)
+        (post-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil)
     )
 
 )
@@ -352,7 +350,7 @@
 
 
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
-                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-optional)
+                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-constraints)
 
     (gil::g-rel sp (first pull) gil::IRT_EQ (nth (- (length playing-s) 1) playing-s)) ; pull[0]=playing-s[quant-1]
 
@@ -363,13 +361,13 @@
             (setq melody (melody-source (parent r-parent)))
             (setq melody (melody-source-B (parent r-parent)))
         )
-        (if (and post-optional (or (not melody) (< (similarity-percent-s r-block) 100)))
-            (post-optional-rock-constraints sp r-block push pull playing nil)
+        (if (and post-constraints (or (not melody) (< (similarity-percent-s r-block) 100)))
+            (post-rock-constraints sp r-block push pull playing nil)
         )
     )
 
     
-    (post-optional-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil)
+    (post-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     ;; translated to the key of the r-block
@@ -383,11 +381,11 @@
 )
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc 
-                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-optional)
-    (if post-optional
-        (post-optional-rock-constraints sp d-block push pull playing nil)
+                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-constraints)
+    (if post-constraints
+        (post-rock-constraints sp d-block push pull playing nil)
     )
-    (post-optional-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil)
+    (post-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil)
 
      ;; constrain d such that it has a difference of (difference-percent-s d-block) with notes played in s-block
     ;; translated to the key of the d-block
@@ -401,11 +399,11 @@
 )
 
 
-(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-optional)
-    (if post-optional    
-        (post-optional-rock-constraints sp c-block push pull playing t)
+(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-constraints)
+    (if post-constraints    
+        (post-rock-constraints sp c-block push pull playing t)
     )
-    (post-optional-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t)
+    (post-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t)
     
 
     ;; constrain c such that is respects the cadence specific rules
