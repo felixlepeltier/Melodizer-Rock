@@ -313,6 +313,7 @@
       (max-pitch :accessor max-pitch :initform 127 :type integer)
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (cadence-type :accessor cadence-type :initform "Perfect" :type string :documentation "Type of cadence used in the current block")
     )
 )
 
@@ -430,12 +431,12 @@
       (om::om-make-point 150 20)
       "Cadence choice"
       :range '("Perfect" "Plagal" "Semi" "None")
-      :value (cadence-type (parent (om::object editor)))
+      :value (cadence-type (om::object editor))
       :di-action #'(lambda (m)
         (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
         (if (string= check "None")
-          (setf (cadence-type (parent (om::object editor))) "None")
-          (setf (cadence-type (parent (om::object editor))) check)
+          (setf (cadence-type (om::object editor)) "None")
+          (setf (cadence-type (om::object editor)) check)
         )
       )
     )

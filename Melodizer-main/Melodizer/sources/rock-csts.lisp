@@ -416,7 +416,7 @@
     (print "Before the case on cadence-type")
     (let ((block-list-len (length (block-list (parent c-parent)))) ;; how many blocks are in the global structure
         (position (block-position c-parent)) ;; position of the current block in the global structure (start index is 0)
-        (c-type (cadence-type c-parent))
+        (c-type (cadence-type c-block))
         (key (chord-key c-block))
         (quality (chord-quality c-block))
         (chord-midi-value (name-to-note-value (chord-key c-block)))
