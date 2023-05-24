@@ -73,7 +73,7 @@
 
             ;; Playing note
             ;; Playing[j] can only be equal to the preceding played note or a new pushed note
-            (gil::g-op sp playing-j-playing-j-one gil::BOT_OR push-j-playing-j 1)
+            ;; (gil::g-op sp playing-j-playing-j-one gil::BOT_OR push-j-playing-j 1)
             ;; No note playing implies no note pushed and previous note pulled
             (gil::g-op sp playing-j-one gil::BOT_IMP push-j-one 1)
             (gil::g-op sp playing-j-one gil::BOT_IMP pull-j-playing-j-one 1)
@@ -85,7 +85,7 @@
             ;; Pulled note
             ;; A note can be pulled only if it was previously playing
             ;; (pull[j] = playing[j-1] OR pull[j] = -1) = 1
-            (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
+            ;; (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
             ;; (gil::g-op sp pull-j-playing-j-one gil::BOT_IMP push-j-playing-j 1)
             ;; (gil::g-op sp push-j-playing-j gil::BOT_IMP pull-j-playing-j-one 1)
             
@@ -96,8 +96,8 @@
             ;; playing[j] /= -1 AND pull[j] /= -1
             ;; (gil::g-op sp playing-j-nq-one gil::BOT_AND pull-j-nq-one push-j-playing-j)
             ;; push[j] can only equal the current note playing or -1
-            (gil::g-op sp push-j-playing-j gil::BOT_OR push-j-one 1)
-            (gil::g-op sp push-j-nq-one gil::BOT_IMP pull-j-playing-j-one 1)
+            ;; (gil::g-op sp push-j-playing-j gil::BOT_OR push-j-one 1)
+            ;; (gil::g-op sp push-j-nq-one gil::BOT_IMP pull-j-playing-j-one 1)
         
         )
     )
@@ -146,7 +146,6 @@
                     (setq post-constraints nil)
                     (setq post-constraints t)
                 )
-                (print "not first B")
             )
         )
     )
@@ -310,7 +309,12 @@
                     )
 
                     (print "First A block's s has been set to the source melody")
-                    
+                    (if (< (length push-source) (length push))
+                        (post-rock-constraints sp s-block   (sublst push (length push-source) (- (length push) (length push-source)))
+                                                            (sublst pull (length push-source) (- (length push) (length push-source)))
+                                                            (sublst playing (length push-source) (- (length push) (length push-source)))
+                                                            nil t)
+                    )
                 )
                 ;; set-B
                 (let (push-source pull-source playing-source ppp-source)
@@ -331,18 +335,21 @@
                     (loop :for i :from 0 :below (length playing-source) :by 1 :do
                         (gil::g-rel sp (nth i playing) gil::IRT_EQ (nth i playing-source))
                     )
-
+                    (if (< (length push-source) (length push))
+                        (post-rock-constraints sp s-block   (sublst push (length push-source) (- (length push) (length push-source)))
+                                                            (sublst pull (length push-source) (- (length push) (length push-source)))
+                                                            (sublst playing (length push-source) (- (length push) (length push-source)))
+                                                            nil t)
+                    )
                     (print "First B block's s has been set to the source melody")
                 )
             )
             ;; neither set-A nor set-B =>
             ;; don't need to set a source melody, constrain as it should normally do
-            (if post-constraints
-                (post-rock-constraints sp s-block push pull playing nil)
-            )
+                (post-rock-constraints sp s-block push pull playing nil post-constraints)
         )
         ;; ;; accompaniment should always be constrained
-        (post-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil)
+        (post-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil t)
     )
 
 )
@@ -361,13 +368,12 @@
             (setq melody (melody-source (parent r-parent)))
             (setq melody (melody-source-B (parent r-parent)))
         )
-        (if (and post-constraints (or (not melody) (< (similarity-percent-s r-block) 100)))
-            (post-rock-constraints sp r-block push pull playing nil)
-        )
+        (post-rock-constraints sp r-block push pull playing nil (and post-constraints (or (not melody) (< (similarity-percent-s r-block) 100))))
+
     )
 
     
-    (post-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil)
+    (post-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil t)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
     ;; translated to the key of the r-block
@@ -375,17 +381,16 @@
             temp-push  temp-playing      
         )
         (setq temp-push (translate-chords sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
-                                        (chord-key r-block) (chord-quality r-block) push-s))
+                                        (chord-key r-block) (chord-quality r-block) push-s))  
         (cst-common-vars sp temp-push push sim)
+
     )
 )
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc 
                                         push-s pull-s playing-s max-pitch max-simultaneous-notes post-constraints)
-    (if post-constraints
-        (post-rock-constraints sp d-block push pull playing nil)
-    )
-    (post-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil)
+    (post-rock-constraints sp d-block push pull playing nil post-constraints)
+    (post-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil t)
 
      ;; constrain d such that it has a difference of (difference-percent-s d-block) with notes played in s-block
     ;; translated to the key of the d-block
@@ -394,16 +399,19 @@
         )
         (setq temp-push (translate-chords sp (chord-key (s-block d-parent)) (chord-quality (s-block d-parent))
                                         (chord-key d-block) (chord-quality d-block) push-s))
+        
         (cst-common-vars sp temp-push push (- 100 diff))
+        
+        
     )
 )
 
 
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-constraints)
-    (if post-constraints    
-        (post-rock-constraints sp c-block push pull playing t)
-    )
-    (post-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t)
+  
+    (post-rock-constraints sp c-block push pull playing t post-constraints)
+
+    (post-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t t)
     
 
     ;; constrain c such that is respects the cadence specific rules
@@ -553,15 +561,18 @@
 ; LIMITING MINIMUM NOTE LENGTH ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun note-min-length-rock (sp push pull min-length)
+(defun note-min-length-rock (sp push pull playing min-length)
+    (print min-length)
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
             (if (typep (nth j push) 'gil::int-var)
                 (let (bool-temp bool2 bool3 bool4)
                     (setq bool-temp (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ -1))
+                    (setq bool2 (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1))
+                    (setq bool4 (gil::add-bool-var-expr sp (nth (+ j k) push) gil::IRT_EQ -1))
                     (setq bool3 (gil::add-bool-var-expr sp (nth (+ j k) pull) gil::IRT_EQ -1))
                     (gil::g-op sp bool-temp gil::BOT_IMP bool3 1)
-                    
+                    (gil::g-op sp bool2 gil::BOT_IMP bool4 1)
                 )
                 (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
             )
@@ -635,7 +646,7 @@
 )
 
 (defun limit-intervals-cst (sp playing)
-    (let ((max-interval 9) (augmented-intervals '(1 6 8)))
+    (let ((max-interval 7) (augmented-intervals '(1 6 8)))
         (loop :for i :from 1 :below (length playing) :do
             (limit-one-interval-cst sp (nth i playing) (nth (- i 1) playing) max-interval augmented-intervals)
         )
@@ -658,10 +669,10 @@
             (setq bool-interval-max (gil::add-bool-var-expr sp interval-abs gil::IRT_LQ max-interval))
 
             ;; The next three line are a way to authorize rests in the middle of a measure
-            ;; (setq bool (gil::add-bool-var sp 0 1))
-            ;; (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
-            ;; (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
-            (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
+            (setq bool (gil::add-bool-var sp 0 1))
+            (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
+            (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
+            ;; (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
 
             (loop :for a :below (length forbidden-intervals) :do
                 (gil::g-rel sp interval-abs gil::IRT_NQ (nth a forbidden-intervals))

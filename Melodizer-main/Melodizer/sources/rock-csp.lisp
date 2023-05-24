@@ -147,7 +147,7 @@
 
 ;posts the constraints specified in the list
 ; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
-(defun post-rock-constraints (sp rock push pull playing is-cadence); sub-push sub-pull)
+(defun post-rock-constraints (sp rock push pull playing is-cadence post-chord); sub-push sub-pull)
     (print "posting rock constraints")
     (if (typep rock 'mldz::accompaniment)
         (progn
@@ -163,8 +163,9 @@
     (cond 
         ((not (typep rock 'mldz::accompaniment))
             (progn
+                (print rock)
                 ; Pitch constraints
-                (if (chord-key rock)
+                (if (and post-chord (chord-key rock))
                     (if (typep (nth 0 push) 'gil::set-var)
                         (chord-key-cst sp push rock)
                         (chord-key-cst-int sp push playing rock)
@@ -172,7 +173,7 @@
                 )
                 ; Time constraints
                 (if (min-note-length-flag rock)
-                    (note-min-length-rock sp push pull (min-note-length rock))
+                    (note-min-length-rock sp push pull playing (min-note-length rock))
                 )
 
                 (if (max-note-length-flag rock)
@@ -190,7 +191,7 @@
                 ;; )
                 ; Time constraints
                 (if (min-note-length-flag rock)
-                    (note-min-length-rock sp push pull (* (/ (min-note-length rock) 2) (bar-length rock)))
+                    (note-min-length-rock sp push pull playing (* (/ (min-note-length rock) 2) (bar-length rock)))
                 )
 
                 (if (max-note-length-flag rock)
@@ -206,7 +207,7 @@
 
             (progn
                 ; Pitch constraints
-                (if (chord-key rock)
+                (if (and post-chord (chord-key rock))
                     (if (typep (nth 0 push) 'gil::set-var)
                         (chord-key-cst sp playing rock)
                         (chord-key-cst-int sp push playing rock)
@@ -214,7 +215,7 @@
                 )
                 ; Time constraints
                 (if (min-note-length-flag rock)
-                    (note-min-length-rock sp push pull (min-note-length rock))
+                    (note-min-length-rock sp push pull playing (min-note-length rock))
                 )
 
                 (if (max-note-length-flag rock)
