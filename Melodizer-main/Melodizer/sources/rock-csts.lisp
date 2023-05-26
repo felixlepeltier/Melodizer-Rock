@@ -409,9 +409,7 @@
 
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-constraints)
   
-    (post-rock-constraints sp c-block push pull playing t post-constraints)
-
-    (post-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t t)
+    
     
 
     ;; constrain c such that is respects the cadence specific rules
@@ -516,7 +514,7 @@
         (mult (min-note-length-mult c-block))
         )
         (setq notes (octaves-of-note chord-midi-value))
-
+        (print notes)
 
         (print "chord-midi-value: ")
         (print chord-midi-value)
@@ -526,9 +524,13 @@
 
         ;; (setq notes-setvar (gil::add-set-var sp 0 128 0 (length notes)))
         ;; (gil::g-rel sp notes-setvar gil::SRT_EQ notes)
-        ;; (gil::g-member sp notes-setvar (nth final-idx playing))
+        (gil::g-dom sp (nth final-idx playing) notes)
         ;; (end-on-tonic-cadence sp (nth prev-idx playing) (nth final-idx playing) notes)
+        
     )
+    (post-rock-constraints sp c-block push pull playing t post-constraints)
+
+    (post-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t t)
 )
 
 
@@ -545,13 +547,6 @@
             ((string= quality "Diminished") (setq triad-to-play (list 0 3 3)))
             ((string= quality "Augmented") (setq triad-to-play (list 0 4 4)))
         )
-        ;; (setq notes-to-play (list (+ chord-midi-value (nth 0 triad-to-play))
-        ;;                             (+ chord-midi-value (nth 1 triad-to-play))
-        ;;                             (+ chord-midi-value (nth 2 triad-to-play))))
-
-        ;; (loop :for i :from 0 :below (length playing) :do
-        ;;     (gil::g-rel sp (nth i playing) gil::SRT_EQ notes-to-play)
-        ;; )
         (setq notes-to-play (build-chordset triad-to-play (- chord-midi-value 60)))
         (print notes-to-play)
         (loop :for i :from 0 :below (length playing) :do

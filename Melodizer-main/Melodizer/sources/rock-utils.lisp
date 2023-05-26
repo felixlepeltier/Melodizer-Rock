@@ -397,7 +397,7 @@
     (let ((modnote (mod note 12)))
         (loop for i from 0 to (/ 128 12)
             collect (+ (* i 12) modnote)
-            collect (+ (* i -12) modnote)
+            ;; collect (+ (* i -12) modnote)
         )
     )
 )
