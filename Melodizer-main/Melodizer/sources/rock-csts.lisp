@@ -538,18 +538,29 @@
         (quality (chord-quality rock))
         (chord-midi-value (name-to-note-value (chord-key rock)))
         (triad-to-play (list)) ;; intervals depending on quality
-        (notes-to-play (list))) ;; notes to be pushed, list of lists
-        (cond ((string= quality "Major") (setq triad-to-play (list 0 4 7)))
-            ((string= quality "Minor") (setq triad-to-play (list 0 3 7)))
-            ((string= quality "Diminished") (setq triad-to-play (list 0 3 6)))
-            ((string= quality "Augmented") (setq triad-to-play (list 0 4 8)))
+        (notes-to-play (list))
+        ) ;; notes to be pushed, list of lists
+        (cond ((string= quality "Major") (setq triad-to-play (list 0 4 3)))
+            ((string= quality "Minor") (setq triad-to-play (list 0 3 4)))
+            ((string= quality "Diminished") (setq triad-to-play (list 0 3 3)))
+            ((string= quality "Augmented") (setq triad-to-play (list 0 4 4)))
         )
-        (setq notes-to-play (list (+ chord-midi-value (nth 0 triad-to-play))
-                                    (+ chord-midi-value (nth 1 triad-to-play))
-                                    (+ chord-midi-value (nth 2 triad-to-play))))
+        ;; (setq notes-to-play (list (+ chord-midi-value (nth 0 triad-to-play))
+        ;;                             (+ chord-midi-value (nth 1 triad-to-play))
+        ;;                             (+ chord-midi-value (nth 2 triad-to-play))))
 
+        ;; (loop :for i :from 0 :below (length playing) :do
+        ;;     (gil::g-rel sp (nth i playing) gil::SRT_EQ notes-to-play)
+        ;; )
+        (setq notes-to-play (build-chordset triad-to-play (- chord-midi-value 60)))
+        (print notes-to-play)
         (loop :for i :from 0 :below (length playing) :do
-            (gil::g-rel sp (nth i playing) gil::SRT_EQ notes-to-play)
+            (let ((bool-array (gil::add-bool-var-array sp (length notes-to-play) 0 1)));;Array to state that one triad is played
+                (loop :for j :from 0 :below (length notes-to-play) :do
+                    (gil::g-rel-reify sp (nth i playing) gil::SRT_EQ (nth j notes-to-play) (nth j bool-array) gil::RM_IMP)
+                )
+                (gil::g-rel sp gil::BOT_XOR bool-array 1)
+            )
         )
         
     )
@@ -562,22 +573,23 @@
         (offset (- (name-to-note-value (chord-key rock)) 60))
         chordset
         )
-        (setq chordset (build-scaleset chord offset))
+        
         (loop :for i :from 0 :below (length playing) :by 1 :do
-            (if (= (mod i 4) 0)
-                (let (bool-array bool-temp)
-                    (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
-                    (loop :for n :from 0 :below (length chordset) :by 1 :do
-                        (let (bool)
-                            (setq bool (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ (nth n chordset)))
-                            (gil::g-rel sp bool gil::IRT_EQ (nth n bool-array))
-                        )
-                    )
-                    (setq bool-temp (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
-                    (gil::g-rel sp bool-temp gil::IRT_EQ (nth (length chordset) bool-array))
-                    (gil::g-rel sp gil::BOT_XOR bool-array 1)
+            (let (bool-array bool-temp chordset)
+                (if (= (mod i 8) 0)
+                    (setq chordset (build-scaleset chord offset))
+                    (setq chordset (build-scaleset (get-chord (chord-quality rock)) offset))
                 )
-                (limit-one-interval-cst sp (nth i playing) (nth (- i 1) playing) 2 nil)
+                (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
+                (loop :for n :from 0 :below (length chordset) :by 1 :do
+                    (let (bool)
+                        (setq bool (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ (nth n chordset)))
+                        (gil::g-rel sp bool gil::IRT_EQ (nth n bool-array))
+                    )
+                )
+                (setq bool-temp (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
+                (gil::g-rel sp bool-temp gil::IRT_EQ (nth (length chordset) bool-array))
+                (gil::g-rel sp gil::BOT_XOR bool-array 1)
             )
         )
     )
