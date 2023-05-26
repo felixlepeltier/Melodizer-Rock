@@ -384,6 +384,24 @@
     )
 )
 
+;; https://stackoverflow.com/questions/59920951/defining-a-minimum-function-to-return-the-minimum-of-a-list-using-another-func
+(defun smallest (x y)
+    (if (< x y) x y)
+)
+
+(defun biggest (x y)
+    (if (< x y) y x)
+)
+
+(defun octaves-of-note (note)
+    (let ((modnote (mod note 12)))
+        (loop for i from 0 to (/ 128 12)
+            collect (+ (* i 12) modnote)
+            collect (+ (* i -12) modnote)
+        )
+    )
+)
+
 ; Create push and pull list from a voice object
 (defun create-push-pull-int (input-chords quant)
     (let (temp

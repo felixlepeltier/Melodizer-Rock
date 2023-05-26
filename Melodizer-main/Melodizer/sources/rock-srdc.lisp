@@ -314,6 +314,7 @@
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
       (cadence-type :accessor cadence-type :initform "Perfect" :type string :documentation "Type of cadence used in the current block")
+      (min-note-length-mult :accessor min-note-length-mult :initform 2 :type integer)
     )
 )
 

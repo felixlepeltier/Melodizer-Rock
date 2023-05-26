@@ -146,7 +146,6 @@
 )
 
 ;posts the constraints specified in the list
-; TODO CHANGE LATER SO THE FUNCTION CAN BE CALLED FROM THE STRING IN THE LIST AND NOT WITH A SERIES OF IF STATEMENTS
 (defun post-rock-constraints (sp rock push pull playing is-cadence post-chord); sub-push sub-pull)
     (print "posting rock constraints")
     (if (typep rock 'mldz::accompaniment)
@@ -172,14 +171,25 @@
                     )
                 )
                 ; Time constraints
+                ;; (if (min-note-length-flag rock)
+                ;;     (note-min-length-rock sp push pull playing (min-note-length rock))
+                ;; )
+
                 (if (min-note-length-flag rock)
-                    (note-min-length-rock sp push pull playing (min-note-length rock))
+                    (if is-cadence 
+                        (note-min-length-rock sp push pull playing (smallest 16 (* (min-note-length-mult rock) (min-note-length rock))))
+                        (note-min-length-rock sp push pull playing (min-note-length rock))
+                    )
                 )
 
                 (if (max-note-length-flag rock)
-                    (note-max-length-rock sp push pull (max-note-length rock))
+                    (if is-cadence 
+                        (note-max-length-rock sp push pull (biggest (max-note-length rock) (* (min-note-length-mult rock) (min-note-length rock))))
+                        (note-max-length-rock sp push pull (max-note-length rock))
+                    )
                 )
-            )  
+            
+            )
         )
 
 

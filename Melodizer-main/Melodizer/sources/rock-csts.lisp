@@ -503,6 +503,32 @@
         )
     )
     (print "After the case on cadence-type")
+
+    (print "Ending on the tonic")
+    (let ((bar-len (bar-length c-block))
+        (quant 16)
+        (chord-midi-value (name-to-note-value (chord-key c-block)))
+        notes-setvar
+        notes
+        final-idx
+        prev-idx
+        (mnl (min-note-length c-block))
+        (mult (min-note-length-mult c-block))
+        )
+        (setq notes (octaves-of-note chord-midi-value))
+
+
+        (print "chord-midi-value: ")
+        (print chord-midi-value)
+
+        (setq final-idx (- (* bar-len quant) 1))
+        (setq prev-idx (- final-idx (* mnl mult)))
+
+        ;; (setq notes-setvar (gil::add-set-var sp 0 128 0 (length notes)))
+        ;; (gil::g-rel sp notes-setvar gil::SRT_EQ notes)
+        ;; (gil::g-member sp notes-setvar (nth final-idx playing))
+        ;; (end-on-tonic-cadence sp (nth prev-idx playing) (nth final-idx playing) notes)
+    )
 )
 
 
@@ -735,5 +761,27 @@
         )   
         (gil::g-lmin sp interval-abs interval-array)     
         (print "end of minimise")
+    )
+)
+
+(defun end-on-tonic-cadence (sp playing-i-one playing-i notes)
+    (let (interval interval-abs scalset interval-array)
+        (setq interval (gil::add-int-var-expr sp playing-i gil::IOP_SUB playing-i-one))
+        (setq interval-abs (gil::add-int-var sp 0 127))
+        (gil::g-abs sp interval interval-abs)
+
+        (setq scaleset notes)
+        (print "scaleset:")
+        (print scaleset)
+        (setq interval-array (gil::add-int-var-array sp (length scaleset) -1 127))
+        (loop :for i :from 0 :below (length scaleset) :do
+            (let (interval-temp (note (nth i scaleset)))
+                ;; (print note)
+                (setq interval-temp (gil::add-int-var-expr sp playing-i-one gil::IOP_SUB note))
+                (gil::g-abs sp interval-temp (nth i interval-array))
+            )
+        )
+        (gil::g-lmin sp interval-abs interval-array)
+        (print "end of end-on-tonic-cadence")
     )
 )
