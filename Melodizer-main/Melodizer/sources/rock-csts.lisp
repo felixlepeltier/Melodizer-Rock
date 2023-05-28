@@ -190,8 +190,11 @@
             (setq temp-push-r-acc (sublst push-acc startidx-r notes-in-subblock))
             (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
             (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
-            (minimise-interval sp (nth (- startidx-r 1) playing) (first temp-playing-r) 
-                                    (chord-key r-block) (chord-quality r-block))
+            ;; (if (or (string/= (chord-key r-block) (chord-key s-block)) 
+            ;;         (string/= (chord-quality r-block) (chord-quality s-block)))
+            ;;     (minimise-interval sp (nth (- startidx-r 1) playing) (first temp-playing-r) 
+            ;;                             (chord-key r-block) (chord-quality r-block))
+            ;; )
 
 
             (setq startidx-d (+ startidx-r notes-in-subblock))
@@ -202,8 +205,11 @@
             (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
             (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
             (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
-            (minimise-interval sp (nth (- startidx-d 1) playing) (first temp-playing-d) 
-                                    (chord-key d-block) (chord-quality d-block))
+            ;; (if (or (string/= (chord-key r-block) (chord-key d-block)) 
+            ;;         (string/= (chord-quality r-block) (chord-quality d-block)))
+            ;;     (minimise-interval sp (nth (- startidx-d 1) playing) (first temp-playing-d) 
+            ;;                             (chord-key d-block) (chord-quality d-block))
+            ;; )
 
 
             (setq startidx-c (+ startidx-d notes-in-subblock))
@@ -214,8 +220,11 @@
             (setq temp-pull-c-acc (sublst pull-acc startidx-c notes-in-subblock))
             (setq temp-playing-c-acc (sublst playing-acc startidx-c notes-in-subblock))
             (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
-            (minimise-interval sp (nth (- startidx-c 1) playing) (first temp-playing-c) 
-                                    (chord-key c-block) (chord-quality c-block))
+            ;; (if (or (string/= (chord-key d-block) (chord-key c-block)) 
+            ;;         (string/= (chord-quality d-block) (chord-quality c-block)))
+            ;;     (minimise-interval sp (nth (- startidx-c 1) playing) (first temp-playing-c) 
+            ;;                             (chord-key c-block) (chord-quality c-block))
+            ;; )
 
 
 
@@ -599,13 +608,27 @@
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
             (if (typep (nth j push) 'gil::int-var)
-                (let (bool-temp bool2 bool3 bool4)
+                (let (bool-temp bool2 bool3 bool4 bool5 bool6)
                     (setq bool-temp (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ -1))
-                    (setq bool2 (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1))
-                    (setq bool4 (gil::add-bool-var-expr sp (nth (+ j k) push) gil::IRT_EQ -1))
                     (setq bool3 (gil::add-bool-var-expr sp (nth (+ j k) pull) gil::IRT_EQ -1))
                     (gil::g-op sp bool-temp gil::BOT_IMP bool3 1)
-                    (gil::g-op sp bool2 gil::BOT_IMP bool4 1)
+
+                    (if (> j 0)
+                        (progn
+                            (setq bool2 (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1))
+                            (setq bool5 (gil::add-bool-var-expr sp (nth (- j 1) playing) gil::IRT_NQ -1))
+                            (setq bool4 (gil::add-bool-var-expr sp (nth (+ j k) playing) gil::IRT_EQ -1))
+                            (setq bool6 (gil::add-bool-var sp 0 1))
+                            (gil::g-op sp bool5 gil::BOT_AND bool2 bool6)
+                            (gil::g-op sp bool6 gil::BOT_IMP bool4 1)
+                        )
+                        (progn
+                            (setq bool2 (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1))
+                            (setq bool4 (gil::add-bool-var-expr sp (nth (+ j k) playing) gil::IRT_EQ -1))
+                            (gil::g-op sp bool2 gil::BOT_IMP bool4 1)
+                        )
+                    )
+                    
                 )
                 (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
             )
@@ -792,3 +815,25 @@
         (print "end of end-on-tonic-cadence")
     )
 )
+
+;; (defun limit-song-interval (sp playing max-interval)
+;;     (let ((max-note (gil::add-int-var sp 0 127))
+;;         (min-note (gil::add-int-var sp 0 127))
+;;         (playing-notes (gil::add-int-var-array sp (length playing) 0 127))
+;;         (average-note (gil::add-int-var sp 0 127))
+;;         interval
+;;         )
+;;         (gil::g-lmax sp max-note playing)
+;;         (gil::g-rel sp average-note gil::IRT_EQ 63)
+
+;;         (loop :for i :from 0 :below (length playing) :do
+;;             (let (bool)
+;;                 (setq bool (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
+;;                 (gil::g-ite sp bool average-note (nth i playing) (nth i playing-notes))
+;;             )
+;;         )
+;;         (gil::g-lmin sp min-note playing-notes)
+;;         (setq interval (gil::add-int-var-expr sp max-note gil::IOP_SUB min-note))
+;;         (gil::g-rel sp interval gil::IRT_LQ max-interval)    
+;;     )
+;; )

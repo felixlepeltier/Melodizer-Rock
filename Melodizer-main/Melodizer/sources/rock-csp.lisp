@@ -31,13 +31,15 @@
         (setq playing-acc (nth 5 temp))
 
         ;; for BAB
-        ;; (gil::g-branch sp (append push pull playing) gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
+        ;; (gil::g-branch sp (append push pull playing) gil::INT_VAR_DEGREE_MAX gil::INT_VAL_RND)
         (gil::g-branch sp push gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp pull gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp playing gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp push-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp pull-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
+        (gil::g-branch sp playing-acc gil::SET_VAR_SIZE_MIN gil::SET_VAL_RND_INC)
 
-        (gil::g-specify-sol-variables sp push)
+        (gil::g-specify-sol-variables sp playing)
         (gil::g-specify-percent-diff sp percent-diff)
 
         ;time stop
@@ -94,6 +96,7 @@
         ;; connects push pull and playing with constraints
         (link-push-pull-playing-int sp push pull playing max-pitch)
         (limit-intervals-cst sp playing)
+        ;; (limit-song-interval sp playing 24)
         (link-push-pull-playing-set sp push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
         
         
@@ -127,8 +130,11 @@
                 (if (> startidx 0)
                     (progn
                         (gil::g-rel sp (first temp-pull) gil::IRT_EQ (nth (- startidx 1) playing))
-                        (minimise-interval sp (nth (- startidx 1) playing) (first temp-playing) 
-                                    (chord-key srdc-parent) (chord-quality srdc-parent))
+                        ;; (if (or (string/= (chord-key srdc-parent) (chord-key (nth (- i 1) block-list))) 
+                        ;;         (string/= (chord-quality srdc-parent) (chord-quality (nth (- i 1) block-list))))
+                        ;;     (minimise-interval sp (nth (- startidx 1) playing) (first temp-playing) 
+                        ;;                 (chord-key srdc-parent) (chord-quality srdc-parent))
+                        ;; )
                     )
                     
                 )
