@@ -186,12 +186,20 @@
                         (note-min-length-rock sp push pull playing (smallest 16 (* (min-note-length-mult rock) (min-note-length rock))))
                         (note-min-length-rock sp push pull playing (min-note-length rock))
                     )
+                    (if is-cadence 
+                        (note-min-length-rock sp push pull playing (min-note-length-mult rock))
+                        (note-min-length-rock sp push pull playing 1)
+                    )
                 )
 
                 (if (max-note-length-flag rock)
                     (if is-cadence 
                         (note-max-length-rock sp push pull (biggest (max-note-length rock) (* (min-note-length-mult rock) (min-note-length rock))))
                         (note-max-length-rock sp push pull (max-note-length rock))
+                    )
+                    (if is-cadence 
+                        (note-max-length-rock sp push pull 16)
+                        (note-max-length-rock sp push pull 16)
                     )
                 )
             

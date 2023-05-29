@@ -580,10 +580,12 @@
         
         (loop :for i :from 0 :below (length playing) :by 1 :do
             (let (bool-array bool-temp chordset)
-                (if (= (mod i 8) 0)
-                    (setq chordset (build-scaleset chord offset))
-                    (setq chordset (build-scaleset (get-chord (chord-quality rock)) offset))
-                )
+                ;; (if (= i 0)
+                ;;     (setq chordset (build-scaleset (get-chord (chord-quality rock)) offset))
+                ;;     (setq chordset (build-scaleset chord offset))
+                ;; )
+                (setq chordset (build-scaleset chord offset))
+                (print chordset)
                 (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
                 (loop :for n :from 0 :below (length chordset) :by 1 :do
                     (let (bool)
@@ -730,9 +732,9 @@
             (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
             ;; (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
 
-            (loop :for a :below (length forbidden-intervals) :do
-                (gil::g-rel sp interval-abs gil::IRT_NQ (nth a forbidden-intervals))
-            )
+            ;; (loop :for a :below (length forbidden-intervals) :do
+            ;;     (gil::g-rel sp interval-abs gil::IRT_NQ (nth a forbidden-intervals))
+            ;; )
         )
 )
 

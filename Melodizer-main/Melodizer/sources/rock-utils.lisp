@@ -238,6 +238,20 @@
     )
 )
 
+(defun get-length-tree (tree)
+    (let ((length 0))
+        (loop :for i :from 0 :below (length tree) :do
+            (if (typep (nth i tree) 'list)
+                (let ((sub-length (get-length-tree (second (nth i tree)))))
+                    (setq length (+ length sub-length))
+                )
+                (setq length (+ length 1))
+            )
+        )
+        length
+    )
+)
+
 (defun propagate-bar-length-srdc (rock-block)
     (let ((parent (parent rock-block)) (nbars (bar-length rock-block)))
         (if (or (typep parent 'mldz::a) (typep parent 'mldz::b))
@@ -414,7 +428,7 @@
          (pitch (to-pitch-list (om::chords input-chords))))
          (setq tree (second tree))
          (loop :for i :from 0 :below (length tree) :by 1 :do
-            (setq temp (read-tree-int (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (nth i tree)) pitch 0 quant next))
+            (setq temp (read-tree-int (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) (second (nth i tree)) pitch 0 (/ quant (ceil-to-exp (get-length-tree tree))) next))
             (setq push (append push (first temp)))
             (setq pull (append pull (second temp)))
             (setq playing (append playing (third temp)))
@@ -432,8 +446,10 @@
 ;recursive function to read a rhythm tree and create push and pull
 (defun read-tree-int (push pull playing tree pitch pos length next)
     (print "in read-tree-int")
+    (print tree)
     (progn
-        (setf length (/ length (ceil-to-exp (length tree))))
+        ;; (setf length (/ length (ceil-to-exp (get-length-tree tree))))
+        (print length)
         (loop :for i :from 0 :below (length tree) :by 1 :do
             (if (typep (nth i tree) 'list)
                 (let (temp)
@@ -445,13 +461,22 @@
                     (setf pos (fifth temp))
                 )
                 (progn
-                    (setf (nth pos push) (first (nth next pitch)))
-                    (loop :for j :from pos :below (+ pos (* length (nth i tree))) :by 1 :do
-                        (setf (nth j playing) (first (nth next pitch)))
+                    (let (next-pitch)
+                        (if (> (nth i tree) 0)
+                            (setq next-pitch (first (nth next pitch)))
+                            (setq next-pitch -1)
+                        )
+                        (setf (nth pos push) next-pitch)
+                        (loop :for j :from pos :below (+ pos (abs (* length (nth i tree)))) :by 1 :do
+                            (setf (nth j playing) next-pitch)
+                            (print (nth j playing))
+                        )
+                        (setf pos (+ pos (abs (* length (nth i tree)))))
+                        (setf (nth (- pos 1) pull) next-pitch)
+                        (if (> (nth i tree) 0)
+                            (setf next (+ next 1))
+                        )
                     )
-                    (setf pos (+ pos (* length (nth i tree))))
-                    (setf (nth (- pos 1) pull) (first (nth next pitch)))
-                    (setf next (+ next 1))
                 )
             )
         )
@@ -475,7 +500,7 @@
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (* 100 (gil::g-values sol n))) pull)))
     (setq p-playing (nconc p-playing (mapcar (lambda (n) (* 100 (gil::g-values sol n))) playing)))
     
-    (setq count 1)
+    (setq count 0)
     ;; (setq rest 0)
     (loop :for b :from 0 :below bars :by 1 :do
         (if (< (nth (* b quant) p-playing) 0)
@@ -547,16 +572,16 @@
 (defun get-scale-chord (mode)
     (cond
         ((string-equal mode "Major")
-            (list 0 2 2 1 2 2 2 1)
+            (list 2 2 1 2 2 2 1)
         )
         ((string-equal mode "Minor")
-            (list 0 2 1 2 2 1 2 2)
+            (list 2 1 2 2 1 2 2)
         )
         ((string-equal mode "Diminished")
-            (list 0 2 1 2 1 2 1 2)
+            (list 2 1 2 1 2 1 2)
         )
         ((string-equal mode "Augmented")
-            (list 0 3 1 3 1 3 1)
+            (list 3 1 3 1 3 1)
         )
     )
 )
