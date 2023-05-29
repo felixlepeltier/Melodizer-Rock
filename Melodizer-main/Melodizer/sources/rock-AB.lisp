@@ -38,6 +38,7 @@
       (similarity-percent-A0 :accessor similarity-percent-A0 :initform 50 :type integer :documentation "Percentage of resemblance with first A")
       (block-position-A :accessor block-position-A :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
       (block-position-B :accessor block-position-B :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
+      (semitones :accessor semitones :initform 0 :type integer :documentation "Semitones of transposition from key")
     )
 )
 
@@ -155,6 +156,7 @@
       (similarity-percent-B0 :accessor similarity-percent-B0 :initform 50 :type integer :documentation "Percentage of resemblance with first B")
       (block-position-A :accessor block-position-A :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
       (block-position-B :accessor block-position-B :initform -1 :type integer :documentation "Index of the A or B block within the global structure")
+      (semitones :accessor semitones :initform 0 :type integer :documentation "Semitones of transposition from key")
     )
 )
 
@@ -783,6 +785,27 @@
       )
 
     ; Key
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 250 50)
+    ;;   (om::om-make-point 100 50)
+    ;;   "Semitones from first A"
+    ;;   :font om::*om-default-font1b*
+    ;; )
+
+    ;; (om::om-make-dialog-item
+    ;;   'om::pop-up-menu
+    ;;   (om::om-make-point 350 50)
+    ;;   (om::om-make-point 80 20)
+    ;;   "semitones from key"
+    ;;   :range (loop :for i :from -12 :below 12 :collect (number-to-string i))
+    ;;   :value (number-to-string (semitones (om::object editor)))
+    ;;   :di-action #'(lambda (m)
+    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;;     (setf (semitones (om::object editor)) (string-to-number check))
+    ;;     ;; (change-subblocks-values (om::object editor) :semitones (semitones (om::object editor)))
+    ;;   )
+    ;; )
 
     (om::om-make-dialog-item
       'om::om-static-text

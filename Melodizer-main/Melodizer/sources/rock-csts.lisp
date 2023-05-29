@@ -389,8 +389,8 @@
     (let ((sim (similarity-percent-s r-block)) 
             temp-push  temp-playing      
         )
-        (setq temp-push (translate-chords sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
-                                        (chord-key r-block) (chord-quality r-block) push-s))  
+        (setq temp-push (translate-chords-2 sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
+                                        (semitones r-block) push-s))  
         (cst-common-vars sp temp-push push sim)
 
     )
@@ -406,8 +406,8 @@
     (let ((diff (difference-percent-s d-block)) 
             temp-push  temp-playing      
         )
-        (setq temp-push (translate-chords sp (chord-key (s-block d-parent)) (chord-quality (s-block d-parent))
-                                        (chord-key d-block) (chord-quality d-block) push-s))
+        (setq temp-push (translate-chords-2 sp (chord-key (s-block d-parent)) (chord-quality (s-block d-parent))
+                                        (semitones d-block) push-s))
         
         (cst-common-vars sp temp-push push (- 100 diff))
         
@@ -577,7 +577,7 @@
         (offset (- (name-to-note-value (chord-key rock)) 60))
         chordset
         )
-        
+        (print "chord-key-cst-int")
         (loop :for i :from 0 :below (length playing) :by 1 :do
             (let (bool-array bool-temp chordset)
                 ;; (if (= i 0)
@@ -585,7 +585,7 @@
                 ;;     (setq chordset (build-scaleset chord offset))
                 ;; )
                 (setq chordset (build-scaleset chord offset))
-                (print chordset)
+                
                 (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
                 (loop :for n :from 0 :below (length chordset) :by 1 :do
                     (let (bool)
@@ -606,7 +606,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-min-length-rock (sp push pull playing min-length)
-    (print min-length)
+    (print "note-min-length-rock")
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
             (if (typep (nth j push) 'gil::int-var)
@@ -643,6 +643,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-max-length-rock (sp push pull max-length)
+    (print "note-max-length-rock")
     (setq l max-length)
     (if (typep (nth 0 push) 'gil::int-var)
         (loop :for j :from 0 :below (- (length push) l) :by 1 :do
@@ -739,6 +740,7 @@
 )
 
 (defun translate-chords (sp chord1 quality1 chord2 quality2 push)
+    (print "translate chord")
     (let (
         (notes (build-scaleset (get-scale-chord quality1)  ;if - mode selectionné
                     (- (name-to-note-value chord1) 60)))
@@ -752,7 +754,43 @@
         (setq temp-push (gil::add-int-var-array sp (length push) -1 127))
         (loop :for i :from 0 :below (length push) :do
             (let ((bool-array (gil::add-bool-var-array sp (length notes) 0 1)) bool-temp bool-tot difference)
-                (loop :for n :from 0 :below (length notes) :do
+                (loop :for n :from 0 :below (min (length notes) (length new-notes)) :do
+                    (let (bool1 bool2)
+                        ;; If the note belongs to the chord, force the new note to belong to the new chord
+                        (setq bool1 (gil::add-bool-var-expr sp (nth i push) gil::IRT_EQ (nth n notes)))
+                        (setq bool2 (gil::add-bool-var-expr sp (nth i temp-push) gil::IRT_EQ (nth n new-notes)))
+                        (gil::g-rel sp bool1 gil::IRT_EQ bool2)
+                        (gil::g-rel sp (nth n bool-array) gil::IRT_EQ bool1)
+                    )
+                )
+                ;; Either the note belong to the chord or the difference between the old and new note 
+                ;; is equal to the difference between the chords
+                (setq bool-tot (gil::add-bool-var sp 0 1))
+                (gil::g-rel sp gil::BOT_OR bool-array bool-tot)
+                (setq difference (gil::add-int-var-expr sp (nth i push) gil::IOP_SUB (nth i temp-push)))
+                (setq bool-temp (gil::add-bool-var-expr sp difference gil::IRT_EQ diff))
+                (gil::g-op sp bool-tot gil::BOT_OR bool-temp 1)
+            )
+        )
+        temp-push
+    )
+)
+
+(defun translate-chords-2 (sp chord1 quality1 semitones push)
+    (print "translate chord")
+    (let (
+        (notes (build-scaleset (get-scale-chord quality1)  ;if - mode selectionné
+                    (- (name-to-note-value chord1) 60)))
+        (diff semitones)
+        temp-push  new-notes      
+        )
+        (setq new-notes (loop :for i :from 0 :below (length notes) :collect (+ (nth i notes) semitones)))
+        (setq notes (append '(-1) notes))
+        (setq new-notes (append '(-1) new-notes))
+        (setq temp-push (gil::add-int-var-array sp (length push) -1 127))
+        (loop :for i :from 0 :below (length push) :do
+            (let ((bool-array (gil::add-bool-var-array sp (length notes) 0 1)) bool-temp bool-tot difference)
+                (loop :for n :from 0 :below (min (length notes) (length new-notes)) :do
                     (let (bool1 bool2)
                         ;; If the note belongs to the chord, force the new note to belong to the new chord
                         (setq bool1 (gil::add-bool-var-expr sp (nth i push) gil::IRT_EQ (nth n notes)))
@@ -775,6 +813,7 @@
 )
 
 (defun minimise-interval (sp playing-i-one playing-i chord quality)
+    (print "minimise interval")
     (let (interval interval-abs scalset interval-array)
         (setq interval (gil::add-int-var-expr sp playing-i gil::IOP_SUB playing-i-one))
         (setq interval-abs (gil::add-int-var sp 0 127))

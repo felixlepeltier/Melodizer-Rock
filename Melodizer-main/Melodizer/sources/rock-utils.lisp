@@ -12,7 +12,8 @@
                                                 max-note-length
                                                 min-simultaneous-notes
                                                 max-simultaneous-notes
-                                                chord-quality)
+                                                chord-quality
+                                                semitones)
     (let (block-list)
     
     ;; Setup the sub-block list for the loop
@@ -131,8 +132,12 @@
                                     (max-note-length x) (floor (expt 2 (- (log max-note-length 2) (diff-max-length x))))))
                     )
                 )
+                (if semitones
+                    (setf (semitones x) semitones)
+                )
             )
         )
+        
         
         (change-subblocks-values x  :bar-length (bar-length x)
                                     :chord-key (chord-key x)
@@ -147,6 +152,7 @@
                                     :min-simultaneous-notes min-simultaneous-notes
                                     :max-simultaneous-notes max-simultaneous-notes
                                     :chord-quality (chord-quality x)
+                                    :semitones semitones
         )
         
     )

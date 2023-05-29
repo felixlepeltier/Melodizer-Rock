@@ -119,6 +119,7 @@
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
       (similarity-percent-s :accessor similarity-percent-s :initform 50 :type integer)
+      (semitones :accessor semitones :initform 0 :type integer :documentation "Semitones of transposition from key")
     )
 )
 
@@ -154,13 +155,13 @@
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 300)
+        :size (om::om-make-point 500 195)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
       (r-constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 805 100)
-        :position (om::om-make-point 5 310)
+        :size (om::om-make-point 500 100)
+        :position (om::om-make-point 5 205)
         :bg-color om::*azulito*)
       )
       (accompaniment-panel (om::om-make-view 'om::om-view
@@ -216,6 +217,7 @@
       (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
       (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
       (difference-percent-s :accessor difference-percent-s :initform 75 :type integer)
+      (semitones :accessor semitones :initform 0 :type integer :documentation "Semitones of transposition from key")
     )
 )
 
@@ -250,7 +252,7 @@
       ;;; setting the different regions of the tool ;;;
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 500 300)
+        :size (om::om-make-point 500 195)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
@@ -260,8 +262,8 @@
         :bg-color om::*azulito*)
       )
       (d-constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 805 100)
-        :position (om::om-make-point 5 310)
+        :size (om::om-make-point 500 100)
+        :position (om::om-make-point 5 205)
         :bg-color om::*azulito*)
       )
     )
@@ -411,6 +413,27 @@
         (print (similarity-percent-s (om::object editor)))
       )
     )
+
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 200 10)
+      (om::om-make-point 100 50)
+      "Semitones from s block"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 300 10)
+      (om::om-make-point 80 20)
+      "semitones from s block"
+      :range (loop :for i :from -12 :below 12 :collect (number-to-string i))
+      :value (number-to-string (semitones (om::object editor)))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (semitones (om::object editor)) (string-to-number check))
+      )
+    )
   )
 )
 
@@ -466,6 +489,26 @@
         (setf (difference-percent-s (om::object editor)) (om::om-slider-value s))
         (print "difference-percent-s: ")
         (print (difference-percent-s (om::object editor)))
+      )
+    )
+    (om::om-make-dialog-item
+      'om::om-static-text
+      (om::om-make-point 200 10)
+      (om::om-make-point 100 50)
+      "Semitones from s block"
+      :font om::*om-default-font1b*
+    )
+
+    (om::om-make-dialog-item
+      'om::pop-up-menu
+      (om::om-make-point 300 10)
+      (om::om-make-point 80 20)
+      "semitones from s block"
+      :range (loop :for i :from -12 :below 12 :collect (number-to-string i))
+      :value (number-to-string (semitones (om::object editor)))
+      :di-action #'(lambda (m)
+        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+        (setf (semitones (om::object editor)) (string-to-number check))
       )
     )
   )
@@ -602,56 +645,56 @@
     )
 
     ; Key
+    
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 300 50)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Chord key"
+    ;;   :font om::*om-default-font1b*
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 300 50)
-      (om::om-make-point 200 20)
-      "Chord key"
-      :font om::*om-default-font1b*
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::pop-up-menu
+    ;;   (om::om-make-point 400 50)
+    ;;   (om::om-make-point 80 20)
+    ;;   "Chord key"
+    ;;   :range '("C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
+    ;;   :value (chord-key (om::object editor))
+    ;;   :di-action #'(lambda (m)
+    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;;     (if (string= check "None")
+    ;;       (setf (chord-key (om::object editor)) nil)
+    ;;       (setf (chord-key (om::object editor)) check)
+    ;;     )      )
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 400 50)
-      (om::om-make-point 80 20)
-      "Chord key"
-      :range '("C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
-      :value (chord-key (om::object editor))
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (chord-key (om::object editor)) nil)
-          (setf (chord-key (om::object editor)) check)
-        )      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::om-static-text
+    ;;   (om::om-make-point 300 100)
+    ;;   (om::om-make-point 200 20)
+    ;;   "Chord quality"
+    ;;   :font om::*om-default-font1b*
+    ;; )
 
-    (om::om-make-dialog-item
-      'om::om-static-text
-      (om::om-make-point 300 100)
-      (om::om-make-point 200 20)
-      "Chord quality"
-      :font om::*om-default-font1b*
-    )
-
-    (om::om-make-dialog-item
-      'om::pop-up-menu
-      (om::om-make-point 400 100)
-      (om::om-make-point 80 20)
-      "Chord quality"
-      :value (chord-quality (om::object editor))
-      :range '("Major" "Minor" "Augmented" "Diminished")
-      :di-action #'(lambda (m)
-        (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-        (if (string= check "None")
-          (setf (chord-quality (om::object editor)) nil)
-          (setf (chord-quality (om::object editor)) check))        
-      )
-    )
+    ;; (om::om-make-dialog-item
+    ;;   'om::pop-up-menu
+    ;;   (om::om-make-point 400 100)
+    ;;   (om::om-make-point 80 20)
+    ;;   "Chord quality"
+    ;;   :value (chord-quality (om::object editor))
+    ;;   :range '("Major" "Minor" "Augmented" "Diminished")
+    ;;   :di-action #'(lambda (m)
+    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
+    ;;     (if (string= check "None")
+    ;;       (setf (chord-quality (om::object editor)) nil)
+    ;;       (setf (chord-quality (om::object editor)) check))        
+    ;;   )
+    ;; )
 
      (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 150)
+      (om::om-make-point 300 50)
       (om::om-make-point 200 20)
       "Minimum pitch"
       :font om::*om-default-font1b*
@@ -676,7 +719,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 300 170)
+      (om::om-make-point 300 70)
       (om::om-make-point 150 20)
       "Minimum pitch"
       :range '(1 127)
@@ -684,17 +727,12 @@
       :value (min-pitch (om::object editor))
       :di-action #'(lambda (s)
         (setf (min-pitch (om::object editor)) (om::om-slider-value s))
-        (let ((old-diff 0))
-          (if (relative-to-same (om::object editor))
-              (setq old-diff (diff-min-pitch (om::object editor)))
-          )
-        )
       )
     )
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 220)
+      (om::om-make-point 300 120)
       (om::om-make-point 200 20)
       "Maximum pitch"
       :font om::*om-default-font1b*
@@ -719,7 +757,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 300 240)
+      (om::om-make-point 300 140)
       (om::om-make-point 150 20)
       "Maximum pitch"
       :range '(1 127)
@@ -727,11 +765,6 @@
       :value (max-pitch (om::object editor))
       :di-action #'(lambda (s)
         (setf (max-pitch (om::object editor)) (om::om-slider-value s))
-        (let ((old-diff 0))
-          (if (relative-to-same (om::object editor))
-              (setq old-diff (diff-max-pitch (om::object editor)))
-          )
-        )
       )
     )
   )
