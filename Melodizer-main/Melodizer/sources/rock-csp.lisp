@@ -43,14 +43,14 @@
         (gil::g-specify-percent-diff sp percent-diff)
 
         ;time stop
-        ;; (setq tstop (gil::t-stop)); create the time stop object
-        ;; (gil::time-stop-init tstop 500); initialize it (time is expressed in ms)
+        (setq tstop (gil::t-stop)); create the time stop object
+        (gil::time-stop-init tstop 500); initialize it (time is expressed in ms)
 
         ;search options
         (setq sopts (gil::search-opts)); create the search options object
         (gil::init-search-opts sopts); initialize it
         (gil::set-n-threads sopts 1); set the number of threads to be used during the search (default is 1, 0 means as many as available)
-        ;; (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
+        (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
         ;; (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
@@ -277,9 +277,10 @@
          sol score-voice score-acc)
 
          (print "in search basic")
-        ;; (gil::time-stop-reset tstop);reset the tstop timer before launching the search
+         (gil::time-stop-reset tstop);reset the tstop timer before launching the search
 
         (om::while check :do
+            
             (setq sol (gil::search-next se)); search the next solution
             (if (null sol)
                 (stopped-or-ended (gil::stopped se) (stop-search rock-object) tstop); check if there are solutions left and if the user wishes to continue searching

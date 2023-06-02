@@ -580,10 +580,6 @@
         (print "chord-key-cst-int")
         (loop :for i :from 0 :below (length playing) :by 1 :do
             (let (bool-array bool-temp chordset)
-                ;; (if (= i 0)
-                ;;     (setq chordset (build-scaleset (get-chord (chord-quality rock)) offset))
-                ;;     (setq chordset (build-scaleset chord offset))
-                ;; )
                 (setq chordset (build-scaleset chord offset))
                 
                 (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
