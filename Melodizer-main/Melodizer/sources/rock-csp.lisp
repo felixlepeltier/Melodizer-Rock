@@ -43,14 +43,14 @@
         (gil::g-specify-percent-diff sp percent-diff)
 
         ;time stop
-        ;; (setq tstop (gil::t-stop)); create the time stop object
-        ;; (gil::time-stop-init tstop 500); initialize it (time is expressed in ms)
+        (setq tstop (gil::t-stop)); create the time stop object
+        (gil::time-stop-init tstop 5000); initialize it (time is expressed in ms)
 
         ;search options
         (setq sopts (gil::search-opts)); create the search options object
         (gil::init-search-opts sopts); initialize it
         (gil::set-n-threads sopts 1); set the number of threads to be used during the search (default is 1, 0 means as many as available)
-        ;; (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
+        (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
         ;; (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
@@ -96,7 +96,6 @@
         ;; connects push pull and playing with constraints
         (link-push-pull-playing-int sp push pull playing max-pitch)
         (limit-intervals-cst sp playing)
-        ;; (limit-song-interval sp playing 24)
         (link-push-pull-playing-set sp push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
         
         
@@ -113,7 +112,6 @@
                   srdc-parent notes-per-block)
                 (setq srdc-parent (nth i block-list))
                 (setq notes-per-block (* (bar-length srdc-parent) quant))
-                ;; (setq startidx (* i notes-per-block))
                 (print startidx)
                 (setq temp-push (sublst push startidx notes-per-block))
                 (setq temp-pull (sublst pull startidx notes-per-block))
@@ -130,17 +128,12 @@
                 (if (> startidx 0)
                     (progn
                         (gil::g-rel sp (first temp-pull) gil::IRT_EQ (nth (- startidx 1) playing))
-                        ;; (if (or (string/= (chord-key srdc-parent) (chord-key (nth (- i 1) block-list))) 
-                        ;;         (string/= (chord-quality srdc-parent) (chord-quality (nth (- i 1) block-list))))
-                        ;;     (minimise-interval sp (nth (- startidx 1) playing) (first temp-playing) 
-                        ;;                 (chord-key srdc-parent) (chord-quality srdc-parent))
-                        ;; )
                     )
                     
                 )
                 
                 (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing 
-                                            temp-push-acc temp-pull-acc temp-playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
+                                            temp-push-acc temp-pull-acc temp-playing-acc push-A0 push-B0 quant max-pitch sp)
                 (setq startidx (+ startidx notes-per-block))
             )
         )
@@ -176,11 +169,7 @@
                         (chord-key-cst-int sp push playing rock)
                     )
                 )
-                ; Time constraints
-                ;; (if (min-note-length-flag rock)
-                ;;     (note-min-length-rock sp push pull playing (min-note-length rock))
-                ;; )
-
+                
                 (if (min-note-length-flag rock)
                     (if is-cadence 
                         (note-min-length-rock sp push pull playing (smallest 16 (* (min-note-length-mult rock) (min-note-length rock))))
@@ -210,9 +199,6 @@
         ((and    is-cadence
                 (typep rock 'mldz::accompaniment))
             (progn
-                ;; (let ((bar-len (/ (bar-length (parent rock)) 4))
-                ;;     )
-                ;; )
                 ; Time constraints
                 (if (min-note-length-flag rock)
                     (note-min-length-rock sp push pull playing (* (/ (min-note-length rock) 2) (bar-length rock)))
@@ -223,8 +209,6 @@
                 )
             )
         )
-
-        ;; (print "after if is cadence")
 
         ((and    (not is-cadence)
                 (typep rock 'mldz::accompaniment))
@@ -277,7 +261,7 @@
          sol score-voice score-acc)
 
          (print "in search basic")
-        ;; (gil::time-stop-reset tstop);reset the tstop timer before launching the search
+        (gil::time-stop-reset tstop);reset the tstop timer before launching the search
 
         (om::while check :do
             (setq sol (gil::search-next se)); search the next solution
@@ -290,7 +274,6 @@
         ;créer score qui retourne la liste de pitch et la rhythm tree
         (print "building scores")
         (print (gil::g-values sol push))
-        ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
         (print (gil::g-values sol pull))
         (print (gil::g-values sol playing))
         (setq score-voice (build-voice-int sol push pull playing bars quant (tempo rock-object)))

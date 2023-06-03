@@ -1,16 +1,9 @@
 (in-package :mldz)
 
+;; Post the constraints to link the three arrays of the representation when using SetVar
 (defun link-push-pull-playing-set (sp push pull playing max-pitch max-simultaneous-notes)
-    (print "link-push-pull-playing-set")
     ;initial constraint on pull, push, playing and durations
     (gil::g-empty sp (first pull)) ; pull[0] == empty
-    ;;-------------------------------------------
-    ;; les 3 arrays on une variable de plus pour eviter d'imposer un silence en derniere note
-    ;; mais les deux contraintes interdisent un push et playing en dernier lieu rendent 100%
-    ;; de diff impossible pour trouver une seconde solution
-    ;;-------------------------------------------
-    ;; (gil::g-empty sp (car (last push)))  ; push[bars*quant] == empty
-    ;; (gil::g-empty sp (car (last playing)))  ; playing[bars*quant] == empty
     (gil::g-rel sp (first push) gil::SRT_EQ (first playing)) ; push[0] == playing [0]
 
     ;connect push, pull and playing
@@ -21,16 +14,19 @@
             (gil::g-op sp temp gil::SOT_UNION (nth j push) (nth j playing)); playing[j] == playing[j-1] - pull[j] + push[j] Playing note
             (gil::g-rel sp (nth j pull) gil::SRT_SUB (nth (- j 1) playing)) ; pull[j] <= playing[j-1] cannot pull a note not playing
             (gil::g-set-op sp (nth (- j 1) playing) gil::SOT_MINUS (nth j pull) gil::SRT_DISJ (nth j push)); push[j] || playing[j-1] - pull[j] Cannot push a note still playing
-            ;; (gil::g-rel sp (nth j pull) gil::SRT_DISJ (nth j push))
         )
     )
 )
 
+;; Post the constraints to link the three arrays of the representation when using IntVar
 (defun link-push-pull-playing-int (sp push pull playing max-pitch)
-    (print "start link-push-pull-playing")
     ;initial constraint on pull, push, playing and durations
     (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
     (gil::g-rel sp (first push) gil::IRT_EQ (first playing)) ; push[0] == playing [0]
+
+    (loop :for j :from 16 :below (length push) :by 16 :do
+        (gil::g-rel sp (nth j pull) gil::IRT_EQ (nth (- j 1) playing))
+    )
 
     ;connect push, pull and playing
     (loop :for j :from 1 :below (length push) :do ;for each interval
@@ -40,15 +36,9 @@
             push-j-playing-j
             pull-j-playing-j-one
             pull-j-one
-            pull-j-nq-one
             push-j-one
             push-j-nq-one
             playing-j-one
-            playing-j-nq-one
-            pull-j-nq-playing-j-one
-            playing-j-nq-playing-j-one
-            pull-j-nq-playing-j-one
-            playing-j-nq-playing-j-one
             )
             (setq 
                 playing-j-playing-j-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ (nth (- j 1) playing))
@@ -56,100 +46,55 @@
                 push-j-playing-j (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ (nth j playing))
                 pull-j-playing-j-one (gil::add-bool-var-expr sp (nth j pull) gil::IRT_EQ (nth (- j 1) playing))
                 pull-j-one (gil::add-bool-var-expr sp (nth j pull) gil::IRT_EQ -1)
-                pull-j-nq-one (gil::add-bool-var-expr sp (nth j pull) gil::IRT_NQ -1)
                 push-j-one (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ -1)
                 push-j-nq-one (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ -1)
                 playing-j-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1)
-                playing-j-nq-one (gil::add-bool-var-expr sp (nth j playing) gil::IRT_NQ -1)
-                pull-j-nq-playing-j-one (gil::add-bool-var-expr sp (nth (- j 1) playing) gil::IRT_NQ (nth j pull))
-                playing-j-nq-playing-j-one (gil::add-bool-var-expr sp (nth (- j 1) playing) gil::IRT_NQ (nth j playing))
             )
 
+            ;; playing[j] can only be equal to the preceding played note or a new pushed note
+            ;; playing[j] = playing[j-1] || playing[j] = push[j]
             (gil::g-op sp playing-j-playing-j-one gil::BOT_OR push-j-playing-j 1)
+            ;; push[j] can only equal the current note playing or -1
+            ;; push[j] = playing[j] || push[j] = -1
             (gil::g-op sp push-j-playing-j gil::BOT_OR push-j-one 1)
+            ;; A note can be pulled only if it was previously playing
+            ;; pull[j] = playing[j-1] || pull[j] = -1
             (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
-
+            ;; A note can be pushed only if the previous playing note was pulled
+            ;; push[j] /= -1 => pull[j] = playing[j-1]
             (gil::g-op sp push-j-nq-one gil::BOT_IMP pull-j-playing-j-one 1)
-
-            ;; Playing note
-            ;; Playing[j] can only be equal to the preceding played note or a new pushed note
-            ;; (gil::g-op sp playing-j-playing-j-one gil::BOT_OR push-j-playing-j 1)
             ;; No note playing implies no note pushed and previous note pulled
+            ;; playing[j] = -1 => push[j] = -1 && pull[j] = playing[j-1]
             (gil::g-op sp playing-j-one gil::BOT_IMP push-j-one 1)
             (gil::g-op sp playing-j-one gil::BOT_IMP pull-j-playing-j-one 1)
-            ;; Same note playing implies push[j] = pull[j] <=> playing[j] = playing[j-1]
+            ;; Same note playing implies the note to either have been pushed and pulled
+            ;; at the same time, or neither pushed or pulled
+            ;; push[j] = pull[j] <=> playing[j] = playing[j-1]
             (gil::g-op sp playing-j-playing-j-one gil::BOT_IMP push-j-pull-j 1)
             (gil::g-op sp push-j-pull-j gil::BOT_IMP playing-j-playing-j-one 1)
-            
-
-            ;; Pulled note
-            ;; A note can be pulled only if it was previously playing
-            ;; (pull[j] = playing[j-1] OR pull[j] = -1) = 1
-            ;; (gil::g-op sp pull-j-playing-j-one gil::BOT_OR pull-j-one 1)
-            ;; (gil::g-op sp pull-j-playing-j-one gil::BOT_IMP push-j-playing-j 1)
-            ;; (gil::g-op sp push-j-playing-j gil::BOT_IMP pull-j-playing-j-one 1)
-            
-
-            ;; Pushed note
-            ;; A note is pushed when a note is playing and the previous note was pulled
-            ;; push[j] /= -1 if
-            ;; playing[j] /= -1 AND pull[j] /= -1
-            ;; (gil::g-op sp playing-j-nq-one gil::BOT_AND pull-j-nq-one push-j-playing-j)
-            ;; push[j] can only equal the current note playing or -1
-            ;; (gil::g-op sp push-j-playing-j gil::BOT_OR push-j-one 1)
-            ;; (gil::g-op sp push-j-nq-one gil::BOT_IMP pull-j-playing-j-one 1)
-        
         )
     )
 )
 
 
-(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 push-B0 quant max-pitch max-simultaneous-notes sp)
+;; Call the right function to constrain the block by their type
+(defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 push-B0 quant max-pitch sp)
     (if (typep srdc-parent 'mldz::a)
-        ;; 
-        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
-        ;; 
-        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch max-simultaneous-notes sp)
+        ;; The block is of type A, constrain it as such
+        (constrain-srdc-from-A srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch sp)
+        ;; The block is of type B, constrain it as such
+        (constrain-srdc-from-B srdc-parent push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch sp)
     )
 )
 
 
-
-(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch max-simultaneous-notes sp)
-    (print "constrain-srdc-from-A")
-    (let ((post-constraints t) sim)
-    (if (typep A-block 'mldz::a)
-        (setq sim (similarity-percent-A0 A-block))
-        (setq sim (similarity-percent-B0 A-block))
-    )
-    ;; bars*quant elements and starts at startidx
-    ;; for the sub arrays of push pull playing
-    (if (and (typep A-block 'mldz::a) (/= (block-position A-block) (idx-first-a (parent A-block))))
-        (let (temp-push)
-            (setq temp-push (translate-chords sp (chord-key (nth (idx-first-a (parent A-block)) (block-list (parent A-block)))) 
-                                                (chord-quality (nth (idx-first-a (parent A-block)) (block-list (parent A-block))))
-                                                (chord-key A-block) (chord-quality A-block) push-A0))
-            (cst-common-vars sp temp-push push sim)
-            (if (= sim 100)
-                (setq post-constraints nil)
-                (setq post-constraints t)
-            )
-        )
+;; Split the three arrays for the sub-blocks then call the block-specific constraints
+(defun constrain-srdc-from-AB (A-block push pull playing push-acc pull-acc playing-acc post-constraints quant max-pitch sp)
+    (print "constrain-srdc-from-AB")
     
-        (if (and (typep A-block 'mldz::b) (/= (block-position A-block) (idx-first-b (parent A-block))))
-            (let (temp-push)
-                (setq temp-push (translate-chords sp (chord-key (nth (idx-first-b (parent A-block)) (block-list (parent A-block)))) 
-                                                    (chord-quality (nth (idx-first-b (parent A-block)) (block-list (parent A-block))))
-                                                    (chord-key A-block) (chord-quality A-block) push-B0))
-                (cst-common-vars sp temp-push push sim)
-                (if (= sim 100)
-                    (setq post-constraints nil)
-                    (setq post-constraints t)
-                )
-            )
-        )
-    )
     (if (> (bar-length (s-block A-block)) 0)
+        ;; bars*quant elements in each subblock and starts at startidx
+        ;; for the sub arrays of push pull playing
         (let ((bars (bar-length (s-block A-block)))
             (s-block (s-block A-block))
             (r-block (r-block A-block))
@@ -182,7 +127,7 @@
             (setq temp-pull-s-acc (sublst pull-acc startidx-s notes-in-subblock))
             (setq temp-playing-s-acc (sublst playing-acc startidx-s notes-in-subblock))
 
-
+            ;; access push pull playing arrays for the section related to r
             (setq startidx-r notes-in-subblock)
             (setq temp-push-r (sublst push startidx-r notes-in-subblock))
             (setq temp-pull-r (sublst pull startidx-r notes-in-subblock))
@@ -190,13 +135,8 @@
             (setq temp-push-r-acc (sublst push-acc startidx-r notes-in-subblock))
             (setq temp-pull-r-acc (sublst pull-acc startidx-r notes-in-subblock))
             (setq temp-playing-r-acc (sublst playing-acc startidx-r notes-in-subblock))
-            ;; (if (or (string/= (chord-key r-block) (chord-key s-block)) 
-            ;;         (string/= (chord-quality r-block) (chord-quality s-block)))
-            ;;     (minimise-interval sp (nth (- startidx-r 1) playing) (first temp-playing-r) 
-            ;;                             (chord-key r-block) (chord-quality r-block))
-            ;; )
 
-
+            ;; access push pull playing arrays for the section related to d
             (setq startidx-d (+ startidx-r notes-in-subblock))
             (setq temp-push-d (sublst push startidx-d notes-in-subblock))
             (setq temp-pull-d (sublst pull startidx-d notes-in-subblock))
@@ -205,13 +145,8 @@
             (setq temp-pull-d-acc (sublst pull-acc startidx-d notes-in-subblock))
             (setq temp-playing-d-acc (sublst playing-acc startidx-d notes-in-subblock))
             (gil::g-rel sp (nth 0 temp-pull-d) gil::IRT_EQ (nth (- startidx-d 1) playing)) ; pull[0]=playing[previous]
-            ;; (if (or (string/= (chord-key r-block) (chord-key d-block)) 
-            ;;         (string/= (chord-quality r-block) (chord-quality d-block)))
-            ;;     (minimise-interval sp (nth (- startidx-d 1) playing) (first temp-playing-d) 
-            ;;                             (chord-key d-block) (chord-quality d-block))
-            ;; )
 
-
+            ;; access push pull playing arrays for the section related to c
             (setq startidx-c (+ startidx-d notes-in-subblock))
             (setq temp-push-c (sublst push startidx-c notes-in-subblock))
             (setq temp-pull-c (sublst pull startidx-c notes-in-subblock))
@@ -220,70 +155,94 @@
             (setq temp-pull-c-acc (sublst pull-acc startidx-c notes-in-subblock))
             (setq temp-playing-c-acc (sublst playing-acc startidx-c notes-in-subblock))
             (gil::g-rel sp (nth startidx-c pull) gil::IRT_EQ (nth (- startidx-c 1) playing)) ; pull[0]=playing[previous]
-            ;; (if (or (string/= (chord-key d-block) (chord-key c-block)) 
-            ;;         (string/= (chord-quality d-block) (chord-quality c-block)))
-            ;;     (minimise-interval sp (nth (- startidx-c 1) playing) (first temp-playing-c) 
-            ;;                             (chord-key c-block) (chord-quality c-block))
-            ;; )
-
-
-
 
             ;; set constraints on these arrays from the values saved in the slots of s-block 
             ;; s
             (print "constraining s")
             (constrain-s sp s-block A-block temp-push-s temp-pull-s temp-playing-s
                                             temp-push-s-acc temp-pull-s-acc temp-playing-s-acc 
-                                            max-pitch max-simultaneous-notes post-constraints)
+                                            max-pitch post-constraints)
 
             ;; r
-
             (print "constraining r")
             (constrain-r sp r-block A-block temp-push-r temp-pull-r temp-playing-r  
                                             temp-push-r-acc temp-pull-r-acc temp-playing-r-acc
                                             temp-push-s temp-pull-s temp-playing-s
-                                            max-pitch max-simultaneous-notes post-constraints)
+                                            max-pitch post-constraints)
         
             ;; d
-
             (print "constraining d")
             (constrain-d sp d-block A-block temp-push-d temp-pull-d temp-playing-d
                                             temp-push-d-acc temp-pull-d-acc temp-playing-d-acc
                                             temp-push-s temp-pull-s temp-playing-s
-                                            max-pitch max-simultaneous-notes post-constraints)
+                                            max-pitch post-constraints)
 
             ;; c
-            
             (print "constraining c")
             (constrain-c sp c-block A-block temp-push-c temp-pull-c temp-playing-c
                                             temp-push-c-acc temp-pull-c-acc temp-playing-c-acc
-                                            max-pitch max-simultaneous-notes post-constraints)
+                                            max-pitch post-constraints)
 
         )
     )
+
+)
+
+(defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch sp)
+    (print "constrain-srdc-from-A")
+    (let ((post-constraints t) (sim (similarity-percent-A0 A-block)))
+
+    ;; If the block is not the first one of its type, the resemblance must be set with the first
+    (if (/= (block-position A-block) (idx-first-a (parent A-block)))
+        (let (temp-push)
+            (setq temp-push (translate-chords sp (chord-key (nth (idx-first-a (parent A-block)) (block-list (parent A-block)))) 
+                                                (chord-quality (nth (idx-first-a (parent A-block)) (block-list (parent A-block))))
+                                                (chord-key A-block) (chord-quality A-block) push-A0))
+            (cst-common-vars sp temp-push push sim)
+            ;; if it has 100% resemblance with the first A, posting constraints on melody might create conflicts
+            (if (= sim 100)
+                (setq post-constraints nil)
+                (setq post-constraints t)
+            )
+        )
+    )
+    
+    ;; A and B behave the same way, the only distinction is done 
+    ;; with the resemblance beween blocks of the same type
+    ;; so the same function can be called for the sub-blocks
+    (constrain-srdc-from-AB A-block push pull playing push-acc pull-acc playing-acc post-constraints quant max-pitch sp)
     )
 )
 
-(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch max-simultaneous-notes sp)
+(defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch sp)
     (print "constrain-srdc-from-B")
-    ;; for now A and B behave the same way so it suffices to call the function written for A
-    ;; when B will have different constraints then this function will have to be changed
-    ;; to accomodate this.
-    (constrain-srdc-from-A B-block push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch max-simultaneous-notes sp)
-)
+    (let ((post-constraints t) (sim (similarity-percent-B0 B-block)))
+    
+    (if (/= (block-position B-block) (idx-first-b (parent B-block)))
+        (let (temp-push)
+            (setq temp-push (translate-chords sp (chord-key (nth (idx-first-b (parent B-block)) (block-list (parent B-block)))) 
+                                                (chord-quality (nth (idx-first-b (parent B-block)) (block-list (parent B-block))))
+                                                (chord-key B-block) (chord-quality B-block) push-B0))
+            (cst-common-vars sp temp-push push sim)
+            ;; if it has 100% resemblance with the first A, posting constraints on melody might create conflicts
+            (if (= sim 100)
+                (setq post-constraints nil)
+                (setq post-constraints t)
+            )
+        )
+    )
 
+    ;; A and B behave the same way, the only distinction is done 
+    ;; with the resemblance beween blocks of the same type
+    ;; so the same function can be called for the sub-blocks
+    (constrain-srdc-from-AB B-block push pull playing push-acc pull-acc playing-acc post-constraints quant max-pitch sp)
+    )
+)
 
 ;; for now these constrain-srdc functions take the parent block as argument in case it comes in handy 
 ;; when we implement more constraints which could be specified through slots of the parent block
-(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-constraints)
-    ;; (gil::g-rel sp (first pull) gil::IRT_EQ -1) ; pull[0] == empty
+(defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch post-constraints)
     
-    ;; ;; if a source melody is given, then use it to generate push pull playing 
-    ;; ;; then constrain the push pull and playing of s to be equal to these arrays
-
-    ;; set-A-source = (/= melody-source nil) and (block-position-A == 0)
-    ;; set-B-source = (/= melody-source-B nil) and (block-position-B == 0)
-
     ;; if  (/= melody-source nil) and (block-position-A == 0)
     (let ((melody-A (melody-source (parent s-parent)))
         (melody-B (melody-source-B (parent s-parent)))
@@ -355,7 +314,7 @@
             )
             ;; neither set-A nor set-B =>
             ;; don't need to set a source melody, constrain as it should normally do
-                (post-rock-constraints sp s-block push pull playing nil post-constraints)
+            (post-rock-constraints sp s-block push pull playing nil post-constraints)
         )
         ;; ;; accompaniment should always be constrained
         (post-rock-constraints sp (accomp s-block) push-acc pull-acc playing-acc nil t)
@@ -366,43 +325,41 @@
 
 
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
-                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-constraints)
+                                        push-s pull-s playing-s max-pitch post-constraints)
 
     (gil::g-rel sp (first pull) gil::IRT_EQ (nth (- (length playing-s) 1) playing-s)) ; pull[0]=playing-s[quant-1]
 
     ;; post optional constraints defined in the rock csp
-    ;; dont constrain if source melody given
+    ;; dont constrain if source melody is given or the similarity with the s block is 100%
     (let (melody)
         (if (typep r-parent 'mldz::a)
             (setq melody (melody-source (parent r-parent)))
             (setq melody (melody-source-B (parent r-parent)))
         )
         (post-rock-constraints sp r-block push pull playing nil (and post-constraints (or (not melody) (< (similarity-percent-s r-block) 100))))
-
     )
 
     
     (post-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil t)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
-    ;; translated to the key of the r-block
+    ;; translated the number of semitones asked of the r-block
     (let ((sim (similarity-percent-s r-block)) 
             temp-push  temp-playing      
         )
         (setq temp-push (translate-chords-2 sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
                                         (semitones r-block) push-s))  
         (cst-common-vars sp temp-push push sim)
-
     )
 )
 
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc 
-                                        push-s pull-s playing-s max-pitch max-simultaneous-notes post-constraints)
+                                        push-s pull-s playing-s max-pitch post-constraints)
     (post-rock-constraints sp d-block push pull playing nil post-constraints)
     (post-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil t)
 
      ;; constrain d such that it has a difference of (difference-percent-s d-block) with notes played in s-block
-    ;; translated to the key of the d-block
+    ;; translated the number of semitones asked of the d-block
     (let ((diff (difference-percent-s d-block)) 
             temp-push  temp-playing      
         )
@@ -410,23 +367,17 @@
                                         (semitones d-block) push-s))
         
         (cst-common-vars sp temp-push push (- 100 diff))
-        
-        
     )
 )
 
 
-(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch max-simultaneous-notes post-constraints)
+(defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch post-constraints)
   
-    
-    
-
     ;; constrain c such that is respects the cadence specific rules
     ;; if cadence-type of the parent block is "Default", then pick cadence depending on the position of the block
     ;; in the global structure for example in the AABA structure, B would be in position 2 and would therefore not
     ;; have a Plagal cadence as this usually marks the end of a complete musical piece
 
-    (print "Before the case on cadence-type")
     (let ((block-list-len (length (block-list (parent c-parent)))) ;; how many blocks are in the global structure
         (position (block-position c-parent)) ;; position of the current block in the global structure (start index is 0)
         (c-type (cadence-type c-block))
@@ -458,12 +409,7 @@
             ((string= c-type "Perfect") 
                 (print "cadence-type")
                 (print "Perfect")
-                ;; Cadence parfaite : accord du cinquième degré suivi du premier degré. C’est très conclusif et c’est en général utilisé à la fin d’une phrase/section/pièce pour marquer la fin d’une partie, pas nécessairement du morceau complet.
-                ;; V -> I
 
-                ;; I IV V  distance par rapport a la key (ton)
-                ;; Major : 0| 2,5| 3,5
-                ;; Minor : 0| 2,5| 3,5
                 ;; Perfect V -> I
                 (setq chords-to-play (list 7 0))
                 (setq notes-to-play (append notes-to-play (list (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 2 triad-to-play)))))
@@ -476,8 +422,8 @@
             ((string= c-type "Plagal") 
                 (print "cadence-type")
                 (print "Plagal")
-                ;; Cadence plagale : accord du quatrième degré suivi du premier degré. C’est moins conclusif et moins fréquemment utilisé
-                ;; IV -> I
+
+                ;; Plagal IV -> I
                 (setq chords-to-play (list 5 0))
                 (setq notes-to-play (append notes-to-play (list (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 2 triad-to-play)))))
 
@@ -489,10 +435,8 @@
             ((string= c-type "Semi") 
                 (print "cadence-type")
                 (print "Semi")
-                ;; Demi cadence : n’importe quel accord vers le cinquième degré. Ca crée de la tension parce que l’harmonie reste en suspension et ne se résoud pas. 
-                ;; anything -> V
-                ;; in this case I -> V
 
+                ;; Demi I -> V
                 (setq chords-to-play (list 0 7))
                 (setq notes-to-play (append notes-to-play (list (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 0 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 1 triad-to-play)) (+ (+ chord-midi-value (nth 0 chords-to-play)) (nth 2 triad-to-play)))))
 
@@ -504,38 +448,20 @@
             ((string= c-type "Deceptive") 
                 (print "cadence-type")
                 (print "Deceptive")
-                ;; Deceptive cadence : accord du cinquième degré vers le sixième ou troisième degré. Ca crée une surprise puisque l’oreille s’attend à entendre le premier degré, et c’est souvent utilisé pour prolonger une phrase ou entre 2 sections pour donner un sentiment de continuité.
-                ;; V -> VI || V -> III
+                ;; Deceptive V -> VI || V -> III
             )
         )
     )
-    (print "After the case on cadence-type")
 
-    (print "Ending on the tonic")
     (let ((bar-len (bar-length c-block))
         (quant 16)
         (chord-midi-value (name-to-note-value (chord-key c-block)))
-        notes-setvar
         notes
         final-idx
-        prev-idx
-        (mnl (min-note-length c-block))
-        (mult (min-note-length-mult c-block))
         )
         (setq notes (octaves-of-note chord-midi-value))
-        (print notes)
-
-        (print "chord-midi-value: ")
-        (print chord-midi-value)
-
         (setq final-idx (- (* bar-len quant) 1))
-        (setq prev-idx (- final-idx (* mnl mult)))
-
-        ;; (setq notes-setvar (gil::add-set-var sp 0 128 0 (length notes)))
-        ;; (gil::g-rel sp notes-setvar gil::SRT_EQ notes)
-        (gil::g-dom sp (nth final-idx playing) notes)
-        ;; (end-on-tonic-cadence sp (nth prev-idx playing) (nth final-idx playing) notes)
-        
+        (gil::g-dom sp (nth final-idx playing) notes)  
     )
     (post-rock-constraints sp c-block push pull playing t post-constraints)
 
@@ -544,13 +470,12 @@
 
 
 (defun chord-key-cst (sp playing rock)
-    (print "chord-key-cst")
     (let ((key (chord-key rock))
         (quality (chord-quality rock))
         (chord-midi-value (name-to-note-value (chord-key rock)))
         (triad-to-play (list)) ;; intervals depending on quality
         (notes-to-play (list))
-        ) ;; notes to be pushed, list of lists
+        )
         (cond ((string= quality "Major") (setq triad-to-play (list 0 4 3)))
             ((string= quality "Minor") (setq triad-to-play (list 0 3 4)))
             ((string= quality "Diminished") (setq triad-to-play (list 0 3 3)))
@@ -563,29 +488,23 @@
                 (loop :for j :from 0 :below (length notes-to-play) :do
                     (gil::g-rel-reify sp (nth i playing) gil::SRT_EQ (nth j notes-to-play) (nth j bool-array) gil::RM_IMP)
                 )
-                (gil::g-rel sp gil::BOT_XOR bool-array 1)
+                ;; Exactly one triad can be played at each time
+                (gil::g-rel sp gil::BOT_OR bool-array 1)
             )
         )
-        
     )
 )
 
 
 (defun chord-key-cst-int (sp push playing rock)
     (let (
-        (chord (get-scale-chord (chord-quality rock)))  ;if - mode selectionné
+        (chord (get-scale-chord (chord-quality rock)))
         (offset (- (name-to-note-value (chord-key rock)) 60))
         chordset
         )
-        (print "chord-key-cst-int")
+        (setq chordset (build-scaleset chord offset))
         (loop :for i :from 0 :below (length playing) :by 1 :do
-            (let (bool-array bool-temp chordset)
-                ;; (if (= i 0)
-                ;;     (setq chordset (build-scaleset (get-chord (chord-quality rock)) offset))
-                ;;     (setq chordset (build-scaleset chord offset))
-                ;; )
-                (setq chordset (build-scaleset chord offset))
-                
+            (let (bool-array bool-temp)
                 (setq bool-array (gil::add-bool-var-array sp (+ (length chordset) 1) 0 1))
                 (loop :for n :from 0 :below (length chordset) :by 1 :do
                     (let (bool)
@@ -595,18 +514,18 @@
                 )
                 (setq bool-temp (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
                 (gil::g-rel sp bool-temp gil::IRT_EQ (nth (length chordset) bool-array))
-                (gil::g-rel sp gil::BOT_XOR bool-array 1)
+                (gil::g-rel sp gil::BOT_OR bool-array 1)
             )
         )
     )
 )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; LIMITING MINIMUM NOTE LENGTH ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-min-length-rock (sp push pull playing min-length)
-    (print "note-min-length-rock")
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
             (if (typep (nth j push) 'gil::int-var)
@@ -643,7 +562,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun note-max-length-rock (sp push pull max-length)
-    (print "note-max-length-rock")
     (setq l max-length)
     (if (typep (nth 0 push) 'gil::int-var)
         (loop :for j :from 0 :below (- (length push) l) :by 1 :do
@@ -705,14 +623,14 @@
 )
 
 (defun limit-intervals-cst (sp playing)
-    (let ((max-interval 7) (augmented-intervals '(1 6 8)))
+    (let ((max-interval 7))
         (loop :for i :from 1 :below (length playing) :do
-            (limit-one-interval-cst sp (nth i playing) (nth (- i 1) playing) max-interval augmented-intervals)
+            (limit-one-interval-cst sp (nth i playing) (nth (- i 1) playing) max-interval)
         )
     )
 )
 
-(defun limit-one-interval-cst (sp playing-i playing-i-one max-interval forbidden-intervals)
+(defun limit-one-interval-cst (sp playing-i playing-i-one max-interval)
     (let (bool-interval-max interval interval-abs bool-pi bool-pi-one bool)
             (setq bool-pi (gil::add-bool-var-expr sp playing-i gil::IRT_EQ -1))
             (setq bool-pi-one (gil::add-bool-var-expr sp playing-i-one gil::IRT_EQ -1))
@@ -727,26 +645,19 @@
             ;; interval <= 7 (perfect fifth)
             (setq bool-interval-max (gil::add-bool-var-expr sp interval-abs gil::IRT_LQ max-interval))
 
-            ;; The next three line are a way to authorize rests in the middle of a measure
+            ;; playing[i] = -1 OR |interval| <= max-interval
             (setq bool (gil::add-bool-var sp 0 1))
             (gil::g-op sp bool-pi gil::BOT_OR bool-pi-one bool)
             (gil::g-op sp bool gil::BOT_OR bool-interval-max 1)
-            ;; (gil::g-rel sp bool-interval-max gil::IRT_EQ 1)
-
-            ;; (loop :for a :below (length forbidden-intervals) :do
-            ;;     (gil::g-rel sp interval-abs gil::IRT_NQ (nth a forbidden-intervals))
-            ;; )
         )
 )
 
 (defun translate-chords (sp chord1 quality1 chord2 quality2 push)
-    (print "translate chord")
     (let (
-        (notes (build-scaleset (get-scale-chord quality1)  ;if - mode selectionné
+        (notes (build-scaleset (get-scale-chord quality1)
                     (- (name-to-note-value chord1) 60)))
-        (new-notes (build-scaleset (get-scale-chord quality2)  ;if - mode selectionné
+        (new-notes (build-scaleset (get-scale-chord quality2)
                     (- (name-to-note-value chord2) 60)))
-        (diff (- (name-to-note-value chord1) (name-to-note-value chord2)) )
         temp-push        
         )
         (setq notes (append '(-1) notes))
@@ -759,17 +670,9 @@
                         ;; If the note belongs to the chord, force the new note to belong to the new chord
                         (setq bool1 (gil::add-bool-var-expr sp (nth i push) gil::IRT_EQ (nth n notes)))
                         (setq bool2 (gil::add-bool-var-expr sp (nth i temp-push) gil::IRT_EQ (nth n new-notes)))
-                        (gil::g-rel sp bool1 gil::IRT_EQ bool2)
-                        (gil::g-rel sp (nth n bool-array) gil::IRT_EQ bool1)
+                        (gil::g-op sp bool1 gil::BOT_IMP bool2 1)
                     )
                 )
-                ;; Either the note belong to the chord or the difference between the old and new note 
-                ;; is equal to the difference between the chords
-                (setq bool-tot (gil::add-bool-var sp 0 1))
-                (gil::g-rel sp gil::BOT_OR bool-array bool-tot)
-                (setq difference (gil::add-int-var-expr sp (nth i push) gil::IOP_SUB (nth i temp-push)))
-                (setq bool-temp (gil::add-bool-var-expr sp difference gil::IRT_EQ diff))
-                (gil::g-op sp bool-tot gil::BOT_OR bool-temp 1)
             )
         )
         temp-push
@@ -781,7 +684,6 @@
     (let (
         (notes (build-scaleset (get-scale-chord quality1)  ;if - mode selectionné
                     (- (name-to-note-value chord1) 60)))
-        (diff semitones)
         temp-push  new-notes      
         )
         (setq new-notes (loop :for i :from 0 :below (length notes) :collect (+ (nth i notes) semitones)))
@@ -795,17 +697,9 @@
                         ;; If the note belongs to the chord, force the new note to belong to the new chord
                         (setq bool1 (gil::add-bool-var-expr sp (nth i push) gil::IRT_EQ (nth n notes)))
                         (setq bool2 (gil::add-bool-var-expr sp (nth i temp-push) gil::IRT_EQ (nth n new-notes)))
-                        (gil::g-rel sp bool1 gil::IRT_EQ bool2)
-                        (gil::g-rel sp (nth n bool-array) gil::IRT_EQ bool1)
+                        (gil::g-op sp bool1 gil::BOT_IMP bool2 1)
                     )
                 )
-                ;; Either the note belong to the chord or the difference between the old and new note 
-                ;; is equal to the difference between the chords
-                (setq bool-tot (gil::add-bool-var sp 0 1))
-                (gil::g-rel sp gil::BOT_OR bool-array bool-tot)
-                (setq difference (gil::add-int-var-expr sp (nth i push) gil::IOP_SUB (nth i temp-push)))
-                (setq bool-temp (gil::add-bool-var-expr sp difference gil::IRT_EQ diff))
-                (gil::g-op sp bool-tot gil::BOT_OR bool-temp 1)
             )
         )
         temp-push
@@ -825,56 +719,32 @@
         (setq interval-array (gil::add-int-var-array sp (length scaleset) -1 127))
         (loop :for i :from 0 :below (length scaleset) :do
             (let (interval-temp (note (nth i scaleset)))
-                ;; (print note)
                 (setq interval-temp (gil::add-int-var-expr sp playing-i-one gil::IOP_SUB note))
                 (gil::g-abs sp interval-temp (nth i interval-array))
             )
         )   
         (gil::g-lmin sp interval-abs interval-array)     
-        (print "end of minimise")
     )
 )
 
-(defun end-on-tonic-cadence (sp playing-i-one playing-i notes)
-    (let (interval interval-abs scalset interval-array)
-        (setq interval (gil::add-int-var-expr sp playing-i gil::IOP_SUB playing-i-one))
-        (setq interval-abs (gil::add-int-var sp 0 127))
-        (gil::g-abs sp interval interval-abs)
+(defun limit-song-interval (sp playing max-interval)
+    (let ((max-note (gil::add-int-var sp 0 127))
+        (min-note (gil::add-int-var sp 0 127))
+        (playing-notes (gil::add-int-var-array sp (length playing) 0 127))
+        (average-note (gil::add-int-var sp 0 127))
+        interval
+        )
+        (gil::g-lmax sp max-note playing)
+        (gil::g-rel sp average-note gil::IRT_EQ 63)
 
-        (setq scaleset notes)
-        (print "scaleset:")
-        (print scaleset)
-        (setq interval-array (gil::add-int-var-array sp (length scaleset) -1 127))
-        (loop :for i :from 0 :below (length scaleset) :do
-            (let (interval-temp (note (nth i scaleset)))
-                ;; (print note)
-                (setq interval-temp (gil::add-int-var-expr sp playing-i-one gil::IOP_SUB note))
-                (gil::g-abs sp interval-temp (nth i interval-array))
+        (loop :for i :from 0 :below (length playing) :do
+            (let (bool)
+                (setq bool (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
+                (gil::g-ite sp bool average-note (nth i playing) (nth i playing-notes))
             )
         )
-        (gil::g-lmin sp interval-abs interval-array)
-        (print "end of end-on-tonic-cadence")
+        (gil::g-lmin sp min-note playing-notes)
+        (setq interval (gil::add-int-var-expr sp max-note gil::IOP_SUB min-note))
+        (gil::g-rel sp interval gil::IRT_LQ max-interval)    
     )
 )
-
-;; (defun limit-song-interval (sp playing max-interval)
-;;     (let ((max-note (gil::add-int-var sp 0 127))
-;;         (min-note (gil::add-int-var sp 0 127))
-;;         (playing-notes (gil::add-int-var-array sp (length playing) 0 127))
-;;         (average-note (gil::add-int-var sp 0 127))
-;;         interval
-;;         )
-;;         (gil::g-lmax sp max-note playing)
-;;         (gil::g-rel sp average-note gil::IRT_EQ 63)
-
-;;         (loop :for i :from 0 :below (length playing) :do
-;;             (let (bool)
-;;                 (setq bool (gil::add-bool-var-expr sp (nth i playing) gil::IRT_EQ -1))
-;;                 (gil::g-ite sp bool average-note (nth i playing) (nth i playing-notes))
-;;             )
-;;         )
-;;         (gil::g-lmin sp min-note playing-notes)
-;;         (setq interval (gil::add-int-var-expr sp max-note gil::IOP_SUB min-note))
-;;         (gil::g-rel sp interval gil::IRT_LQ max-interval)    
-;;     )
-;; )
