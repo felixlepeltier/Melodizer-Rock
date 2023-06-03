@@ -92,7 +92,6 @@
   (let* ((object (om::object view)))
     (om::om-with-focused-view
       view
-      ;;; DRAW SOMETHING ?
     )
   )
 )
@@ -114,23 +113,23 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       (rock-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 170 300)
+        :size (om::om-make-point 130 200)
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
       (constraints-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 730 300)
-        :position (om::om-make-point 5 310)
+        :size (om::om-make-point 510 200)
+        :position (om::om-make-point 5 210)
         :bg-color om::*azulito*)
       )
       (structure-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 150 300)
-        :position (om::om-make-point 180 5)
+        :size (om::om-make-point 100 200)
+        :position (om::om-make-point 140 5)
         :bg-color om::*azulito*)
       )
       (search-panel (om::om-make-view 'om::om-view
-        :size (om::om-make-point 400 300)
-        :position (om::om-make-point 335 5)
+        :size (om::om-make-point 270 200)
+        :position (om::om-make-point 245 5)
         :bg-color om::*azulito*)
       )
     )
@@ -185,9 +184,9 @@
     ;; Button to add a block A at the end of the current block-list
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 5 5) ; position (horizontal, vertical)
-        (om::om-make-point 150 40) ; size (horizontal, vertical)
-        "Add A to structure"
+        (om::om-make-point 5 10) ; position (horizontal, vertical)
+        (om::om-make-point 100 20) ; size (horizontal, vertical)
+        "Add A"
         :di-action #'(lambda (b)
           (print "Added A to structure")
           ;;Create the block and set its values
@@ -217,7 +216,7 @@
                                       :chord-quality (chord-quality (om::object editor))
             )
           )
-          (om::om-remove-subviews rock-panel)
+          ;; (om::om-remove-subviews rock-panel)
           (make-my-interface editor)
         )
     )
@@ -227,8 +226,8 @@
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 50) ; position (horizontal, vertical)
-        (om::om-make-point 150 40) ; size (horizontal, vertical)
-        "Add B to structure"
+        (om::om-make-point 100 20) ; size (horizontal, vertical)
+        "Add B"
         :di-action #'(lambda (b)
           (print "Added B to structure")
           ;;Create the block and set its values
@@ -258,7 +257,7 @@
                                       :chord-quality (chord-quality (om::object editor))
             )
           )
-          (om::om-remove-subviews rock-panel)
+          ;; (om::om-remove-subviews rock-panel)
           (make-my-interface editor)
         )
     )
@@ -266,9 +265,9 @@
     ;; Buton to erase every bit of the current structure
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 5 140) ; position (horizontal, vertical)
-        (om::om-make-point 150 40) ; size (horizontal, vertical)
-        "Clear structure"
+        (om::om-make-point 5 90) ; position (horizontal, vertical)
+        (om::om-make-point 100 20) ; size (horizontal, vertical)
+        "Clear"
         :di-action #'(lambda (b)
           (print "Cleared structure")
           (mp:process-run-function ; start a new thread for the execution of the next method
@@ -279,8 +278,7 @@
               (setf (block-list (om::object editor)) nil)
               (setf (nb-a (om::object editor)) 0)
               (setf (nb-b (om::object editor)) 0)
-              (setf (idx-first-a (om::object editor)) 0)
-              (setf (idx-first-b (om::object editor)) 0)
+              (om::om-remove-subviews rock-panel)
               (make-my-interface editor)
             )
           )
@@ -306,8 +304,8 @@
       (if (typep x 'mldz::a)
         (setf subview-list (append subview-list (list (om::om-make-dialog-item
           'om::om-button
-          (om::om-make-point 5 (+ 5 (* 40 loop-index))) ; position (horizontal, vertical)
-          (om::om-make-point 100 40) ; size (horizontal, vertical)
+          (om::om-make-point 5 (+ 5 (* 30 loop-index))) ; position (horizontal, vertical)
+          (om::om-make-point 75 20) ; size (horizontal, vertical)
           "A"
           :di-action #'(lambda (b)
 
@@ -330,8 +328,8 @@
       (if (typep x 'mldz::b)
         (setf subview-list (append subview-list (list (om::om-make-dialog-item
           'om::om-button
-          (om::om-make-point 5 (+ 5 (* 40 loop-index))) ; position (horizontal, vertical)
-          (om::om-make-point 100 40) ; size (horizontal, vertical)
+          (om::om-make-point 5 (+ 5 (* 30 loop-index))) ; position (horizontal, vertical)
+          (om::om-make-point 75 20) ; size (horizontal, vertical)
           "B"
           :di-action #'(lambda (b)
             (print "Selected B")
@@ -380,7 +378,7 @@
     panel
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 10)
+      (om::om-make-point 15 5)
       (om::om-make-point 120 20)
       "Block constraints"
       :font om::*om-default-font1b*
@@ -388,15 +386,15 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 50)
-      (om::om-make-point 200 20)
+      (om::om-make-point 15 30)
+      (om::om-make-point 100 20)
       "Number of bars"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 50)
+      (om::om-make-point 150 30)
       (om::om-make-point 80 20)
       "Bar length"
       :range (bar-length-range (om::object editor))
@@ -416,15 +414,15 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 100)
-      (om::om-make-point 200 20)
+      (om::om-make-point 15 60)
+      (om::om-make-point 100 20)
       "Min note length"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 120 100)
+      (om::om-make-point 120 60)
       (om::om-make-point 20 20)
       ""
       :checked-p (min-note-length-flag (om::object editor))
@@ -441,7 +439,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 100)
+      (om::om-make-point 150 60)
       (om::om-make-point 80 20); size
       "Minimum note length"
       :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
@@ -457,15 +455,15 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 150)
-      (om::om-make-point 200 20)
+      (om::om-make-point 15 90)
+      (om::om-make-point 100 20)
       "Max note length"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::om-check-box
-      (om::om-make-point 120 150)
+      (om::om-make-point 120 90)
       (om::om-make-point 20 20)
       ""
       :checked-p (max-note-length-flag (om::object editor))
@@ -482,7 +480,7 @@
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 150)
+      (om::om-make-point 150 90)
       (om::om-make-point 80 20); size
       "Maximum note length"
       :range  (loop :for n :from 0 :upto 4 :collect (number-to-string (expt 2 n)))
@@ -498,7 +496,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 10)
+      (om::om-make-point 250 5)
       (om::om-make-point 200 20)
       "Pitch constraints"
       :font om::*om-default-font1b*
@@ -506,15 +504,15 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 50)
-      (om::om-make-point 200 20)
+      (om::om-make-point 250 30)
+      (om::om-make-point 100 20)
       "Chord key"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 400 50)
+      (om::om-make-point 350 30)
       (om::om-make-point 80 20)
       "Chord key"
       :range '("C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
@@ -532,15 +530,15 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 100)
-      (om::om-make-point 200 20)
+      (om::om-make-point 250 60)
+      (om::om-make-point 100 20)
       "Chord quality"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 400 100)
+      (om::om-make-point 350 60)
       (om::om-make-point 80 20)
       "Chord quality"
       :value (chord-quality (om::object editor))
@@ -557,8 +555,8 @@
 
      (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 150)
-      (om::om-make-point 200 20)
+      (om::om-make-point 250 90)
+      (om::om-make-point 100 20)
       "Minimum pitch"
       :font om::*om-default-font1b*
     )
@@ -566,7 +564,7 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 300 170)
+      (om::om-make-point 250 110)
       (om::om-make-point 150 20)
       "Minimum pitch"
       :range '(1 127)
@@ -581,15 +579,15 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 300 220)
-      (om::om-make-point 200 20)
+      (om::om-make-point 250 140)
+      (om::om-make-point 100 20)
       "Maximum pitch"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 300 240)
+      (om::om-make-point 250 160)
       (om::om-make-point 150 20)
       "Maximum pitch"
       :range '(1 127)
@@ -618,7 +616,7 @@
     search-panel
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 145 2)
+      (om::om-make-point 75 5)
       (om::om-make-point 120 20)
       "Search Parameters"
       :font om::*om-default-font1b*
@@ -626,8 +624,8 @@
 
     (om::om-make-dialog-item
       'om::om-button
-      (om::om-make-point 5 50) ; position (horizontal, vertical)
-      (om::om-make-point 130 20) ; size (horizontal, vertical)
+      (om::om-make-point 5 30) ; position (horizontal, vertical)
+      (om::om-make-point 80 20) ; size (horizontal, vertical)
       "Start"
       :di-action #'(lambda (b)
           (setf (result (om::object editor)) 
@@ -639,8 +637,8 @@
 
     (om::om-make-dialog-item
       'om::om-button
-      (om::om-make-point 135 50) ; position
-      (om::om-make-point 130 20) ; size
+      (om::om-make-point 90 30) ; position
+      (om::om-make-point 80 20) ; size
       "Next"
       :di-action #'(lambda (b)
         (if (typep (result (om::object editor)) 'null); if the problem is not initialized
@@ -667,8 +665,8 @@
 
     (om::om-make-dialog-item
         'om::om-button
-        (om::om-make-point 265 50) ; position (horizontal, vertical)
-        (om::om-make-point 130 20) ; size (horizontal, vertical)
+        (om::om-make-point 175 30) ; position (horizontal, vertical)
+        (om::om-make-point 80 20) ; size (horizontal, vertical)
         "Stop"
         :di-action #'(lambda (b)
           (setf (stop-search (om::object editor)) t)
@@ -677,16 +675,16 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 100)
-      (om::om-make-point 200 20)
+      (om::om-make-point 15 75)
+      (om::om-make-point 100 20)
       "Tempo (BPM)"
       :font om::*om-default-font1b*
     )
 
     (om::om-make-dialog-item
       'om::pop-up-menu
-      (om::om-make-point 170 100)
-      (om::om-make-point 200 20)
+      (om::om-make-point 170 75)
+      (om::om-make-point 80 20)
       "Tempo"
       :range (loop :for n :from 30 :upto 200 :collect (number-to-string n))
       :value (number-to-string (tempo (om::object editor)))
@@ -698,7 +696,7 @@
 
     (om::om-make-dialog-item
       'om::om-static-text
-      (om::om-make-point 15 200)
+      (om::om-make-point 15 105)
       (om::om-make-point 200 20)
       "Difference Percentage"
       :font om::*om-default-font1b*
@@ -706,8 +704,8 @@
 
     (om::om-make-dialog-item
       'om::slider
-      (om::om-make-point 170 200)
-      (om::om-make-point 200 20)
+      (om::om-make-point 15 130)
+      (om::om-make-point 230 20)
       "Difference Percentage"
       :range '(0 100)
       :increment 1
