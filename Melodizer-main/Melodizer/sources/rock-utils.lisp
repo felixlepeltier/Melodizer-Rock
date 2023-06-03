@@ -2,9 +2,7 @@
 
 (defun change-subblocks-values (rock-block &key bar-length 
                                                 chord-key 
-                                                min-pitch-flag
                                                 min-pitch 
-                                                max-pitch-flag
                                                 max-pitch 
                                                 min-note-length-flag
                                                 min-note-length
@@ -41,12 +39,12 @@
                         (-  (name-to-note-value (chord-key (parent rock-block))) 
                             (name-to-note-value chord-key)))
             )
-            (if (and (or min-pitch-flag min-pitch) (min-pitch (parent rock-block)))
+            (if (and min-pitch (min-pitch (parent rock-block)))
                 (setf   (diff-min-pitch rock-block) 
                         (- (min-pitch (parent rock-block)) 
                             min-pitch))
             )
-            (if (and (or max-pitch-flag max-pitch) (max-pitch (parent rock-block)))
+            (if (and max-pitch (max-pitch (parent rock-block)))
                 (setf   (diff-max-pitch rock-block) 
                         (- (max-pitch (parent rock-block)) 
                             max-pitch))
@@ -94,8 +92,7 @@
         (if min-pitch
             (cond 
                 ((relative-to-parent x)
-                    (setf   (min-pitch-flag x) min-pitch-flag 
-                            (min-pitch x) (- min-pitch (diff-min-pitch x)))
+                    (setf (min-pitch x) (- min-pitch (diff-min-pitch x)))
                 )
             )
             
@@ -103,8 +100,7 @@
         (if max-pitch
             (cond 
                 ((relative-to-parent x)
-                    (setf   (max-pitch-flag x) max-pitch-flag 
-                            (max-pitch x) (- max-pitch (diff-max-pitch x)))
+                    (setf (max-pitch x) (- max-pitch (diff-max-pitch x)))
                 )
             )
         )
@@ -141,9 +137,7 @@
         
         (change-subblocks-values x  :bar-length (bar-length x)
                                     :chord-key (chord-key x)
-                                    :min-pitch-flag (min-pitch-flag x)
                                     :min-pitch (min-pitch x)
-                                    :max-pitch-flag (max-pitch-flag x)
                                     :max-pitch (max-pitch x)
                                     :min-note-length-flag (min-note-length-flag x)
                                     :min-note-length (min-note-length x)
@@ -383,7 +377,6 @@
                             (setf   (diff-min-pitch x) (- (diff-min-pitch x) diff-min-pitch))
                             (setf   (min-pitch x) (- (min-pitch parent) (diff-min-pitch x)))
                             (change-subblocks-values x 
-                                    :min-pitch-flag (min-pitch-flag x)
                                     :min-pitch (min-pitch x))
                         )
                     )
@@ -392,7 +385,6 @@
                             (setf   (diff-max-pitch x) (- (diff-max-pitch x) diff-max-pitch))
                             (setf   (max-pitch x) (- (max-pitch parent) (diff-max-pitch x)))
                             (change-subblocks-values x 
-                                    :max-pitch-flag (max-pitch-flag x)
                                     :max-pitch (max-pitch x))
                         )
                     )

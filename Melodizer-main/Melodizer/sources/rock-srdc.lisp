@@ -9,26 +9,60 @@
 
 (om::defclass! s ()
     (
-      (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
-      (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 1 :type integer)
-      (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
-      (max-note-length :accessor max-note-length :initform 16 :type integer)
-      (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-key :accessor chord-key :initform "C" :type string)
-      (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-quality :accessor chord-quality :initform "Major" :type string)
-      (diff-chord-quality :accessor diff-chord-quality :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch :accessor min-pitch :initform 1 :type integer)
-      (diff-min-pitch :accessor diff-min-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
-      (max-pitch :accessor max-pitch :initform 127 :type integer)
-      (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
+      (parent 
+          :accessor parent :initarg :parent :initform nil 
+          :documentation "parent block from which the block comes from")
+      (accomp 
+          :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment)
+          :documentation "acompaniment block for this part of the song")
+      (relative-to-parent 
+          :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer
+          :documentation "Flag to no if the cnahges in the attributes are relative to the parent block")
+      (bar-length 
+          :accessor bar-length :initform 0 :type integer
+          :documentation "Number of bars of this block")
+      (min-note-length-flag 
+          :accessor min-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the minimum note length constraint")
+      (min-note-length 
+          :accessor min-note-length :initform 1 :type integer
+          :documentation "Minimum note length value")
+      (diff-min-length 
+          :accessor diff-min-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-note-length-flag 
+          :accessor max-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the maximum note length constraint")
+      (max-note-length 
+          :accessor max-note-length :initform 16 :type integer
+          :documentation "Maximum note length value")
+      (diff-max-length 
+          :accessor diff-max-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-key 
+          :accessor chord-key :initform "C" :type string
+          :documentation "key to set the scale in")
+      (diff-chord-key 
+          :accessor diff-chord-key :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-quality 
+          :accessor chord-quality :initform "Major" :type string
+          :documentation "quality to set the scale in")
+      (diff-chord-quality 
+          :accessor diff-chord-quality :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (min-pitch 
+          :accessor min-pitch :initform 1 :type integer
+          :documentation "Minimum pitch value")
+      (diff-min-pitch 
+          :accessor diff-min-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-pitch 
+          :accessor max-pitch :initform 127 :type integer
+          :documentation "Maximum pitch value")
+      (diff-max-pitch 
+          :accessor diff-max-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
     )
 )
 
@@ -41,14 +75,13 @@
   (let* ((object (om::object view)))
     (om::om-with-focused-view
       view
-      ;;; DRAW SOMETHING ?
     )
   )
 )
 
 (defmethod initialize-instance ((self s-editor) &rest args)
   ;;; do what needs to be done by default
-  (call-next-method) ; start the search by default?
+  (call-next-method)
   (make-my-interface self)
 )
 
@@ -98,28 +131,66 @@
 
 (om::defclass! r ()
     (
-      (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
-      (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 1 :type integer)
-      (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
-      (max-note-length :accessor max-note-length :initform 16 :type integer)
-      (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-key :accessor chord-key :initform "C" :type string)
-      (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-quality :accessor chord-quality :initform "Major" :type string)
-      (diff-chord-quality :accessor diff-chord-quality :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch :accessor min-pitch :initform 1 :type integer)
-      (diff-min-pitch :accessor diff-min-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
-      (max-pitch :accessor max-pitch :initform 127 :type integer)
-      (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (similarity-percent-s :accessor similarity-percent-s :initform 50 :type integer)
-      (semitones :accessor semitones :initform 0 :type integer :documentation "Semitones of transposition from key")
+      (parent 
+          :accessor parent :initarg :parent :initform nil 
+          :documentation "parent block from which the block comes from")
+      (accomp 
+          :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment)
+          :documentation "acompaniment block for this part of the song")
+      (relative-to-parent 
+          :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer
+          :documentation "Flag to no if the cnahges in the attributes are relative to the parent block")
+      (bar-length 
+          :accessor bar-length :initform 0 :type integer
+          :documentation "Number of bars of this block")
+      (min-note-length-flag 
+          :accessor min-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the minimum note length constraint")
+      (min-note-length 
+          :accessor min-note-length :initform 1 :type integer
+          :documentation "Minimum note length value")
+      (diff-min-length 
+          :accessor diff-min-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-note-length-flag 
+          :accessor max-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the maximum note length constraint")
+      (max-note-length 
+          :accessor max-note-length :initform 16 :type integer
+          :documentation "Maximum note length value")
+      (diff-max-length 
+          :accessor diff-max-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-key 
+          :accessor chord-key :initform "C" :type string
+          :documentation "key to set the scale in")
+      (diff-chord-key 
+          :accessor diff-chord-key :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-quality 
+          :accessor chord-quality :initform "Major" :type string
+          :documentation "quality to set the scale in")
+      (diff-chord-quality 
+          :accessor diff-chord-quality :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (min-pitch 
+          :accessor min-pitch :initform 1 :type integer
+          :documentation "Minimum pitch value")
+      (diff-min-pitch 
+          :accessor diff-min-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-pitch 
+          :accessor max-pitch :initform 127 :type integer
+          :documentation "Maximum pitch value")
+      (diff-max-pitch 
+          :accessor diff-max-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (similarity-percent-s 
+          :accessor similarity-percent-s :initform 50 :type integer
+          :documentation "percentage of ressemblance with the s block of with the same parent")
+      (semitones 
+        :accessor semitones :initform 0 :type integer 
+        :documentation "Semitones of transposition from the s-block of the same parent")
     )
 )
 
@@ -132,7 +203,6 @@
   (let* ((object (om::object view)))
     (om::om-with-focused-view
       view
-      ;;; DRAW SOMETHING ?
     )
   )
 )
@@ -196,28 +266,66 @@
 
 (om::defclass! d ()
     (
-      (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
-      (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 1 :type integer)
-      (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
-      (max-note-length :accessor max-note-length :initform 16 :type integer)
-      (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-key :accessor chord-key :initform "C" :type string)
-      (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-quality :accessor chord-quality :initform "Major" :type string)
-      (diff-chord-quality :accessor diff-chord-quality :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch :accessor min-pitch :initform 1 :type integer)
-      (diff-min-pitch :accessor diff-min-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
-      (max-pitch :accessor max-pitch :initform 127 :type integer)
-      (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (difference-percent-s :accessor difference-percent-s :initform 75 :type integer)
-      (semitones :accessor semitones :initform 0 :type integer :documentation "Semitones of transposition from key")
+      (parent 
+          :accessor parent :initarg :parent :initform nil 
+          :documentation "parent block from which the block comes from")
+      (accomp 
+          :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment)
+          :documentation "acompaniment block for this part of the song")
+      (relative-to-parent 
+          :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer
+          :documentation "Flag to no if the cnahges in the attributes are relative to the parent block")
+      (bar-length 
+          :accessor bar-length :initform 0 :type integer
+          :documentation "Number of bars of this block")
+      (min-note-length-flag 
+          :accessor min-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the minimum note length constraint")
+      (min-note-length 
+          :accessor min-note-length :initform 1 :type integer
+          :documentation "Minimum note length value")
+      (diff-min-length 
+          :accessor diff-min-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-note-length-flag 
+          :accessor max-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the maximum note length constraint")
+      (max-note-length 
+          :accessor max-note-length :initform 16 :type integer
+          :documentation "Maximum note length value")
+      (diff-max-length 
+          :accessor diff-max-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-key 
+          :accessor chord-key :initform "C" :type string
+          :documentation "key to set the scale in")
+      (diff-chord-key 
+          :accessor diff-chord-key :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-quality 
+          :accessor chord-quality :initform "Major" :type string
+          :documentation "quality to set the scale in")
+      (diff-chord-quality 
+          :accessor diff-chord-quality :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (min-pitch 
+          :accessor min-pitch :initform 1 :type integer
+          :documentation "Minimum pitch value")
+      (diff-min-pitch 
+          :accessor diff-min-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-pitch 
+          :accessor max-pitch :initform 127 :type integer
+          :documentation "Maximum pitch value")
+      (diff-max-pitch 
+          :accessor diff-max-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (difference-percent-s 
+          :accessor difference-percent-s :initform 75 :type integer
+          :documentation "percentage of difference with the s block of with the same parent")
+      (semitones 
+        :accessor semitones :initform 0 :type integer 
+        :documentation "Semitones of transposition from the s-block of the same parent")
     )
 )
 
@@ -230,14 +338,13 @@
   (let* ((object (om::object view)))
     (om::om-with-focused-view
       view
-      ;;; DRAW SOMETHING ?
     )
   )
 )
 
 (defmethod initialize-instance ((self d-editor) &rest args)
   ;;; do what needs to be done by default
-  (call-next-method) ; start the search by default?
+  (call-next-method)
   (make-my-interface self)
 )
 
@@ -295,28 +402,66 @@
 
 (om::defclass! c ()
     (
-      (parent :accessor parent :initarg :parent :initform nil :documentation "")
-      (accomp :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment))
-      (relative-to-parent :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer)
-      (bar-length :accessor bar-length :initform 0 :type integer)
-      (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-      (min-note-length :accessor min-note-length :initform 1 :type integer)
-      (diff-min-length :accessor diff-min-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
-      (max-note-length :accessor max-note-length :initform 16 :type integer)
-      (diff-max-length :accessor diff-max-length :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-key :accessor chord-key :initform "C" :type string)
-      (diff-chord-key :accessor diff-chord-key :initform 0 :type integer :documentation "Difference for relative changes")
-      (chord-quality :accessor chord-quality :initform "Major" :type string)
-      (diff-chord-quality :accessor diff-chord-quality :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch :accessor min-pitch :initform 1 :type integer)
-      (diff-min-pitch :accessor diff-min-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
-      (max-pitch :accessor max-pitch :initform 127 :type integer)
-      (diff-max-pitch :accessor diff-max-pitch :initform 0 :type integer :documentation "Difference for relative changes")
-      (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-      (cadence-type :accessor cadence-type :initform "Perfect" :type string :documentation "Type of cadence used in the current block")
-      (min-note-length-mult :accessor min-note-length-mult :initform 2 :type integer)
+      (parent 
+          :accessor parent :initarg :parent :initform nil 
+          :documentation "parent block from which the block comes from")
+      (accomp 
+          :accessor accomp :initarg :accomp :initform (make-instance 'accompaniment)
+          :documentation "acompaniment block for this part of the song")
+      (relative-to-parent 
+          :accessor relative-to-parent :initarg :relative-to-parent :initform 1 :type integer
+          :documentation "Flag to no if the cnahges in the attributes are relative to the parent block")
+      (bar-length 
+          :accessor bar-length :initform 0 :type integer
+          :documentation "Number of bars of this block")
+      (min-note-length-flag 
+          :accessor min-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the minimum note length constraint")
+      (min-note-length 
+          :accessor min-note-length :initform 1 :type integer
+          :documentation "Minimum note length value")
+      (diff-min-length 
+          :accessor diff-min-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-note-length-flag 
+          :accessor max-note-length-flag :initform nil :type integer
+          :documentation "Flag to post the maximum note length constraint")
+      (max-note-length 
+          :accessor max-note-length :initform 16 :type integer
+          :documentation "Maximum note length value")
+      (diff-max-length 
+          :accessor diff-max-length :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-key 
+          :accessor chord-key :initform "C" :type string
+          :documentation "key to set the scale in")
+      (diff-chord-key 
+          :accessor diff-chord-key :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (chord-quality 
+          :accessor chord-quality :initform "Major" :type string
+          :documentation "quality to set the scale in")
+      (diff-chord-quality 
+          :accessor diff-chord-quality :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (min-pitch 
+          :accessor min-pitch :initform 1 :type integer
+          :documentation "Minimum pitch value")
+      (diff-min-pitch 
+          :accessor diff-min-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (max-pitch 
+          :accessor max-pitch :initform 127 :type integer
+          :documentation "Maximum pitch value")
+      (diff-max-pitch 
+          :accessor diff-max-pitch :initform 0 :type integer 
+          :documentation "Difference for relative changes")
+      (cadence-type 
+          :accessor cadence-type :initform "Perfect" :type string 
+          :documentation "Type of cadence used in the current block")
+      (min-note-length-mult 
+          :accessor min-note-length-mult :initform 2 :type integer
+          :documentation "Multiplicator to slow down the song")
     )
 )
 
@@ -329,7 +474,6 @@
   (let* ((object (om::object view)))
     (om::om-with-focused-view
       view
-      ;;; DRAW SOMETHING ?
     )
   )
 )
@@ -356,11 +500,6 @@
         :position (om::om-make-point 5 5)
         :bg-color om::*azulito*)
       )
-      ;; (accompaniment-panel (om::om-make-view 'om::om-view
-      ;;   :size (om::om-make-point 300 300)
-      ;;   :position (om::om-make-point 510 5)
-      ;;   :bg-color om::*azulito*)
-      ;; )
       (c-constraints-panel (om::om-make-view 'om::om-view
         :size (om::om-make-point 500 100)
         :position (om::om-make-point 5 310)
@@ -373,13 +512,11 @@
 
     ; add the subviews for the different parts into the main view
     (setf elements-constraints-panel (make-constraints-srdc-panel self constraints-panel))
-    ;; (setf elements-accompaniment-panel (make-accompaniment-panel self accompaniment-panel))
 
     ; add the subviews for the different parts into the main view
     (om::om-add-subviews
       self
       constraints-panel
-      ;; accompaniment-panel
       c-constraints-panel
     )
   )
@@ -387,7 +524,11 @@
   self
 )
 
-;; r-constraints-panel interface building
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                     r CONSTRAINTS PANEL                     ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun make-r-constraints-panel (editor panel)
   (om::om-add-subviews
@@ -437,7 +578,11 @@
   )
 )
 
-;; c-constraints-panel interface building
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                     c CONSTRAINTS PANEL                     ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun make-c-constraints-panel (editor panel)
   (om::om-add-subviews
@@ -467,6 +612,11 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                     d CONSTRAINTS PANEL                     ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun make-d-constraints-panel (editor panel)
   (om::om-add-subviews
     panel
@@ -514,6 +664,12 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                    srdc CONSTRAINTS PANEL                   ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun make-constraints-srdc-panel (editor panel)
   (om::om-add-subviews
     panel
@@ -546,16 +702,6 @@
         (set-bar-length-up (om::object editor))
       )
     )
-
-
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 300 2)
-    ;;   (om::om-make-point 120 20)
-    ;;   "Time constraints"
-    ;;   :font om::*om-default-font1b*
-    ;; )
 
     (om::om-make-dialog-item
       'om::om-static-text
@@ -638,54 +784,6 @@
       :font om::*om-default-font1b*
     )
 
-    ; Key
-    
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 300 50)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Chord key"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::pop-up-menu
-    ;;   (om::om-make-point 400 50)
-    ;;   (om::om-make-point 80 20)
-    ;;   "Chord key"
-    ;;   :range '("C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab" "A" "Bb" "B")
-    ;;   :value (chord-key (om::object editor))
-    ;;   :di-action #'(lambda (m)
-    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-    ;;     (if (string= check "None")
-    ;;       (setf (chord-key (om::object editor)) nil)
-    ;;       (setf (chord-key (om::object editor)) check)
-    ;;     )      )
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 300 100)
-    ;;   (om::om-make-point 200 20)
-    ;;   "Chord quality"
-    ;;   :font om::*om-default-font1b*
-    ;; )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::pop-up-menu
-    ;;   (om::om-make-point 400 100)
-    ;;   (om::om-make-point 80 20)
-    ;;   "Chord quality"
-    ;;   :value (chord-quality (om::object editor))
-    ;;   :range '("Major" "Minor" "Augmented" "Diminished")
-    ;;   :di-action #'(lambda (m)
-    ;;     (setq check (nth (om::om-get-selected-item-index m) (om::om-get-item-list m)))
-    ;;     (if (string= check "None")
-    ;;       (setf (chord-quality (om::object editor)) nil)
-    ;;       (setf (chord-quality (om::object editor)) check))        
-    ;;   )
-    ;; )
-
      (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 300 50)
@@ -694,22 +792,6 @@
       :font om::*om-default-font1b*
     )
 
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-check-box
-    ;;   (om::om-make-point 400 150)
-    ;;   (om::om-make-point 20 20)
-    ;;   ""
-    ;;   :checked-p (min-pitch-flag (om::object editor))
-    ;;   :di-action #'(lambda (c)
-    ;;                 (if (om::om-checked-p c)
-    ;;                   (setf (min-pitch-flag (om::object editor)) 1)
-    ;;                   (setf (min-pitch-flag (om::object editor)) nil)
-    ;;                 )
-    ;;                 (change-subblocks-values (om::object editor) 
-    ;;                             :min-pitch-flag (min-pitch-flag (om::object editor)) 
-    ;;                             :min-pitch (min-pitch (om::object editor)))
-    ;;   )
-    ;; )
 
     (om::om-make-dialog-item
       'om::slider
@@ -732,22 +814,6 @@
       :font om::*om-default-font1b*
     )
 
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-check-box
-    ;;   (om::om-make-point 400 220)
-    ;;   (om::om-make-point 20 20)
-    ;;   ""
-    ;;   :checked-p (max-pitch-flag (om::object editor))
-    ;;   :di-action #'(lambda (c)
-    ;;                 (if (om::om-checked-p c)
-    ;;                   (setf (max-pitch-flag (om::object editor)) 1)
-    ;;                   (setf (max-pitch-flag (om::object editor)) nil)
-    ;;                 )
-    ;;                 (change-subblocks-values (om::object editor) 
-    ;;                                         :max-pitch-flag (max-pitch-flag (om::object editor)) 
-    ;;                                         :max-pitch (max-pitch (om::object editor)))
-    ;;   )
-    ;; )
 
     (om::om-make-dialog-item
       'om::slider

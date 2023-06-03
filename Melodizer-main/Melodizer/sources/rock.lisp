@@ -7,40 +7,79 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+;; Define a rock object containing the constraints
+;; and attributes necessary for the search
 (om::defclass! rock ()
     (
-      (block-list :accessor block-list :initarg :block-list :initform nil :documentation "Block list containing the global musical structure")
-    (melody-source-A :accessor melody-source-A :initarg :melody-source-A :initform nil :documentation "Source melody for s of the first A block")
-    (melody-source-B :accessor melody-source-B :initarg :melody-source-B :initform nil :documentation "Source melody for s of the first B block")
-    (bar-length :accessor bar-length :initform 0 :type integer)
-    (nb-a :accessor nb-a  :initform 0 :type integer :documentation "number of block A in the structure")
-    (nb-b :accessor nb-b  :initform 0 :type integer :documentation "number of block B in the structure")
-    (idx-first-a :accessor idx-first-a :initform 0 :type integer :documentation "index of the first block A in the structure")
-    (idx-first-b :accessor idx-first-b  :initform 0 :type integer :documentation "index of the first block B in the structure")
-    (min-note-length-flag :accessor min-note-length-flag :initform nil :type integer)
-    (min-note-length :accessor min-note-length :initform 1 :type integer)
-    (max-note-length-flag :accessor max-note-length-flag :initform nil :type integer)
-    (max-note-length :accessor max-note-length :initform 16 :type integer)
-    (chord-key :accessor chord-key :initform "C" :type string)
-    (chord-quality :accessor chord-quality :initform "Major" :type string)
-    (min-pitch :accessor min-pitch :initform 1 :type integer)
-    (min-pitch-flag :accessor min-pitch-flag :initform nil :type integer)
-    (max-pitch :accessor max-pitch :initform 127 :type integer)
-    (max-pitch-flag :accessor max-pitch-flag :initform nil :type integer)
-    (solution :accessor solution :initarg :solution :initform nil :documentation "The current solution of the CSP in the form of a voice object.")
-    (result :accessor result
-      :result :initform (list) :documentation
-      "A temporary list holder to store the result of the call to the CSPs, shouldn't be touched.")
-    (stop-search :accessor stop-search :stop-search :initform nil :documentation
-      "A boolean variable to tell if the user wishes to stop the search or not.")
-    (input-rhythm :accessor input-rhythm :input-rhythm :initform (make-instance 'voice) :documentation
-      "The rhythm of the melody or a melody in the form of a voice object. ")
-    (tempo :accessor tempo :initform 80 :type integer :documentation
-      "The tempo (BPM) of the project")
-    (branching :accessor branching :initform "Top down" :type string :documentation
-      "The tempo (BPM) of the project")
-    (percent-diff :accessor percent-diff :initform 1 :type integer)
+      (block-list 
+          :accessor block-list :initarg :block-list :initform nil 
+          :documentation "Block list containing the global musical structure")
+      (melody-source-A  
+          :accessor melody-source-A :initarg :melody-source-A :initform nil 
+          :documentation "Source melody for s of the first A block")
+      (melody-source-B  
+          :accessor melody-source-B :initarg :melody-source-B :initform nil 
+          :documentation "Source melody for s of the first B block")
+      (bar-length 
+          :accessor bar-length :initform 0 :type integer
+           :documentation "Number of bars contained in the block")
+      (nb-a 
+          :accessor nb-a  :initform 0 :type integer 
+          :documentation "number of block A in the structure")
+      (nb-b 
+          :accessor nb-b  :initform 0 :type integer 
+          :documentation "number of block B in the structure")
+      (idx-first-a  
+          :accessor idx-first-a :initform 0 :type integer 
+          :documentation "index of the first block A in the structure")
+      (idx-first-b  
+          :accessor idx-first-b  :initform 0 :type integer 
+          :documentation "index of the first block B in the structure")
+      (min-note-length-flag 
+          :accessor min-note-length-flag :initform nil :type integer
+          :documentation "Flag stating if the note-min-length constrain must be posted")
+      (min-note-length  
+          :accessor min-note-length :initform 1 :type integer
+          :documentation "Minimum note length value")
+      (max-note-length-flag 
+          :accessor max-note-length-flag :initform nil :type integer
+          :documentation "Flag stating if the note-max-length constrain must be posted")
+      (max-note-length  
+          :accessor max-note-length :initform 16 :type integer
+          :documentation "Maximum note length value")
+      (chord-key  
+          :accessor chord-key :initform "C" :type string
+          :documentation "Chord key to set the scale in")
+      (chord-quality  
+          :accessor chord-quality :initform "Major" :type string
+          :documentation "Quality to set the scale in")
+      (min-pitch  
+          :accessor min-pitch :initform 1 :type integer
+          :documentation "Minimum pitch value")
+      (max-pitch 
+          :accessor max-pitch :initform 127 :type integer
+          :documentation "Maximum pitch value")
+      (solution 
+          :accessor solution :initarg :solution :initform nil 
+          :documentation "The current solution of the CSP in the form of a voice object.")
+      (result :accessor result
+          :result :initform (list) 
+          :documentation "A list holder to store the result of the call to the CSPs")
+      (stop-search 
+          :accessor stop-search :stop-search :initform nil 
+          :documentation "booleanto tell if the user wishes to stop the search or not.")
+      (input-rhythm 
+          :accessor input-rhythm :input-rhythm :initform (make-instance 'voice) 
+          :documentation "The rhythm of the melody or a melody in the form of a voice object. ")
+      (tempo 
+          :accessor tempo :initform 80 :type integer 
+          :documentation "The tempo (BPM) of the project")
+      (branching 
+          :accessor branching :initform "Top down" :type string 
+          :documentation "The tempo (BPM) of the project")
+      (percent-diff 
+          :accessor percent-diff :initform 1 :type integer
+          :documentation "The minimum difference percentage between solutions")
     )
 )
 
@@ -115,10 +154,6 @@
 )
 
 
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                  INTERFACE CONSTRUCTION                     ;;
@@ -138,7 +173,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                      ROCK INTERFACE                         ;;
+;;                        ROCK PANEL                           ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -146,6 +181,8 @@
 (defun make-rock-panel (editor rock-panel)
   (om::om-add-subviews
     rock-panel
+
+    ;; Button to add a block A at the end of the current block-list
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 5) ; position (horizontal, vertical)
@@ -153,7 +190,7 @@
         "Add A to structure"
         :di-action #'(lambda (b)
           (print "Added A to structure")
-          
+          ;;Create the block and set its values
           (let ((bar-length 0) (new-block (make-instance 'A :parent (om::object editor) (om::object editor))))
             (setf (block-position new-block) (length (block-list (om::object editor))))
             (setf (block-position-A new-block) (count-A-block-list (block-list (parent new-block))))
@@ -167,12 +204,11 @@
             )
             (setf (nb-a (om::object editor)) (+ (nb-a (om::object editor)) 1))
             (setf (bar-length (om::object editor)) (+ bar-length (bar-length (om::object editor))))
+            ;; Update the constraints values based on the Rock block
             (change-subblocks-values (om::object editor) 
                                       :bar-length (bar-length (om::object editor))
                                       :chord-key (chord-key (om::object editor))
-                                      :min-pitch-flag (min-pitch-flag (om::object editor))
                                       :min-pitch (min-pitch (om::object editor))
-                                      :max-pitch-flag (max-pitch-flag (om::object editor))
                                       :max-pitch (max-pitch (om::object editor))
                                       :min-note-length-flag (min-note-length-flag (om::object editor))
                                       :min-note-length (min-note-length (om::object editor))
@@ -187,7 +223,7 @@
     )
 
     
-
+    ;; Button to add a block B at the end of the current block-list
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 50) ; position (horizontal, vertical)
@@ -195,8 +231,7 @@
         "Add B to structure"
         :di-action #'(lambda (b)
           (print "Added B to structure")
-
-          ;; (setf (block-list (om::object editor)) (append (block-list (om::object editor)) (list (make-instance 'B :parent (om::object editor) (om::object editor)))))
+          ;;Create the block and set its values
           (let ((bar-length 0) (new-block (make-instance 'B :parent (om::object editor) (om::object editor))))
             (setf (block-position new-block) (length (block-list (om::object editor))))
             (setf (block-position-B new-block) (count-B-block-list (block-list (parent new-block))))
@@ -210,12 +245,11 @@
             )
             (setf (nb-b (om::object editor)) (+ (nb-b (om::object editor)) 1))
             (setf (bar-length (om::object editor)) (+ bar-length (bar-length (om::object editor))))
+            ;; Update the constraints values based on the Rock block
             (change-subblocks-values (om::object editor) 
                                       :bar-length (bar-length (om::object editor))
                                       :chord-key (chord-key (om::object editor))
-                                      :min-pitch-flag (min-pitch-flag (om::object editor))
                                       :min-pitch (min-pitch (om::object editor))
-                                      :max-pitch-flag (max-pitch-flag (om::object editor))
                                       :max-pitch (max-pitch (om::object editor))
                                       :min-note-length-flag (min-note-length-flag (om::object editor))
                                       :min-note-length (min-note-length (om::object editor))
@@ -229,7 +263,7 @@
         )
     )
     
-
+    ;; Buton to erase every bit of the current structure
     (om::om-make-dialog-item
         'om::om-button
         (om::om-make-point 5 140) ; position (horizontal, vertical)
@@ -245,7 +279,8 @@
               (setf (block-list (om::object editor)) nil)
               (setf (nb-a (om::object editor)) 0)
               (setf (nb-b (om::object editor)) 0)
-              ;; (om::om-remove-subviews rock-panel)
+              (setf (idx-first-a (om::object editor)) 0)
+              (setf (idx-first-b (om::object editor)) 0)
               (make-my-interface editor)
             )
           )
@@ -257,14 +292,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                  STRUCTURE INTERFACE                        ;;
+;;                      STRUCTURE PANEL                        ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; if we have access to the rock-editor
 (defun make-structure-panel (editor structure-panel)
 
   (let ((loop-index 0) (subview-list '()))
+  ;; Loop on the block-list and create buttons for every block of the structure
+  ;; that open the corresponding editor
   (loop for x in (block-list (om::object editor))
     do 
       (if (typep x 'mldz::a)
@@ -281,7 +317,9 @@
               nil ; process initialization keywords, not needed here
               #'(lambda () ; function to call
                 (om::openeditorframe ; open a window displaying the editor of the A block
-                  (om::omNG-make-new-instance (nth (position b subview-list) (block-list (om::object editor))) (concatenate 'string "Window A" (write-to-string (position b subview-list))))
+                  (om::omNG-make-new-instance (nth (position b subview-list) 
+                  (block-list (om::object editor))) 
+                  (concatenate 'string "Window A" (write-to-string (position b subview-list))))
                 )
               )
             )
@@ -302,7 +340,9 @@
               nil ; process initialization keywords, not needed here
               #'(lambda () ; function to call
                 (om::openeditorframe ; open a window displaying the editor of the B block
-                  (om::omNG-make-new-instance (nth (position b subview-list) (block-list (om::object editor))) (concatenate 'string "Window B" (write-to-string (position b subview-list))))
+                  (om::omNG-make-new-instance (nth (position b subview-list) 
+                  (block-list (om::object editor))) 
+                  (concatenate 'string "Window B" (write-to-string (position b subview-list))))
                 )
               )
             )
@@ -329,6 +369,11 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                     CONSTRAINTS PANEL                       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun make-constraints-panel (editor panel)
   (om::om-add-subviews
@@ -368,14 +413,6 @@
         )
       )
     )
-
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-static-text
-    ;;   (om::om-make-point 300 2)
-    ;;   (om::om-make-point 120 20)
-    ;;   "Time constraints"
-    ;;   :font om::*om-default-font1b*
-    ;; )
 
     (om::om-make-dialog-item
       'om::om-static-text
@@ -467,8 +504,6 @@
       :font om::*om-default-font1b*
     )
 
-    ; Key
-
     (om::om-make-dialog-item
       'om::om-static-text
       (om::om-make-point 300 50)
@@ -528,22 +563,6 @@
       :font om::*om-default-font1b*
     )
 
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-check-box
-    ;;   (om::om-make-point 400 150)
-    ;;   (om::om-make-point 20 20)
-    ;;   ""
-    ;;   :checked-p (min-pitch-flag (om::object editor))
-    ;;   :di-action #'(lambda (c)
-    ;;                 (if (om::om-checked-p c)
-    ;;                   (setf (min-pitch-flag (om::object editor)) 1)
-    ;;                   (setf (min-pitch-flag (om::object editor)) nil)
-    ;;                 )
-    ;;                 (change-subblocks-values (om::object editor) 
-    ;;                             :min-pitch-flag (min-pitch-flag (om::object editor)) 
-    ;;                             :min-pitch (min-pitch (om::object editor)))
-    ;;   )
-    ;; )
 
     (om::om-make-dialog-item
       'om::slider
@@ -556,7 +575,6 @@
       :di-action #'(lambda (s)
         (setf (min-pitch (om::object editor)) (om::om-slider-value s))
         (change-subblocks-values (om::object editor) 
-                                  :min-pitch-flag (min-pitch-flag (om::object editor)) 
                                   :min-pitch (min-pitch (om::object editor)))
       )
     )
@@ -569,23 +587,6 @@
       :font om::*om-default-font1b*
     )
 
-    ;; (om::om-make-dialog-item
-    ;;   'om::om-check-box
-    ;;   (om::om-make-point 400 220)
-    ;;   (om::om-make-point 20 20)
-    ;;   ""
-    ;;   :checked-p (max-pitch-flag (om::object editor))
-    ;;   :di-action #'(lambda (c)
-    ;;                 (if (om::om-checked-p c)
-    ;;                   (setf (max-pitch-flag (om::object editor)) 1)
-    ;;                   (setf (max-pitch-flag (om::object editor)) nil)
-    ;;                 )
-    ;;                 (change-subblocks-values (om::object editor) 
-    ;;                                         :max-pitch-flag (max-pitch-flag (om::object editor)) 
-    ;;                                         :max-pitch (max-pitch (om::object editor)))
-    ;;   )
-    ;; )
-
     (om::om-make-dialog-item
       'om::slider
       (om::om-make-point 300 240)
@@ -597,7 +598,6 @@
       :di-action #'(lambda (s)
         (setf (max-pitch (om::object editor)) (om::om-slider-value s))
         (change-subblocks-values (om::object editor) 
-                                  :max-pitch-flag (max-pitch-flag (om::object editor)) 
                                   :max-pitch (max-pitch (om::object editor)))
       )
     )
@@ -607,6 +607,11 @@
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                        SEARCH PANEL                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun make-rock-search-panel (editor search-panel)
   (om::om-add-subviews
@@ -625,7 +630,6 @@
       (om::om-make-point 130 20) ; size (horizontal, vertical)
       "Start"
       :di-action #'(lambda (b)
-          ;; (setq init (new-melodizer (block-csp (om::object editor)) (percent-diff (om::object editor)) (branching (om::object editor))))
           (setf (result (om::object editor)) 
                 (rock-solver (om::object editor) 
                             (percent-diff (om::object editor)) 
@@ -715,4 +719,3 @@
   )
 
 )
-
