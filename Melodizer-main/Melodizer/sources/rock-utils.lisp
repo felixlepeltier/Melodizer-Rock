@@ -1,5 +1,7 @@
 (in-package :mldz)
 
+;; Function to change the values of a sub-block according to the new value
+;; of the parent block and the differences calculated before
 (defun change-subblocks-values (rock-block &key bar-length 
                                                 chord-key 
                                                 min-pitch 
@@ -154,10 +156,8 @@
     )                                          
 )
 
-
-
-
-
+;; Function that returns a list corresponding to the values the
+;; bar-length parameter of a block can take
 (defun bar-length-range (rock-block)
     (if (or (typep rock-block 'mldz::s)
             (typep rock-block 'mldz::r)
@@ -168,7 +168,9 @@
                 :below 5
                 :by 1 
                 :collect (number-to-string n))
-    
+        ;; When it  is rock block, it must have a number of bar 
+        ;; divisable between all the blocks A and B and their s r d c sub-blocks
+        ;; thus 4 per element of its block-list
         (let ((sum (bar-length rock-block))(result (list))) 
             (if (typep rock-block 'mldz::rock)
                 (if (= sum 0)
@@ -186,6 +188,7 @@
                     (setq result (list (number-to-string sum)))
                 )
             )
+            ;; When it is a block A or B, it must be a multiple of 4 
             (if (or (typep rock-block 'mldz::a) (typep rock-block 'mldz::b))
                 (if (= sum 0)
                     (setq result (append (loop :for n 
@@ -202,6 +205,8 @@
     )
 )
 
+;; Compute the bar-length of a rock block based 
+;; on the bar-length of its sub-blocks
 (defun bar-length-sum-rock (rock)
     (let ((sum 0))
         (loop :for n :from 0 :below (list-length (block-list rock)) :by 1
@@ -211,12 +216,18 @@
         sum
     )
 )
+
+;; Compute the bar-length of a A or B block based 
+;; on the bar-length of its sub-blocks
 (defun bar-length-sum-AB (A)
     (+  (bar-length (s-block A)) 
         (bar-length (r-block A)) 
         (bar-length (d-block A)) 
         (bar-length (c-block A)))
 )
+
+;;; When the bar-length of a sub-block is changed, 
+;; the bar-length of the parents is adapted
 (defun set-bar-length-up (rock-block)
     (if (or (typep (parent rock-block) 'mldz::a) (typep (parent rock-block) 'mldz::b))
         (setf (bar-length (parent rock-block)) (bar-length-sum-AB (parent rock-block)))
@@ -228,6 +239,7 @@
     )
 )
 
+;; Round up to the next exponent of 2
 (defun ceil-to-exp (val)
     (cond
         ((<= val 1) 1)
@@ -238,6 +250,7 @@
     )
 )
 
+;; Compute the total length of a tree
 (defun get-length-tree (tree)
     (let ((length 0))
         (loop :for i :from 0 :below (length tree) :do
@@ -250,6 +263,8 @@
     )
 )
 
+;; When bar-length of a s r d or c is changed, the other block
+;; with the same parents get the same bar length
 (defun propagate-bar-length-srdc (rock-block)
     (let ((parent (parent rock-block)) (nbars (bar-length rock-block)))
         (if (or (typep parent 'mldz::a) (typep parent 'mldz::b))
@@ -269,7 +284,6 @@
 ;; lst - [lst] List from which sublist is to be returned
 ;; idx - [int] Zero-based index at which to start the sublist
 ;; len - [int] Length of the sublist or nil to return all items following idx
-
 (defun sublst (lst idx len)
     (cond
         (   (null lst) nil)
@@ -279,7 +293,7 @@
     )
 )
 
-
+;; Count the number of blocks of type A in block-list
 (defun count-A-block-list (block-list)
     (let ((count 0))
         (dolist (n block-list)
@@ -291,6 +305,7 @@
     )
 )
 
+;; Count the number of blocks of type B in block-list
 (defun count-B-block-list (block-list)
     (let ((count 0))
         (dolist (n block-list)
@@ -319,6 +334,8 @@
         block-list
         )
         (setf block-list (block-list parent))
+        ;; For each block of the same type in block-list
+        ;; If they are relative, change their value according to the difference
         (loop :for x in block-list do
             (if (and (not (eq x AB-block)) (relative-to-same x) (typep x type-block))
                 (progn
@@ -418,15 +435,12 @@
          (next 0)
          (push (list))
          (pull (list '-1))
-        ;; (pull (list))
          (playing (list))
          (tree (om::tree input-chords))
          (pitch (to-pitch-list (om::chords input-chords))))
          (setq tree (second tree))
-         (print tree)
          (loop :for i :from 0 :below (length tree) :by 1 :do
             (let ((subtree (second (nth i tree))))
-                (print subtree)
                 (setq temp (read-tree-int (make-list quant :initial-element -1) (make-list quant :initial-element -1) (make-list quant :initial-element -1) subtree pitch 0 (/ quant (ceil-to-exp (get-length-tree subtree))) next))
                 (setq push (append push (first temp)))
                 (setq pull (append pull (second temp)))
@@ -445,11 +459,7 @@
 ; <next> is the index in pitch of the next notes we will add
 ;recursive function to read a rhythm tree and create push and pull
 (defun read-tree-int (push pull playing tree pitch pos length next)
-    (print "in read-tree-int")
-    (print tree)
     (progn
-        ;; (setf length (/ length (ceil-to-exp (get-length-tree tree))))
-        (print length)
         (loop :for i :from 0 :below (length tree) :by 1 :do
             (if (typep (nth i tree) 'list)
                 (let (temp)
@@ -469,7 +479,6 @@
                         (setf (nth pos push) next-pitch)
                         (loop :for j :from pos :below (+ pos (abs (* length (nth i tree)))) :by 1 :do
                             (setf (nth j playing) next-pitch)
-                            (print (nth j playing))
                         )
                         (setf pos (+ pos (abs (* length (nth i tree)))))
                         (setf (nth (- pos 1) pull) next-pitch)
@@ -495,8 +504,6 @@
           (prev 0)
           )
     (setq p-push (nconc p-push (mapcar (lambda (n) (* 100 (gil::g-values sol n))) push)))
-    ;; (print p-push)
-    ;; (loop :for i :below (length pull) do (print (gil::g-values sol (nth i pull))))
     (setq p-pull (nconc p-pull (mapcar (lambda (n) (* 100 (gil::g-values sol n))) pull)))
     (setq p-playing (nconc p-playing (mapcar (lambda (n) (* 100 (gil::g-values sol n))) playing)))
     
