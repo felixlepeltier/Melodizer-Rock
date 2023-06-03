@@ -11,7 +11,7 @@
 (om::defclass! rock ()
     (
       (block-list :accessor block-list :initarg :block-list :initform nil :documentation "Block list containing the global musical structure")
-    (melody-source :accessor melody-source :initarg :melody-source :initform nil :documentation "Source melody for s of the first A block")
+    (melody-source-A :accessor melody-source-A :initarg :melody-source-A :initform nil :documentation "Source melody for s of the first A block")
     (melody-source-B :accessor melody-source-B :initarg :melody-source-B :initform nil :documentation "Source melody for s of the first B block")
     (bar-length :accessor bar-length :initform 0 :type integer)
     (nb-a :accessor nb-a  :initform 0 :type integer :documentation "number of block A in the structure")

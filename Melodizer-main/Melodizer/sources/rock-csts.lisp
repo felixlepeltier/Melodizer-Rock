@@ -1,5 +1,9 @@
 (in-package :mldz)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Link arrays of music representation ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;; Post the constraints to link the three arrays of the representation when using SetVar
 (defun link-push-pull-playing-set (sp push pull playing max-pitch max-simultaneous-notes)
     ;initial constraint on pull, push, playing and durations
@@ -76,6 +80,9 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Constrain Blocks and their sub-blocks ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Call the right function to constrain the block by their type
 (defun constrain-srdc-from-parent (srdc-parent push pull playing push-acc pull-acc playing-acc push-A0 push-B0 quant max-pitch sp)
@@ -188,14 +195,15 @@
 
 )
 
+;; Constrain the A blocks with the resemblance if they are not the first A
 (defun constrain-srdc-from-A (A-block push pull playing push-acc pull-acc playing-acc push-A0 quant max-pitch sp)
     (print "constrain-srdc-from-A")
     (let ((post-constraints t) (sim (similarity-percent-A0 A-block)))
 
     ;; If the block is not the first one of its type, the resemblance must be set with the first
-    (if (/= (block-position A-block) (idx-first-a (parent A-block)))
+    (if (not (= (block-position-A A-block) 0))
         (let (temp-push)
-            (setq temp-push (translate-chords sp (chord-key (nth (idx-first-a (parent A-block)) (block-list (parent A-block)))) 
+            (setq temp-push (transpose-chords-key sp (chord-key (nth (idx-first-a (parent A-block)) (block-list (parent A-block)))) 
                                                 (chord-quality (nth (idx-first-a (parent A-block)) (block-list (parent A-block))))
                                                 (chord-key A-block) (chord-quality A-block) push-A0))
             (cst-common-vars sp temp-push push sim)
@@ -214,13 +222,14 @@
     )
 )
 
+;; Constrain the B blocks with the resemblance if they are not the first B
 (defun constrain-srdc-from-B (B-block push pull playing push-acc pull-acc playing-acc push-B0 quant max-pitch sp)
     (print "constrain-srdc-from-B")
     (let ((post-constraints t) (sim (similarity-percent-B0 B-block)))
     
-    (if (/= (block-position B-block) (idx-first-b (parent B-block)))
+    (if (not (= (block-position-B B-block) 0))
         (let (temp-push)
-            (setq temp-push (translate-chords sp (chord-key (nth (idx-first-b (parent B-block)) (block-list (parent B-block)))) 
+            (setq temp-push (transpose-chords-key sp (chord-key (nth (idx-first-b (parent B-block)) (block-list (parent B-block)))) 
                                                 (chord-quality (nth (idx-first-b (parent B-block)) (block-list (parent B-block))))
                                                 (chord-key B-block) (chord-quality B-block) push-B0))
             (cst-common-vars sp temp-push push sim)
@@ -244,7 +253,7 @@
 (defun constrain-s (sp s-block s-parent push pull playing push-acc pull-acc playing-acc max-pitch post-constraints)
     
     ;; if  (/= melody-source nil) and (block-position-A == 0)
-    (let ((melody-A (melody-source (parent s-parent)))
+    (let ((melody-A (melody-source-A (parent s-parent)))
         (melody-B (melody-source-B (parent s-parent)))
         (first-A (= (block-position-A s-parent) 0))
         (first-B (= (block-position-B s-parent) 0))
@@ -258,13 +267,11 @@
             (if set-A
                 ;; set-A
                 (let (push-source pull-source playing-source ppp-source)
-                    (print "Setting the first A block's s to the source melody")
-                    (setq ppp-source (create-push-pull-int (melody-source (parent s-parent)) 16))
+                    (setq ppp-source (create-push-pull-int (melody-source-A (parent s-parent)) 16))
 
                     (setq push-source (first ppp-source))
                     (setq pull-source (second ppp-source))
                     (setq playing-source (third ppp-source))
-                    (print push-source)
 
                     (loop :for i :from 0 :below (length push-source) :by 1 :do
                         (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
@@ -286,13 +293,11 @@
                 )
                 ;; set-B
                 (let (push-source pull-source playing-source ppp-source)
-                    (print "Setting the first B block's s to the source melody")
                     (setq ppp-source (create-push-pull-int (melody-source-B (parent s-parent)) 16))
                     
                     (setq push-source (first ppp-source))
                     (setq pull-source (second ppp-source))
                     (setq playing-source (third ppp-source))
-                    (print push-source)
 
                     (loop :for i :from 0 :below (length push-source) :by 1 :do
                         (gil::g-rel sp (nth i push) gil::IRT_EQ (nth i push-source))
@@ -323,7 +328,7 @@
 )
 
 
-
+;; Constrain the r block based on its resemblance with the s-block
 (defun constrain-r (sp r-block r-parent push pull playing push-acc pull-acc playing-acc
                                         push-s pull-s playing-s max-pitch post-constraints)
 
@@ -333,7 +338,7 @@
     ;; dont constrain if source melody is given or the similarity with the s block is 100%
     (let (melody)
         (if (typep r-parent 'mldz::a)
-            (setq melody (melody-source (parent r-parent)))
+            (setq melody (melody-source-A (parent r-parent)))
             (setq melody (melody-source-B (parent r-parent)))
         )
         (post-rock-constraints sp r-block push pull playing nil (and post-constraints (or (not melody) (< (similarity-percent-s r-block) 100))))
@@ -343,40 +348,36 @@
     (post-rock-constraints sp (accomp r-block) push-acc pull-acc playing-acc nil t)
 
     ;; constrain r such that it has a similarity of (similarity-percent-s r-block) with notes played in s-block
-    ;; translated the number of semitones asked of the r-block
+    ;; transposed the number of semitones asked of the r-block
     (let ((sim (similarity-percent-s r-block)) 
             temp-push  temp-playing      
         )
-        (setq temp-push (translate-chords-2 sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
+        (setq temp-push (transpose-chords-semitones sp (chord-key (s-block r-parent)) (chord-quality (s-block r-parent))
                                         (semitones r-block) push-s))  
         (cst-common-vars sp temp-push push sim)
     )
 )
 
+; Constrain the d-block based on its resemblance with the s-bloc
 (defun constrain-d (sp d-block d-parent push pull playing push-acc pull-acc playing-acc 
                                         push-s pull-s playing-s max-pitch post-constraints)
     (post-rock-constraints sp d-block push pull playing nil post-constraints)
     (post-rock-constraints sp (accomp d-block) push-acc pull-acc playing-acc nil t)
 
      ;; constrain d such that it has a difference of (difference-percent-s d-block) with notes played in s-block
-    ;; translated the number of semitones asked of the d-block
+    ;; transposed the number of semitones asked of the d-block
     (let ((diff (difference-percent-s d-block)) 
             temp-push  temp-playing      
         )
-        (setq temp-push (translate-chords-2 sp (chord-key (s-block d-parent)) (chord-quality (s-block d-parent))
+        (setq temp-push (transpose-chords-semitones sp (chord-key (s-block d-parent)) (chord-quality (s-block d-parent))
                                         (semitones d-block) push-s))
         
         (cst-common-vars sp temp-push push (- 100 diff))
     )
 )
 
-
+;; constrain c such that is respects the cadence specific rules
 (defun constrain-c (sp c-block c-parent push pull playing push-acc pull-acc playing-acc max-pitch post-constraints)
-  
-    ;; constrain c such that is respects the cadence specific rules
-    ;; if cadence-type of the parent block is "Default", then pick cadence depending on the position of the block
-    ;; in the global structure for example in the AABA structure, B would be in position 2 and would therefore not
-    ;; have a Plagal cadence as this usually marks the end of a complete musical piece
 
     (let ((block-list-len (length (block-list (parent c-parent)))) ;; how many blocks are in the global structure
         (position (block-position c-parent)) ;; position of the current block in the global structure (start index is 0)
@@ -468,7 +469,12 @@
     (post-rock-constraints sp (accomp c-block) push-acc pull-acc playing-acc t t)
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; LIMITING NOTE TO THE SCALE ;;
+;; OR THE CHORDS              ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Constraints on polyphonic voices
 (defun chord-key-cst (sp playing rock)
     (let ((key (chord-key rock))
         (quality (chord-quality rock))
@@ -482,7 +488,6 @@
             ((string= quality "Augmented") (setq triad-to-play (list 0 4 4)))
         )
         (setq notes-to-play (build-chordset triad-to-play (- chord-midi-value 60)))
-        (print notes-to-play)
         (loop :for i :from 0 :below (length playing) :do
             (let ((bool-array (gil::add-bool-var-array sp (length notes-to-play) 0 1)));;Array to state that one triad is played
                 (loop :for j :from 0 :below (length notes-to-play) :do
@@ -495,7 +500,7 @@
     )
 )
 
-
+;; Constraints on monophonic voices
 (defun chord-key-cst-int (sp push playing rock)
     (let (
         (chord (get-scale-chord (chord-quality rock)))
@@ -520,6 +525,30 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;
+; LIMITING PITCH RANGE ;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun pitch-range (sp push min-pitch max-pitch)
+    (loop :for j :below (length push) :by 1 :do
+        (if (typep (nth j push) 'gil::int-var)
+            ;; Constraints on monophonic voices
+            (progn 
+                (let (bool-temp bool-one bool-min bool-max)
+                    (setq bool-one (gil::add-bool-var-expr sp (nth j push) gil::IRT_EQ -1))
+                    (setq bool-min (gil::add-bool-var-expr sp (nth j push) gil::IRT_GQ min-pitch))
+                    (setq bool-max (gil::add-bool-var-expr sp (nth j push) gil::IRT_LQ max-pitch))
+                    (setq bool-temp (gil::add-bool-var sp 0 1))
+                    (gil::g-op sp bool-min gil::BOT_AND bool-max bool-temp)
+                    (gil::g-op sp bool-temp gil::BOT_OR bool-one 1)
+                )
+            )
+            ;; Constraints on polyphonic voices
+            (gil::g-dom-ints sp (nth j push) gil::SRT_SUB min-pitch max-pitch)
+        )
+    )
+)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; LIMITING MINIMUM NOTE LENGTH ;
@@ -529,11 +558,13 @@
     (loop :for j :from 0 :below (length push) :by 1 :do
         (loop :for k :from 1 :below min-length :by 1 :while (< (+ j k) (length pull)) :do
             (if (typep (nth j push) 'gil::int-var)
+                ;; Constraints on monophonic voices
                 (let (bool-temp bool2 bool3 bool4 bool5 bool6)
                     (setq bool-temp (gil::add-bool-var-expr sp (nth j push) gil::IRT_NQ -1))
                     (setq bool3 (gil::add-bool-var-expr sp (nth (+ j k) pull) gil::IRT_EQ -1))
                     (gil::g-op sp bool-temp gil::BOT_IMP bool3 1)
 
+                    ;; Limiting silence minimum length
                     (if (> j 0)
                         (progn
                             (setq bool2 (gil::add-bool-var-expr sp (nth j playing) gil::IRT_EQ -1))
@@ -551,6 +582,7 @@
                     )
                     
                 )
+                ;; Constraints on polyphonic voices
                 (gil::g-rel sp (nth (+ j k) pull) gil::SRT_DISJ (nth j push))
             )
         )
@@ -564,6 +596,7 @@
 (defun note-max-length-rock (sp push pull max-length)
     (setq l max-length)
     (if (typep (nth 0 push) 'gil::int-var)
+        ;; Constraints on monophonic voices
         (loop :for j :from 0 :below (- (length push) l) :by 1 :do
             (let (  (count (gil::add-int-var sp 0 l))
                     (int-array (gil::add-int-var-array sp l 0 l)))
@@ -574,6 +607,7 @@
                 (gil::g-rel sp count gil::IRT_GQ 1)
             )
         )
+        ;; Constraints on polyphonic voices
         (loop :for j :from 0 :below (- (length push) l) :by 1 :do
             (let ((l-pull (gil::add-set-var-array sp l 0 127 0 127))
                 (l-pull-union (gil::add-set-var sp 0 127 0 127)))
@@ -587,6 +621,10 @@
     )
     
 )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; LIMITING THE NUMBER OF COMMON NOTES ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun cst-common-vars (sp vars1 vars2 sim)
     (let (count-vars int-array n-vars perc)
@@ -605,6 +643,10 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; LIMITING THE NUMBER OF DIFFERENT NOTES ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun cst-different-vars (sp vars1 vars2 diff)
     (let (count-vars int-array n-vars perc)
         (setq perc (/ diff 100))
@@ -621,6 +663,10 @@
         (gil::g-rel sp count gil::IRT_GQ n-vars)
     )
 )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; LIMITING THE INTERVALS BETWEEN NOTES ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun limit-intervals-cst (sp playing)
     (let ((max-interval 7))
@@ -652,7 +698,11 @@
         )
 )
 
-(defun translate-chords (sp chord1 quality1 chord2 quality2 push)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TRANSPOSING AN ARRAY OF VARIABLE ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun transpose-chords-key (sp chord1 quality1 chord2 quality2 push)
     (let (
         (notes (build-scaleset (get-scale-chord quality1)
                     (- (name-to-note-value chord1) 60)))
@@ -679,8 +729,8 @@
     )
 )
 
-(defun translate-chords-2 (sp chord1 quality1 semitones push)
-    (print "translate chord")
+
+(defun transpose-chords-semitones (sp chord1 quality1 semitones push)
     (let (
         (notes (build-scaleset (get-scale-chord quality1)  ;if - mode selectionné
                     (- (name-to-note-value chord1) 60)))
@@ -706,8 +756,11 @@
     )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MINIMISE THE INTERVAL BETWEEN TWO NOTES ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun minimise-interval (sp playing-i-one playing-i chord quality)
-    (print "minimise interval")
     (let (interval interval-abs scalset interval-array)
         (setq interval (gil::add-int-var-expr sp playing-i gil::IOP_SUB playing-i-one))
         (setq interval-abs (gil::add-int-var sp 0 127))
@@ -715,7 +768,6 @@
 
         (setq scaleset (append '(-1) (build-scaleset (get-scale-chord quality)  ;if - mode selectionné
                     (- (name-to-note-value chord) 60))))
-        (print scaleset)
         (setq interval-array (gil::add-int-var-array sp (length scaleset) -1 127))
         (loop :for i :from 0 :below (length scaleset) :do
             (let (interval-temp (note (nth i scaleset)))
@@ -726,6 +778,10 @@
         (gil::g-lmin sp interval-abs interval-array)     
     )
 )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; LIMIT THE OVERALL INTERVAL BETWEEN THE NOTES ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun limit-song-interval (sp playing max-interval)
     (let ((max-note (gil::add-int-var sp 0 127))
