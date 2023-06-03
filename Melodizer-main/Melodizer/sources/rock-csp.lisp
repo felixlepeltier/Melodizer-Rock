@@ -4,22 +4,20 @@
 ; NEW-MELODIZER ;
 ;;;;;;;;;;;;;;;;;
 
-; <rock-csp> list of the child block objects
+; <rock-csp> the rock object defining the constraints
 ; <percent-diff> percentage of difference wanted for the solutions
 ; This function creates the CSP by creating the space and the variables, posting the constraints and the branching, specifying
 ; the search options and creating the search engine.
 (defmethod rock-solver (rock-csp percent-diff branching)
     (let ((sp (gil::new-space)); create the space;
-        push pull playing  
-        dfs tstop sopts scaleset pitch temp
+        push pull playing push-acc pull-acc playing-acc
+        tstop sopts temp
         pos
 
         (max-pitch 127)
         (bars (bar-length rock-csp))
         (quant 16)
-        (min-length 1) ;minimum length of a note with associated constraint
-        (chord-rhythm 2) ;a chord is played every [chord-rhythm] quant
-        (chord-min-length 2)) ; minimum length of a chord with associated constraint
+        ) 
 
         ;Setting constraint for this block and child blocks
         (setq temp (constrain-rock sp rock-csp))
@@ -30,8 +28,7 @@
         (setq pull-acc (nth 4 temp))
         (setq playing-acc (nth 5 temp))
 
-        ;; for BAB
-        ;; (gil::g-branch sp (append push pull playing) gil::INT_VAR_DEGREE_MAX gil::INT_VAL_RND)
+        ;; Define branching for BAB
         (gil::g-branch sp push gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp pull gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
         (gil::g-branch sp playing gil::INT_VAR_SIZE_MIN gil::INT_VAL_RND)
@@ -53,7 +50,6 @@
         (gil::set-time-stop sopts tstop); set the timestop object to stop the search if it takes too long
 
         ; search engine
-        ;; (setq se (gil::search-engine sp (gil::opts sopts) gil::DFS))
         (setq se (gil::search-engine sp (gil::opts sopts) gil::BAB))
 
         (print "new-melodizer basic CSP constructed")
@@ -66,7 +62,7 @@
 ;recursive function to set the constraint on all the blocks in the tree structure
 ; TODO : adapt function for A A B A and launch functions for s r d c
 (defun constrain-rock (sp rock-csp)
-    (print "At the start of constrain-rock (sp rock-csp)")
+    (print "At the start of constrain-rock")
 
     ; return pull push playing
     (let (pull push playing pull-acc push-acc playing-acc block-list positions
@@ -95,6 +91,7 @@
         
         ;; connects push pull and playing with constraints
         (link-push-pull-playing-int sp push pull playing max-pitch)
+        ;; Limit intervals between consecutive notes
         (limit-intervals-cst sp playing)
         (link-push-pull-playing-set sp push-acc pull-acc playing-acc max-pitch max-simultaneous-notes)
         
@@ -112,7 +109,6 @@
                   srdc-parent notes-per-block)
                 (setq srdc-parent (nth i block-list))
                 (setq notes-per-block (* (bar-length srdc-parent) quant))
-                (print startidx)
                 (setq temp-push (sublst push startidx notes-per-block))
                 (setq temp-pull (sublst pull startidx notes-per-block))
                 (setq temp-playing (sublst playing startidx notes-per-block))
@@ -127,9 +123,9 @@
                 )
                 (if (> startidx 0)
                     (progn
+                        ;; Last played note of the previous block must be pulled
                         (gil::g-rel sp (first temp-pull) gil::IRT_EQ (nth (- startidx 1) playing))
                     )
-                    
                 )
                 
                 (constrain-srdc-from-parent srdc-parent temp-push temp-pull temp-playing 
@@ -138,16 +134,15 @@
             )
         )
 
-        (print "At the end of constrain-rock (sp rock-csp)")
         ;; return
         (list push pull playing push-acc pull-acc playing-acc)
     )
 )
 
-;posts the constraints specified in the list
-(defun post-rock-constraints (sp rock push pull playing is-cadence post-chord); sub-push sub-pull)
+;posts the constraints specified in the block
+(defun post-rock-constraints (sp rock push pull playing is-cadence post-chord)
     (print "posting rock constraints")
-    (if (typep rock 'mldz::accompaniment)
+    (if (typep rock 'mldz::accompaniment);; Only accompaniment is polymorphique
         (progn
             (if (and (min-simultaneous-notes rock) (typep (nth 0 push) 'gil::set-var))
                 (gil::g-card sp playing (min-simultaneous-notes rock) (max-simultaneous-notes rock))
@@ -161,7 +156,6 @@
     (cond 
         ((not (typep rock 'mldz::accompaniment))
             (progn
-                (print rock)
                 ; Pitch constraints
                 (if (and post-chord (chord-key rock))
                     (if (typep (nth 0 push) 'gil::set-var)
@@ -260,7 +254,7 @@
          (check t); for the while loop
          sol score-voice score-acc)
 
-         (print "in search basic")
+        (print "in search rock")
         (gil::time-stop-reset tstop);reset the tstop timer before launching the search
 
         (om::while check :do
@@ -272,12 +266,7 @@
         )
 
         ;créer score qui retourne la liste de pitch et la rhythm tree
-        (print "building scores")
-        (print (gil::g-values sol push))
-        (print (gil::g-values sol pull))
-        (print (gil::g-values sol playing))
         (setq score-voice (build-voice-int sol push pull playing bars quant (tempo rock-object)))
-        (print score-voice)
         (setq score-acc (build-voice sol push-acc pull-acc bars quant (tempo rock-object)))
         
         (list 
